@@ -1,0 +1,46 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Cloud Aspire Solutions",
+    "documentationUrl": "https://cloudaspiresolutions.in/services",
+    "logoUrl": "https://cloudaspiresolutions.in/uploads/site_logo_1783239874.png"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:cloudaspiresolutions.in:content:llmstxt",
+      "displayName": "Cloud Aspire LLMs Content Manifest",
+      "type": "text/markdown",
+      "description": "Structured overview of Cloud Aspire digital marketing, SEO, PPC services, case studies, and corporate information for LLMs.",
+      "url": "https://cloudaspiresolutions.in/llms.txt",
+      "representativeQueries": [
+        "What services does Cloud Aspire Solutions offer?",
+        "Cloud Aspire digital marketing agency case studies",
+        "How to contact Cloud Aspire Solutions for SEO or PPC?"
+      ]
+    },
+    {
+      "identifier": "urn:air:cloudaspiresolutions.in:service:digital-marketing",
+      "displayName": "Digital Marketing & SEO Services",
+      "type": "text/html",
+      "description": "Comprehensive suite of digital marketing services including SEO, PPC management, social media, and web development.",
+      "url": "https://cloudaspiresolutions.in/services",
+      "representativeQueries": [
+        "Digital marketing agency in India",
+        "Professional SEO and PPC management services",
+        "Hire web development and growth marketing team"
+      ]
+    },
+    {
+      "identifier": "urn:air:cloudaspiresolutions.in:service:inquiry",
+      "displayName": "Consultation & Inquiry Endpoint",
+      "type": "text/html",
+      "description": "Contact channels and free consultation booking for digital growth and web engineering.",
+      "url": "https://cloudaspiresolutions.in/contact",
+      "representativeQueries": [
+        "Book a free digital marketing consultation",
+        "Contact Cloud Aspire Solutions sales team",
+        "Get a quotation for SEO or website development"
+      ]
+    }
+  ]
+}

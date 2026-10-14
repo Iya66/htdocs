@@ -1,0 +1,121 @@
+# robots.txt for https://cloudaspiresolutions.in/
+
+# Default: allow all crawlers, block private areas
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+Disallow: /*?*utm_
+Disallow: /*?*sessionid=
+
+# Search engines
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+# AI search and answer crawlers (allowed so you can appear in AI answers)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Claude-User
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Applebot
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /backups/
+Disallow: /scratch/
+
+# Sitemap
+Sitemap: https://cloudaspiresolutions.in/sitemap.xml

@@ -1,0 +1,17 @@
+# Backups
+admin/uploads/backups/*.zip
+admin/uploads/backups/*.sql
+
+# Composer & Node
+vendor/
+node_modules/
+composer.phar
+
+# Logs and temp
+logs/
+tmp/
+*.log
+
+# Environment files
+app/.env
+.env
