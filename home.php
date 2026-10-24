@@ -57,13 +57,9 @@ try {
     $projects = [];
 }
 
-// Stats from DB
-$db_projects = 0;
-$db_leads = 0;
+// Service count from DB (stat figures themselves come from Admin > Settings)
 $db_services = count($services);
 try {
-    $db_projects = (int)$conn->query("SELECT COUNT(*) FROM projects")->fetchColumn();
-    $db_leads = (int)$conn->query("SELECT COUNT(*) FROM leads")->fetchColumn();
     $db_services = (int)$conn->query("SELECT COUNT(*) FROM services WHERE status = 'active'")->fetchColumn();
 } catch (Exception $e) {}
 
@@ -74,8 +70,11 @@ try {
 } catch (Exception $e) {}
 $satisfaction_percentage = ($db_avg_rating !== null && $db_avg_rating > 0) ? round(($db_avg_rating / 5) * 100) : 100;
 
-$stat_projects = $db_projects ?: 159;
-$stat_clients = $db_leads ?: 156;
+// Stats come from Admin > Settings (editable, not raw table row counts)
+$stat_experience = (int)($settings['stat_experience'] ?? 5);
+$stat_staff = (int)($settings['stat_staff'] ?? 10);
+$stat_projects = (int)($settings['stat_projects'] ?? 1);
+$stat_clients = (int)($settings['stat_clients'] ?? 2);
 $stat_satisfaction = $satisfaction_percentage . '%';
 $stat_services = $db_services ?: count($services);
 

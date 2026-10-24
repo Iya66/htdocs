@@ -315,6 +315,8 @@ require_once __DIR__ . '/../../../admin/includes/header.php';
                 <input type="hidden" name="contact_phone" value="<?= htmlspecialchars($contact_phone) ?>">
                 <input type="hidden" name="contact_whatsapp" value="<?= htmlspecialchars($contact_whatsapp) ?>">
                 <input type="hidden" name="contact_hours" value="<?= htmlspecialchars($contact_hours) ?>">
+                <input type="hidden" name="contact_address" value="<?= htmlspecialchars($contact_address) ?>">
+                <input type="hidden" name="maps_url" value="<?= htmlspecialchars($maps_url) ?>">
                 <input type="hidden" name="social_facebook" value="<?= htmlspecialchars($social_facebook) ?>">
                 <input type="hidden" name="social_instagram" value="<?= htmlspecialchars($social_instagram) ?>">
                 <input type="hidden" name="social_twitter" value="<?= htmlspecialchars($social_twitter) ?>">
@@ -439,6 +441,22 @@ require_once __DIR__ . '/../../../admin/includes/header.php';
                 <div class="form-group">
                     <label><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp Number</label>
                     <input type="text" name="contact_whatsapp" class="form-control" value="<?= htmlspecialchars($contact_whatsapp) ?>" placeholder="e.g. 8098830937" required>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Office Physical Address</label>
+                    <textarea name="contact_address" class="form-control" rows="2" placeholder="e.g. No. 53, Auvai Nagar, Puducherry, 605008" required><?= htmlspecialchars($contact_address) ?></textarea>
+                    <span style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: block;">
+                        Shown in the website header, footer, and /contact page.
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-diamond-turn-right" style="color: var(--primary);"></i> Google Maps Directions URL</label>
+                    <input type="url" name="maps_url" class="form-control" value="<?= htmlspecialchars($maps_url) ?>" placeholder="https://maps.google.com/?q=...">
+                    <span style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; display: block;">
+                        Used when visitors click "Get Directions" on the website.
+                    </span>
                 </div>
 
                 <div class="form-group">

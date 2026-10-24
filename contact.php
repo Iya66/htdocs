@@ -67,7 +67,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $msg_text = 'Please provide a valid email address.';
         } else {
             try {
-                $stmt = $conn->prepare("INSERT INTO leads (name, phone, email, service, message, status) VALUES (?, ?, ?, ?, ?, 'new')");
+                $stmt = $conn->prepare("INSERT INTO leads (name, phone, email, service, message, status) VALUES (?, ?, ?, ?, ?, 'new_lead')");
                 $stmt->execute([$name, $phone, $email, $service ?: null, $message ?: null]);
 
                 // Track rate limit

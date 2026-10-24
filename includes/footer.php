@@ -302,8 +302,8 @@ if (isset($conn)) {
         justify-content: center;
         font-size: 32px;
         box-shadow: 0 8px 25px rgba(37, 211, 102, 0.45);
-        z-index: 9999;
-        transition: transform 0.3s ease;
+        z-index: 9990;
+        transition: transform 0.3s ease, opacity 0.25s ease, visibility 0.25s ease;
         animation: cdmPulse 2s infinite;
     }
 
@@ -532,6 +532,12 @@ if (isset($conn)) {
     }
 
     @media (max-width: 768px) {
+        .cdm-footer {
+            padding-top: 45px;
+        }
+        .cdm-footer .container {
+            padding: 0 16px;
+        }
         .cdm-modal-card {
             grid-template-columns: 1fr;
         }
@@ -540,6 +546,7 @@ if (isset($conn)) {
         }
         .cdm-footer-main-grid {
             grid-template-columns: 1fr;
+            gap: 30px;
         }
         .cdm-form-row {
             grid-template-columns: 1fr;
@@ -547,6 +554,14 @@ if (isset($conn)) {
         .cdm-footer-bottom .container {
             flex-direction: column;
             text-align: center;
+            gap: 12px;
+        }
+        .cdm-float-wa {
+            width: 50px;
+            height: 50px;
+            bottom: 20px;
+            right: 18px;
+            font-size: 26px;
         }
     }
 </style>
@@ -688,15 +703,17 @@ if (isset($conn)) {
     </div>
 </footer>
 
-<!-- FLOATING WHATSAPP BUTTON -->
-<a href="https://wa.me/<?= $clean_wa ?>?text=Hi%20<?= urlencode($site_name) ?>!%20I%E2%80%99m%20interested%20in%20your%20digital%20marketing%20services.%20Can%20you%20share%20more%20details%3F" 
+<!-- SINGLE FLOATING WHATSAPP BUTTON -->
+<?php if (!empty($clean_wa)): ?>
+<a href="https://wa.me/<?= htmlspecialchars($clean_wa) ?>?text=Hi%20<?= urlencode($site_name) ?>!%20I%E2%80%99m%20interested%20in%20your%20digital%20marketing%20services.%20Can%20you%20share%20more%20details%3F" 
    class="cdm-float-wa" 
    target="_blank" 
-   rel="noopener" 
+   rel="noopener noreferrer" 
    title="Chat on WhatsApp" 
    aria-label="Chat with our strategist on WhatsApp">
     <i class="fab fa-whatsapp"></i>
 </a>
+<?php endif; ?>
 
 <!-- LEAD CAPTURE POPUP MODAL -->
 <div class="cdm-modal-backdrop" id="cdmLeadModal">
@@ -720,13 +737,16 @@ if (isset($conn)) {
 
             <form class="cdm-popup-form" id="cdmPopupLeadForm" onsubmit="submitPopupLead(event)">
                 <div class="cdm-input-group">
-                    <input type="text" name="name" placeholder="Your Name*" required>
+                    <input type="text" name="name" id="popup_lead_name" placeholder="Your Name*" required autocomplete="name">
                 </div>
                 <div class="cdm-input-group">
-                    <input type="tel" name="mobile" placeholder="Your Mobile Number*" maxlength="14" required>
+                    <input type="tel" name="mobile" id="popup_lead_mobile" placeholder="Your Mobile Number*" maxlength="14" required autocomplete="tel">
                 </div>
                 <div class="cdm-input-group">
-                    <select name="services" required>
+                    <input type="email" name="email" id="popup_lead_email" placeholder="Your Email Address" autocomplete="email">
+                </div>
+                <div class="cdm-input-group">
+                    <select name="services" id="popup_lead_services" required>
                         <option value="" disabled selected>Select Desired Service*</option>
                         <?php if (!empty($footer_services)): ?>
                             <?php foreach ($footer_services as $ms): ?>
@@ -757,36 +777,97 @@ if (isset($conn)) {
 <!-- SCRIPTS FOR CHERRIDM INTERACTIVITY -->
 <script>
 // Mobile Drawer
-document.addEventListener('DOMContentLoaded', function() {
+function initMobileNavigationDrawer() {
+    if (window.cdmDrawerInitDone) return;
     const toggle = document.getElementById('cdmMenuToggle');
     const drawer = document.getElementById('cdmMobileDrawer');
     const overlay = document.getElementById('cdmDrawerOverlay');
     const closeBtn = document.getElementById('cdmDrawerClose');
     const header = document.getElementById('cdmHeader');
+    const servicesToggle = document.getElementById('mobileServicesToggle');
+    const servicesSubmenu = document.getElementById('mobileServicesSubmenu');
 
-    if (toggle && drawer && overlay && closeBtn) {
-        toggle.addEventListener('click', () => {
-            drawer.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-        const close = () => {
-            drawer.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        };
-        closeBtn.addEventListener('click', close);
-        overlay.addEventListener('click', close);
+    const openDrawer = () => {
+        if (!drawer || !overlay) return;
+        drawer.classList.add('active');
+        overlay.classList.add('active');
+        document.body.classList.add('cdm-drawer-open');
+        document.body.style.overflow = 'hidden';
+        if (toggle) toggle.setAttribute('aria-expanded', 'true');
+        if (closeBtn) {
+            setTimeout(() => closeBtn.focus(), 100);
+        }
+    };
+
+    const closeDrawer = () => {
+        if (!drawer || !overlay) return;
+        drawer.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.classList.remove('cdm-drawer-open');
+        document.body.style.overflow = '';
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    };
+
+    if (toggle) toggle.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (overlay) {
+        overlay.addEventListener('click', closeDrawer);
+        overlay.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
     }
 
-    // Header scroll effect
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 40) {
-            header && header.classList.add('scrolled');
-        } else {
-            header && header.classList.remove('scrolled');
+    // Escape key closes mobile navigation drawer
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && drawer && drawer.classList.contains('active')) {
+            closeDrawer();
         }
     });
+
+    // Services Submenu Accordion Toggle
+    if (servicesToggle && servicesSubmenu) {
+        servicesToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isOpen = servicesSubmenu.classList.toggle('open');
+            servicesToggle.classList.toggle('open', isOpen);
+            const arrow = servicesToggle.querySelector('.cdm-drawer-arrow');
+            if (arrow) arrow.classList.toggle('open', isOpen);
+            servicesToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    }
+
+    // Auto close drawer when tapping any navigation link (except submenu toggle)
+    if (drawer) {
+        const navLinks = drawer.querySelectorAll('.cdm-drawer-nav a, .cdm-drawer-brand');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                closeDrawer();
+            });
+        });
+    }
+
+    // Header scroll shadow effect
+    const updateHeaderScroll = () => {
+        if (!header) return;
+        if (window.scrollY > 20) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    };
+    window.addEventListener('scroll', updateHeaderScroll, { passive: true });
+    updateHeaderScroll();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileNavigationDrawer);
+} else {
+    initMobileNavigationDrawer();
+}
 
     // Auto-open modal after 6 seconds
     if (!sessionStorage.getItem('cdm_popup_seen')) {
@@ -795,12 +876,32 @@ document.addEventListener('DOMContentLoaded', function() {
             sessionStorage.setItem('cdm_popup_seen', 'true');
         }, 6000);
     }
-});
 
-// Modal open & close
-function openContactPopup() {
+// Modal open & close with context preservation
+function openContactPopup(serviceName = '') {
     const modal = document.getElementById('cdmLeadModal');
     if (modal) {
+        if (serviceName && typeof serviceName === 'string') {
+            const select = document.getElementById('popup_lead_services');
+            if (select) {
+                const term = serviceName.toLowerCase().trim();
+                for (let i = 0; i < select.options.length; i++) {
+                    const optText = select.options[i].text.toLowerCase();
+                    const optVal = select.options[i].value.toLowerCase();
+                    if (optText.includes(term) || term.includes(optText) || optVal.includes(term)) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            const modalTitle = document.querySelector('.cdm-modal-right h4');
+            if (modalTitle) {
+                if (!modalTitle.dataset.defaultTitle) {
+                    modalTitle.dataset.defaultTitle = modalTitle.textContent;
+                }
+                modalTitle.textContent = 'Free Quote for ' + serviceName;
+            }
+        }
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -811,6 +912,10 @@ function closeContactPopup() {
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = '';
+        const modalTitle = document.querySelector('.cdm-modal-right h4');
+        if (modalTitle && modalTitle.dataset.defaultTitle) {
+            modalTitle.textContent = modalTitle.dataset.defaultTitle;
+        }
     }
 }
 
@@ -827,6 +932,21 @@ function submitPopupLead(e) {
     const form = e.target;
     const btn = document.getElementById('btnPopupSubmit');
     const msg = document.getElementById('popupLeadMsg');
+
+    // Optional email validation: validate format only if provided
+    const emailField = form.querySelector('input[name="email"]');
+    if (emailField && emailField.value.trim() !== '') {
+        const emailVal = emailField.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailVal)) {
+            msg.className = 'cdm-alert-box error';
+            msg.textContent = 'Please enter a valid email address.';
+            msg.style.display = 'block';
+            emailField.focus();
+            return;
+        }
+    }
+
     const formData = new FormData(form);
 
     btn.disabled = true;
@@ -841,6 +961,7 @@ function submitPopupLead(e) {
         if (data.status === 'success') {
             msg.className = 'cdm-alert-box success';
             msg.textContent = data.message;
+            msg.style.display = 'block';
             form.reset();
             setTimeout(() => {
                 closeContactPopup();
@@ -849,11 +970,13 @@ function submitPopupLead(e) {
         } else {
             msg.className = 'cdm-alert-box error';
             msg.textContent = data.message || 'Submission failed. Please try again.';
+            msg.style.display = 'block';
         }
     })
     .catch(err => {
         msg.className = 'cdm-alert-box error';
         msg.textContent = 'Network error. Please try again.';
+        msg.style.display = 'block';
     })
     .finally(() => {
         btn.disabled = false;
@@ -896,18 +1019,9 @@ function submitFooterAudit(e) {
 }
 </script>
 
-<!-- CHERRIDM FLOATING WHATSAPP & ACTION -->
-<?php if (!empty($clean_wa)): ?>
-<a href="https://api.whatsapp.com/send?phone=<?= htmlspecialchars($clean_wa) ?>&text=Hi%20<?= urlencode($site_name) ?>%2C%20I%20would%20like%20to%20grow%20my%20business%20with%20your%20digital%20marketing%20services." 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   class="cdm-floating-wa" 
-   aria-label="Chat on WhatsApp">
-    <i class="fab fa-whatsapp"></i>
-</a>
-<?php endif; ?>
 
 <!-- CherriDM Animation & Interaction Controller -->
 <script src="<?= $base_url ?>/assets/js/cherridm-animations.js?v=2.0" defer></script>
+</div><!-- /.cdm-site-wrapper -->
 </body>
 </html>

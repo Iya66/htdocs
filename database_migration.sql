@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `wa_number` varchar(20) DEFAULT NULL,
   `avatar` varchar(500) DEFAULT NULL,
   `role` enum('admin','manager','user','viewer') DEFAULT 'user',
+  `permissions` text DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `last_login` datetime DEFAULT NULL,
   `google_id` varchar(100) DEFAULT NULL,
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `admin` (
   `wa_number` varchar(20) DEFAULT NULL,
   `avatar` varchar(500) DEFAULT NULL,
   `role` varchar(50) DEFAULT 'admin',
+  `permissions` text DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `last_login` datetime DEFAULT NULL,
   `google_id` varchar(100) DEFAULT NULL,
@@ -143,7 +145,11 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('privacy_policy', '<h2>1. Information We Collect</h2><p>At Cloud Aspire, we collect information you provide directly to us, such as your name, email address, phone number, and business details when you fill out contact forms, request proposals, subscribe to updates, or engage our services.</p><h2>2. How We Use Your Information</h2><p>We use the data we collect for purposeful and transparent business operations:</p><ul><li>To deliver, execute, and monitor our digital marketing and web development services</li><li>To communicate critical project milestones, campaign performance, and strategy updates</li><li>To enhance website responsiveness, security, and customer experience</li><li>To adhere strictly to applicable statutory and legal frameworks</li></ul><h2>3. Information Sharing & Third Parties</h2><p>We strictly do not sell, trade, or monetize your personal or commercial data. We only share essential metadata with vetted infrastructure providers who are bound by non-disclosure agreements.</p><h2>4. Data Security</h2><p>We employ enterprise-grade security protocols, encryption in transit (SSL/TLS), access controls, and regular vulnerability assessments to safeguard your data against unauthorized access or breaches.</p><h2>5. Cookies & Tracking Technologies</h2><p>Our website utilizes necessary cookies and privacy-respecting analytics to optimize user navigation and performance.</p><h2>6. Your Data Rights</h2><p>You have the right to access, verify, export, or request deletion of your personal records. For inquiries, please reach out to our privacy compliance team at <a href=\"mailto:cloudaspire2025@gmail.com\">cloudaspire2025@gmail.com</a>.</p><h2>7. Policy Updates</h2><p>We may update this Privacy Policy periodically to reflect evolving legal standards. Changes will be posted on this page with an updated timestamp.</p>'),
 ('terms_conditions', '<h2>1. Acceptance of Terms</h2><p>By browsing, accessing, or engaging services through Cloud Aspire, you agree to adhere to these Terms & Conditions, all applicable laws, and relevant industry regulations.</p><h2>2. Service Engagement & Deliverables</h2><p>All digital marketing, SEO, paid advertising, and web development deliverables are executed according to predefined project proposals and milestone agreements agreed upon between the client and Cloud Aspire.</p><h2>3. Intellectual Property Rights</h2><p>Upon full settlement of agreed project dues, all bespoke creative assets, website source codes, and campaign configurations developed specifically for the client become the proprietary property of the client.</p><h2>4. Client Responsibilities</h2><p>Clients are expected to provide timely feedback, necessary brand assets, and required account access to maintain agreed project schedules and campaign launch dates.</p><h2>5. Limitation of Liability</h2><p>While Cloud Aspire employs best-in-class industry methodologies, we do not guarantee third-party platform algorithm behaviors beyond direct control.</p><h2>6. Inquiries & Legal Notices</h2><p>For questions regarding our terms of service, contact our legal desk at <a href=\"mailto:cloudaspire2025@gmail.com\">cloudaspire2025@gmail.com</a>.</p>'),
 ('refund_policy', '<h2>1. Satisfaction Commitment</h2><p>At Cloud Aspire, we are committed to providing top-tier digital marketing, SEO, and development solutions. We work closely with every client at every milestone to ensure our deliverables match expectations.</p><h2>2. Refund Eligibility & Window</h2><p>If you are dissatisfied with a standard subscription plan or service kickoff, you may submit a formal review request within 14 calendar days of onboarding.</p><h2>3. Excluded & Non-Refundable Services</h2><p>The following costs represent direct third-party or completed disbursements and are non-refundable:</p><ul><li>Third-party platform advertising spend paid directly to Google, Meta, or LinkedIn</li><li>Domain registration, dedicated server provisioning, or third-party API license fees</li><li>Custom design or development phases that have already been reviewed, approved, and delivered</li></ul><h2>4. Refund Request Process</h2><p>To request a billing review or dispute resolution, please email our finance desk at <a href=\"mailto:cloudaspire2025@gmail.com\">cloudaspire2025@gmail.com</a> with your invoice number and project details.</p>'),
-('schema_version', '2026.10.13')
+('schema_version', '2026.10.13'),
+('stat_experience', '5'),
+('stat_clients', '2'),
+('stat_projects', '1'),
+('stat_staff', '10')
 ON DUPLICATE KEY UPDATE `setting_value`=VALUES(`setting_value`);
 
 -- ---------------------------------------------------------------
@@ -172,13 +178,22 @@ CREATE TABLE IF NOT EXISTS `services` (
   `slug` varchar(150) NOT NULL,
   `short_description` text DEFAULT NULL,
   `full_description` text DEFAULT NULL,
+  `hero_heading` varchar(255) DEFAULT NULL,
+  `hero_highlight` varchar(255) DEFAULT NULL,
+  `learn_more_text` varchar(100) DEFAULT 'Learn More',
+  `learn_more_url` varchar(255) DEFAULT NULL,
+  `explore_btn_text` varchar(100) DEFAULT 'Explore Service',
+  `explore_btn_url` varchar(255) DEFAULT NULL,
   `icon` varchar(50) DEFAULT NULL,
   `image` varchar(500) DEFAULT NULL,
+  `hero_bg_image` varchar(500) DEFAULT NULL,
   `price` varchar(50) DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
+  `sort_order` int(11) NOT NULL DEFAULT 0,
   `seo_title` varchar(255) DEFAULT NULL,
   `meta_description` text DEFAULT NULL,
   `meta_keywords` text DEFAULT NULL,
+  `og_image` varchar(500) DEFAULT NULL,
   `features` text DEFAULT NULL,
   `benefits` text DEFAULT NULL,
   `process_steps` text DEFAULT NULL,
@@ -187,7 +202,8 @@ CREATE TABLE IF NOT EXISTS `services` (
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_services_slug` (`slug`),
-  KEY `idx_services_status` (`status`)
+  KEY `idx_services_status` (`status`),
+  KEY `idx_services_status_sort` (`status`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `services` (`id`, `service_name`, `slug`, `short_description`, `full_description`, `icon`, `image`, `price`, `status`, `created_at`, `updated_at`) VALUES
@@ -315,7 +331,7 @@ CREATE TABLE IF NOT EXISTS `why_choose_us` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `why_choose_us` (`id`, `question`, `answer`, `icon`, `status`, `sort_order`, `created_at`, `updated_at`) VALUES
-(1, 'Proven Track Record', 'Over 500+ successful digital initiatives with measurable ROI across e-commerce, healthcare, hospitality, and real estate.', 'fa-trophy', 'active', 1, '2026-08-29 12:58:24', '2026-08-29 12:58:24'),
+(1, 'Proven Track Record', 'Over 4+ successful digital initiatives with measurable ROI across e-commerce, healthcare, hospitality, and real estate.', 'fa-trophy', 'active', 1, '2026-08-29 12:58:24', '2026-08-29 12:58:24'),
 (2, 'Certified Specialists', 'Dedicated in-house specialists in performance marketing, technical SEO, and conversion-focused web architecture.', 'fa-users-gear', 'active', 2, '2026-08-29 12:58:24', '2026-08-29 12:58:24'),
 (3, 'Data-Driven Growth', 'Every campaign decision is backed by live analytics, conversion tracking, and deep audience behavior modeling.', 'fa-chart-line', 'active', 3, '2026-08-29 12:58:24', '2026-08-29 12:58:24'),
 (4, 'Dedicated Support', 'Direct access to account leads and transparent bi-weekly strategy alignment calls with zero bureaucratic delays.', 'fa-headset', 'active', 4, '2026-08-29 12:58:24', '2026-08-29 12:58:24'),
@@ -391,11 +407,18 @@ CREATE TABLE IF NOT EXISTS `leads` (
   `email` varchar(150) DEFAULT NULL,
   `service` varchar(150) DEFAULT NULL,
   `message` text DEFAULT NULL,
-  `status` enum('new','contacted','qualified','proposal_sent','converted','closed') DEFAULT 'new',
+  `status` enum('new_lead','call_not_answered','call_back_later','already_has_website','no_website','website_improvement','interested','followup_pending','meeting_scheduled','proposal_sent','converted','not_interested','new','contacted','confirmed','lose') NOT NULL DEFAULT 'new_lead',
   `notes` text DEFAULT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `follow_up_date` datetime DEFAULT NULL,
+  `stage_notes` text DEFAULT NULL,
+  `proposal_reference` varchar(150) DEFAULT NULL,
+  `lost_reason` varchar(255) DEFAULT NULL,
+  `converted_at` datetime DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_leads_status` (`status`),
+  KEY `idx_leads_followup` (`follow_up_date`),
   KEY `idx_leads_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -539,6 +562,21 @@ CREATE TABLE IF NOT EXISTS `blogs` (
   UNIQUE KEY `idx_blogs_slug` (`slug`),
   KEY `idx_blogs_status_date` (`status`,`published_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------
+-- 24. Migration: 12-Stage Lead System & Follow-up Workflow
+-- ---------------------------------------------------------------
+ALTER TABLE `leads` 
+  ADD COLUMN IF NOT EXISTS `website` VARCHAR(255) NULL AFTER `notes`,
+  ADD COLUMN IF NOT EXISTS `follow_up_date` DATETIME NULL AFTER `website`,
+  ADD COLUMN IF NOT EXISTS `stage_notes` TEXT NULL AFTER `follow_up_date`,
+  ADD COLUMN IF NOT EXISTS `proposal_reference` VARCHAR(150) NULL AFTER `stage_notes`,
+  ADD COLUMN IF NOT EXISTS `lost_reason` VARCHAR(255) NULL AFTER `proposal_reference`,
+  ADD COLUMN IF NOT EXISTS `converted_at` DATETIME NULL AFTER `lost_reason`;
+
+ALTER TABLE `leads`
+  ADD INDEX IF NOT EXISTS `idx_leads_followup` (`follow_up_date`),
+  ADD INDEX IF NOT EXISTS `idx_leads_status` (`status`);
 
 SET FOREIGN_KEY_CHECKS = 1;
 -- ===============================================================

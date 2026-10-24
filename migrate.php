@@ -121,6 +121,64 @@ foreach ($service_cols as $scol => $stype) {
     }
 }
 
+// 4.2 Lead Pipeline Stages (12-stage CRM workflow)
+// Reconciles the `leads.status` column with app/lead_statuses.php so that
+// validation, badges, filters and the ENUM can never drift apart.
+// Idempotent: only rewrites the column when it does not already match.
+require_once __DIR__ . '/app/lead_statuses.php';
+
+try {
+    $lead_col = $conn->query("SHOW COLUMNS FROM `leads` LIKE 'status'")->fetch(PDO::FETCH_ASSOC);
+
+    if (!$lead_col) {
+        out("! `leads`.`status` column not found — skipping lead stage sync.", "error");
+    } else {
+        $expected_sql = leadStatusEnumSql('status');
+        $current_type = (string)($lead_col['Type'] ?? '');
+        $current_default = (string)($lead_col['Default'] ?? '');
+        $current_null = strtoupper((string)($lead_col['Null'] ?? ''));
+
+        /**
+         * Compare the live ENUM against the registry by VALUE rather than by
+         * raw string: SHOW COLUMNS returns only the type (e.g. enum('a','b'))
+         * with no NOT NULL / DEFAULT clause, and storage engines are free to
+         * reorder or re-space the definition.
+         */
+        $extractEnumValues = static function (string $type): array {
+            if (preg_match("/^enum\((.*)\)$/i", trim($type), $m) !== 1) {
+                return [];
+            }
+            preg_match_all("/'((?:[^'\\\\]|\\\\.)*)'/", $m[1], $vals);
+            return array_map(static fn($v) => str_replace("\\'", "'", $v), $vals[1]);
+        };
+
+        $current_values = $extractEnumValues($current_type);
+        $expected_values = leadStatusEnumValues();
+
+        $needs_update = $current_values !== $expected_values
+            || $current_default !== 'new_lead'
+            || $current_null !== 'NO';
+
+        if ($needs_update) {
+            $conn->exec("ALTER TABLE `leads` MODIFY `status` {$expected_sql}");
+            out("✓ Synced `leads`.`status` ENUM to " . count($expected_values) . " stages (12 approved + legacy history)", "success");
+        } else {
+            out("• `leads`.`status` ENUM already up to date (" . count($expected_values) . " stages)", "info");
+        }
+
+        // Report the stage distribution so an admin can spot unmigrated rows.
+        $stage_counts = leadStatusCounts($conn);
+        $legacy = (int)($stage_counts['legacy'] ?? 0);
+        if ($legacy > 0) {
+            out("! {$legacy} lead(s) still hold a status outside the 12-stage workflow — review them in /admin/leads.", "error");
+        } else {
+            out("✓ All existing leads map to the 12-stage workflow.", "success");
+        }
+    }
+} catch (Throwable $e) {
+    out("! Lead stage sync warning: " . $e->getMessage(), "error");
+}
+
 // 5. Audit & Validate Live Tables
 out("---------------------------------------------------------------");
 out(" Table Verification Summary:");

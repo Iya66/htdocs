@@ -130,7 +130,26 @@ if (isset($_POST['save_files'])) {
 }
 
 // ============================================
-// 6. DELETE FILE
+// 7. SAVE COMPANY STAT FIGURES
+// ============================================
+if (isset($_POST['save_stats'])) {
+    $result = saveSection($conn, 'Company Stats', function() {
+        global $conn;
+        $stat_keys = ['stat_experience', 'stat_clients', 'stat_projects', 'stat_staff'];
+        $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        foreach ($stat_keys as $key) {
+            $stmt->execute([$key, max(0, (int)($_POST[$key] ?? 0))]);
+        }
+        logAudit($conn, 'UPDATE_STATS', 'Updated company stat figures', $_SESSION['admin_id']);
+    });
+    $_SESSION['stats_msg'] = $result['message'];
+    $_SESSION['stats_type'] = $result['success'] ? 'success' : 'error';
+    header('Location: general.php');
+    exit;
+}
+
+// ============================================
+// 8. DELETE FILE
 // ============================================
 if (isset($_POST['delete_file'])) {
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
@@ -283,6 +302,10 @@ $upload_xml = getSetting($conn, 'upload_xml', '');
 $upload_html = getSetting($conn, 'upload_html', '');
 $theme_primary = getSetting($conn, 'theme_primary', '#6366f1');
 $theme_accent = getSetting($conn, 'theme_accent', '#8b5cf6');
+$stat_experience = getSetting($conn, 'stat_experience', '5');
+$stat_clients = getSetting($conn, 'stat_clients', '2');
+$stat_projects = getSetting($conn, 'stat_projects', '1');
+$stat_staff = getSetting($conn, 'stat_staff', '10');
 
 // Get all uploaded files
 $stmt = $conn->query("SELECT * FROM uploads ORDER BY uploaded_at DESC");
@@ -303,6 +326,8 @@ $files_msg = $_SESSION['files_msg'] ?? '';
 $files_type = $_SESSION['files_type'] ?? '';
 $delete_msg = $_SESSION['delete_msg'] ?? '';
 $delete_type = $_SESSION['delete_type'] ?? '';
+$stats_msg = $_SESSION['stats_msg'] ?? '';
+$stats_type = $_SESSION['stats_type'] ?? '';
 
 // Clear session messages
 unset($_SESSION['site_name_msg'], $_SESSION['site_name_type']);
@@ -311,5 +336,6 @@ unset($_SESSION['logo_msg'], $_SESSION['logo_type']);
 unset($_SESSION['favicon_msg'], $_SESSION['favicon_type']);
 unset($_SESSION['files_msg'], $_SESSION['files_type']);
 unset($_SESSION['delete_msg'], $_SESSION['delete_type']);
+unset($_SESSION['stats_msg'], $_SESSION['stats_type']);
 
 require_once __DIR__ . '/../../app/Views/admin/settings/general.php';

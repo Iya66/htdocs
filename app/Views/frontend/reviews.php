@@ -14,103 +14,131 @@ $msg_text = $msg_text ?? '';
 $csrf_token = $csrf_token ?? '';
 
 include __DIR__ . '/../../../includes/header.php'; 
+require_once __DIR__ . '/../../../includes/components/page_hero.php';
 ?>
 
-<!-- CHERRIDM INNER PAGE HERO -->
 <style>
-    .cdm-page-hero {
-        background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80') center/cover;
-        padding: 90px 20px 80px;
-        text-align: center;
-        color: #ffffff;
-        position: relative;
-    }
-    .cdm-page-hero h1 {
-        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 14px;
-        letter-spacing: -0.5px;
-    }
-    .cdm-page-hero h1 span.stroke {
-        color: #fb9a27;
-    }
-    .cdm-page-hero p {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 680px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
-    }
-    .cdm-breadcrumb-capsule {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        padding: 7px 22px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .cdm-breadcrumb-capsule a {
-        color: #ffffff;
-        transition: color 0.2s ease;
-        text-decoration: none;
-    }
-    .cdm-breadcrumb-capsule a:hover {
-        color: #fb9a27;
-    }
-    .cdm-breadcrumb-capsule span.sep {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .cdm-breadcrumb-capsule span.active {
-        color: #fb9a27;
+    /* ══════════════════════════════════════════════════
+       REVIEWS PAGE STYLES (CherriDM Design System)
+       ══════════════════════════════════════════════════ */
+    .cdm-reviews-section {
+        padding: 60px 0 80px;
+        background-color: #f8faff;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    /* CherriDM Metrics Grid */
+    .cdm-reviews-container {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ══════════════════════════════════════════════════
+       1. LIVE METRICS STRIP (Consistent height, width & center alignment)
+       ══════════════════════════════════════════════════ */
     .cdm-reviews-metrics {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 24px;
         margin-bottom: 50px;
+        align-items: stretch;
     }
+
     .cdm-metric-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 14px;
-        padding: 32px 20px;
+        padding: 30px 20px;
         text-align: center;
         box-shadow: 0 4px 16px rgba(3, 34, 143, 0.05);
         transition: all 0.35s ease;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+        height: 100%;
+        box-sizing: border-box;
     }
+
     .cdm-metric-card:hover {
-        transform: translateY(-6px);
+        transform: translateY(-5px);
         border-color: #fb9a27;
         box-shadow: 0 14px 35px rgba(3, 34, 143, 0.12);
     }
+
     .cdm-metric-card h3 {
-        font-size: 2.6rem;
+        font-size: clamp(2.2rem, 3.5vw, 2.7rem);
         font-weight: 800;
         color: #03228f;
         letter-spacing: -0.02em;
         line-height: 1.1;
-        margin-bottom: 8px;
+        margin: 0 0 8px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+
     .cdm-metric-card p {
         color: #64748b;
         font-size: 0.95rem;
         font-weight: 600;
         margin: 0;
+        line-height: 1.35;
+        text-align: center;
     }
 
-    /* Reviews Grid */
+    /* ══════════════════════════════════════════════════
+       2. SECTION HEADER BAR
+       ══════════════════════════════════════════════════ */
+    .cdm-reviews-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .cdm-reviews-header-title .eyebrow {
+        color: #fb9a27;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 1px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .cdm-reviews-header-title h2 {
+        font-size: clamp(1.8rem, 3vw, 2.3rem);
+        font-weight: 800;
+        color: #03228f;
+        margin: 0;
+        line-height: 1.25;
+    }
+
+    .cdm-reviews-write-btn {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    /* ══════════════════════════════════════════════════
+       3. REVIEWS GRID & CARDS
+       ══════════════════════════════════════════════════ */
     .cdm-reviews-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: 28px;
     }
+
     .cdm-review-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -121,12 +149,15 @@ include __DIR__ . '/../../../includes/header.php';
         flex-direction: column;
         position: relative;
         transition: all 0.35s ease;
+        box-sizing: border-box;
     }
+
     .cdm-review-card:hover {
         transform: translateY(-6px);
         border-color: #fb9a27;
         box-shadow: 0 16px 40px rgba(3, 34, 143, 0.12);
     }
+
     .cdm-quote-badge {
         position: absolute;
         top: 24px;
@@ -137,16 +168,19 @@ include __DIR__ . '/../../../includes/header.php';
         pointer-events: none;
         transition: all 0.3s ease;
     }
+
     .cdm-review-card:hover .cdm-quote-badge {
         opacity: 0.45;
         transform: scale(1.15) rotate(-6deg);
     }
+
     .cdm-review-stars {
         color: #fb9a27;
         font-size: 1.15rem;
         margin-bottom: 16px;
         letter-spacing: 3px;
     }
+
     .cdm-review-text {
         color: #475569;
         font-size: 0.98rem;
@@ -155,6 +189,7 @@ include __DIR__ . '/../../../includes/header.php';
         font-style: italic;
         flex-grow: 1;
     }
+
     .cdm-review-author {
         display: flex;
         align-items: center;
@@ -163,6 +198,7 @@ include __DIR__ . '/../../../includes/header.php';
         padding-top: 18px;
         border-top: 1px solid #f1f5f9;
     }
+
     .cdm-avatar-circle {
         width: 48px;
         height: 48px;
@@ -177,18 +213,21 @@ include __DIR__ . '/../../../includes/header.php';
         flex-shrink: 0;
         box-shadow: 0 4px 12px rgba(3, 34, 143, 0.2);
     }
+
     .cdm-author-info h4 {
         margin: 0;
         font-size: 1.02rem;
         font-weight: 700;
         color: #03228f;
     }
+
     .cdm-author-role {
         font-size: 0.82rem;
         color: #64748b;
         font-weight: 500;
         margin-top: 2px;
     }
+
     .cdm-verified-tag {
         display: inline-flex;
         align-items: center;
@@ -199,7 +238,9 @@ include __DIR__ . '/../../../includes/header.php';
         margin-top: 3px;
     }
 
-    /* Review Form Card */
+    /* ══════════════════════════════════════════════════
+       4. REVIEW SUBMISSION FORM CARD
+       ══════════════════════════════════════════════════ */
     .cdm-review-form-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -208,8 +249,10 @@ include __DIR__ . '/../../../includes/header.php';
         box-shadow: 0 10px 35px rgba(3, 34, 143, 0.08);
         position: relative;
         overflow: hidden;
-        margin-top: 70px;
+        margin-top: 60px;
+        box-sizing: border-box;
     }
+
     .cdm-review-form-card::before {
         content: '';
         position: absolute;
@@ -219,14 +262,17 @@ include __DIR__ . '/../../../includes/header.php';
         height: 4px;
         background: linear-gradient(90deg, #03228f, #fb9a27, #03228f);
     }
+
     .cdm-interactive-stars {
         display: inline-flex;
         flex-direction: row-reverse;
         gap: 6px;
     }
+
     .cdm-interactive-stars input {
         display: none;
     }
+
     .cdm-interactive-stars label {
         font-size: 2.2rem;
         color: #cbd5e1;
@@ -234,12 +280,14 @@ include __DIR__ . '/../../../includes/header.php';
         transition: transform 0.2s ease, color 0.2s ease;
         user-select: none;
     }
+
     .cdm-interactive-stars label:hover,
     .cdm-interactive-stars label:hover ~ label,
     .cdm-interactive-stars input:checked ~ label {
         color: #fb9a27;
         transform: scale(1.15);
     }
+
     .cdm-rating-tag {
         font-size: 0.88rem;
         font-weight: 700;
@@ -249,6 +297,7 @@ include __DIR__ . '/../../../includes/header.php';
         border-radius: 20px;
         border: 1px solid rgba(3, 34, 143, 0.15);
     }
+
     .cdm-input-control {
         width: 100%;
         padding: 13px 16px;
@@ -261,79 +310,117 @@ include __DIR__ . '/../../../includes/header.php';
         outline: none;
         box-sizing: border-box;
     }
+
     .cdm-input-control:focus {
         background: #ffffff;
         border-color: #03228f;
         box-shadow: 0 0 0 3px rgba(3, 34, 143, 0.12);
     }
 
+    /* ══════════════════════════════════════════════════
+       5. RESPONSIVE BREAKPOINTS
+       ══════════════════════════════════════════════════ */
     @media (max-width: 992px) {
         .cdm-reviews-metrics {
             grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 40px;
         }
     }
-    @media (max-width: 640px) {
+
+    @media (max-width: 650px) {
+        .cdm-reviews-section {
+            padding: 45px 0 60px;
+        }
+        .cdm-reviews-container {
+            padding: 0 16px;
+        }
         .cdm-reviews-metrics {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .cdm-metric-card {
+            padding: 20px 12px;
+            min-height: 110px;
+        }
+        .cdm-metric-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+        }
+        .cdm-metric-card p {
+            font-size: 0.82rem;
+        }
+        .cdm-reviews-header-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .cdm-reviews-write-btn {
+            width: 100%;
+            justify-content: center;
         }
         .cdm-reviews-grid {
             grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .cdm-review-card {
+            padding: 24px 20px;
         }
         .cdm-review-form-card {
-            padding: 30px 20px;
+            padding: 30px 18px;
+            margin-top: 45px;
+        }
+        .cdm-form-grid {
+            grid-template-columns: 1fr !important;
         }
     }
 </style>
 
-<section class="cdm-page-hero">
-    <div class="container">
-        <h1>Client <span class="stroke">Reviews</span></h1>
-        <p>Real feedback and verified ratings from businesses we have empowered to grow online</p>
-        <div class="cdm-breadcrumb-capsule">
-            <a href="<?= $base_url ?>/"><i class="fas fa-home"></i> Home</a>
-            <span class="sep">/</span>
-            <span class="active">Reviews</span>
-        </div>
-    </div>
-</section>
+<?php
+render_page_hero([
+    'title' => 'Client',
+    'highlight' => 'Reviews',
+    'subtitle' => 'Real feedback and verified ratings from businesses we have empowered to grow online',
+    'breadcrumb_active' => 'Reviews',
+    'base_url' => $base_url
+]);
+?>
 
-<section style="padding: 70px 0; background-color: #f8faff;">
-    <div class="container">
-        <!-- Live Metrics Strip -->
+<section class="cdm-reviews-section">
+    <div class="cdm-reviews-container">
+        <!-- ══════════════ 1. LIVE METRICS STRIP ══════════════ -->
         <div class="cdm-reviews-metrics">
             <div class="cdm-metric-card cdm-reveal">
-                <h3 class="counter-num" data-count="<?= (float)$avg_rating_display ?>/5"><?= $avg_rating_display ?>/5</h3>
+                <h3 class="counter-num" data-target="<?= (float)$avg_rating_display ?>" data-decimals="1" data-suffix="/5"><?= $avg_rating_display ?>/5</h3>
                 <p>Average Rating</p>
             </div>
             <div class="cdm-metric-card cdm-reveal">
-                <h3 class="counter-num" data-count="<?= (int)$stat_clients ?>+"><?= $stat_clients ?>+</h3>
+                <h3 class="counter-num" data-target="<?= (int)$stat_clients ?>" data-decimals="0" data-suffix="+"><?= $stat_clients ?>+</h3>
                 <p>Happy Clients</p>
             </div>
             <div class="cdm-metric-card cdm-reveal">
-                <h3 class="counter-num" data-count="<?= $stat_satisfaction ?>"><?= $stat_satisfaction ?></h3>
+                <h3 class="counter-num" data-target="<?= (int)$satisfaction_percentage ?>" data-decimals="0" data-suffix="%"><?= $stat_satisfaction ?></h3>
                 <p>Satisfaction Rate</p>
             </div>
             <div class="cdm-metric-card cdm-reveal">
-                <h3 class="counter-num" data-count="<?= $stat_retention ?>"><?= $stat_retention ?></h3>
+                <h3 class="counter-num" data-target="<?= (int)$retention_percentage ?>" data-decimals="0" data-suffix="%"><?= $stat_retention ?></h3>
                 <p>Positive Feedback</p>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 16px;">
-            <div>
-                <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 4px;">
-                    // Client Feedback //
-                </span>
-                <h2 style="font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #03228f; margin: 0;">
-                    Verified Client <span class="text-secondary">Ratings &amp; Reviews</span>
-                </h2>
+        <!-- ══════════════ 2. SECTION HEADER BAR ══════════════ -->
+        <div class="cdm-reviews-header-bar">
+            <div class="cdm-reviews-header-title">
+                <span class="eyebrow">// Client Feedback //</span>
+                <h2>Verified Client <span class="text-secondary">Ratings &amp; Reviews</span></h2>
             </div>
-            <a href="#write-review" class="cdm-btn-quote" style="padding: 12px 24px; font-size: 0.95rem; border-radius: 8px;">
+            <a href="#write-review" class="cdm-btn-quote cdm-reviews-write-btn">
                 <i class="fas fa-pen-nib"></i> <span>Write a Review</span>
             </a>
         </div>
 
-        <!-- Reviews Grid -->
+        <!-- ══════════════ 3. REVIEWS GRID ══════════════ -->
         <div class="cdm-reviews-grid" id="reviewsGrid">
             <?php 
             $theme_colors = ['#03228f', '#fb9a27', '#0a1945', '#1e40af', '#0284c7'];
@@ -380,7 +467,7 @@ include __DIR__ . '/../../../includes/header.php';
             <?php endif; ?>
         </div>
 
-        <!-- ══════════════ USER-SIDE REVIEW FORM ══════════════ -->
+        <!-- ══════════════ 4. USER-SIDE REVIEW FORM ══════════════ -->
         <div class="cdm-review-form-card" id="write-review">
             <div style="text-align: center; max-width: 620px; margin: 0 auto 36px;">
                 <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; display: inline-block; margin-bottom: 6px;">
@@ -409,7 +496,7 @@ include __DIR__ . '/../../../includes/header.php';
                     <input type="hidden" name="action" value="submit_review">
                     <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="cdm-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <!-- Star Rating Picker (Full Width) -->
                         <div style="grid-column: 1 / -1; margin-bottom: 4px;">
                             <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #03228f; margin-bottom: 8px;">
@@ -482,23 +569,6 @@ include __DIR__ . '/../../../includes/header.php';
                 </form>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- BOTTOM CTA BANNER -->
-<section style="background: linear-gradient(135deg, #02144a 0%, #03228f 100%); padding: 70px 20px; color: #ffffff; text-align: center;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 8px;">
-            // Partner With Us //
-        </span>
-        <h3 style="font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px;">Ready to Experience Compound Growth?</h3>
-        <p style="font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px;">
-            Partner with Pondicherry's leading digital marketing team and elevate your brand authority today.
-        </p>
-        <button type="button" class="cdm-btn-quote" style="display: inline-flex;" onclick="openContactPopup()">
-            <span>Claim Your Free Audit</span>
-            <i class="fas fa-arrow-right"></i>
-        </button>
     </div>
 </section>
 
@@ -577,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 20px;">
                                 A thank-you note and receipt have been dispatched to <strong>${escapeHtml(email)}</strong>.
                             </p>
-                            <button type="button" class="cdm-btn-primary" onclick="location.reload()" style="font-size: 0.9rem;">
+                            <button type="button" class="cdm-btn-quote" onclick="location.reload()" style="font-size: 0.9rem;">
                                 <i class="fas fa-sync-alt"></i> Refresh Page
                             </button>
                         </div>
@@ -657,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const target = parseFloat(el.getAttribute('data-target')) || 0;
                     const decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
                     const suffix = el.getAttribute('data-suffix') || '';
-                    const duration = 1600;
+                    const duration = 1400;
                     let startTime = null;
 
                     function animateCount(timestamp) {
@@ -684,4 +754,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 <?php include __DIR__ . '/../../../includes/footer.php'; ?>

@@ -199,15 +199,8 @@ try {
     error_log("Error calculating review stats from DB: " . $e->getMessage());
 }
 
-// 2. Live Happy Clients directly from the `leads` table in Database (matching home.php & why-choose-us.php)
-$db_leads = 0;
-try {
-    $db_leads = (int)$conn->query("SELECT COUNT(*) FROM leads")->fetchColumn();
-} catch (Exception $e) {
-    error_log("Error fetching leads count from DB: " . $e->getMessage());
-}
-
-$stat_clients = $db_leads;
+// 2. Happy Clients figure — editable from Admin > Settings
+$stat_clients = (int)($settings['stat_clients'] ?? 2);
 $avg_rating_display = $db_avg_rating > 0 ? number_format($db_avg_rating, 1) : '0.0';
 $stat_satisfaction = $satisfaction_percentage . '%';
 $stat_retention = $retention_percentage . '%';

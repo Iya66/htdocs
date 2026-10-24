@@ -12,9 +12,12 @@ $testimonials = $testimonials ?? [];
 $why_choose_us_items = $why_choose_us_items ?? [];
 $projects = $projects ?? [];
 
-$stat_projects = $stat_projects ?? 159;
-$stat_clients = $stat_clients ?? 156;
+$stat_projects = $stat_projects ?? (int)($settings['stat_projects'] ?? 1);
+$stat_clients = $stat_clients ?? (int)($settings['stat_clients'] ?? 2);
 $stat_services = $stat_services ?? count($services);
+// Company milestones — editable from Admin > Settings
+$stat_experience = (int)($settings['stat_experience'] ?? 5);
+$stat_staff = (int)($settings['stat_staff'] ?? 10);
 
 // SEO
 $pageTitle = $site_name . " - Best Digital Marketing Company in Pondicherry";
@@ -191,13 +194,13 @@ include __DIR__ . '/../../../includes/header.php';
     }
 
     /* ══════════════════════════════════════════════
-       2. FLIP BOXES (OVERLAPPING CARDS)
+       2. COMPACT FEATURE CARDS (CLEAN OVERVIEW)
        ══════════════════════════════════════════════ */
     .cdm-flip-section {
         position: relative;
         z-index: 10;
-        margin-top: -95px;
-        margin-bottom: 70px;
+        margin-top: -65px;
+        margin-bottom: 50px;
     }
 
     .cdm-flip-grid {
@@ -205,124 +208,92 @@ include __DIR__ . '/../../../includes/header.php';
         margin: 0 auto;
         padding: 0 20px;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
     }
 
-    .cdm-flip-card {
-        background-color: transparent;
-        height: 250px;
-        perspective: 1000px;
-    }
-
-    .cdm-flip-inner {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        transform-style: preserve-3d;
-    }
-
-    .cdm-flip-card:hover .cdm-flip-inner {
-        transform: rotateY(180deg);
-    }
-
-    .cdm-flip-front, .cdm-flip-back {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        border-radius: 8px;
+    .cdm-feat-card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px 18px 18px;
+        box-shadow: 0 8px 25px rgba(3, 34, 143, 0.08);
+        border: 1px solid #eef2f6;
+        border-top: 3px solid #fb9a27;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 24px 18px;
-        box-shadow: 0 10px 30px rgba(3, 34, 143, 0.1);
+        justify-content: space-between;
+        height: 100%;
+        min-height: 195px;
     }
 
-    .cdm-flip-front {
-        background: #ffffff;
-        border-bottom: 4px solid #fb9a27;
+    .cdm-feat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(3, 34, 143, 0.14);
+        border-top-color: #03228f;
     }
 
-    .cdm-flip-icon-wrap {
-        width: 64px;
-        height: 64px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(3, 34, 143, 0.08) 0%, rgba(251, 154, 39, 0.12) 100%);
-        border: 1.5px solid rgba(3, 34, 143, 0.1);
+    .cdm-feat-icon-wrap {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(3, 34, 143, 0.07);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 16px;
-        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        margin-bottom: 12px;
+        transition: all 0.25s ease;
     }
 
-    .cdm-flip-icon-wrap i {
-        font-size: 28px;
+    .cdm-feat-icon-wrap i {
+        font-size: 22px;
         color: #03228f;
-        margin-bottom: 0 !important;
-        transition: all 0.35s ease;
+        transition: all 0.25s ease;
     }
 
-    .cdm-flip-card:hover .cdm-flip-icon-wrap {
+    .cdm-feat-card:hover .cdm-feat-icon-wrap {
         background: #fb9a27;
-        border-color: #fb9a27;
-        transform: scale(1.1) rotate(4deg);
-        box-shadow: 0 8px 20px rgba(251, 154, 39, 0.35);
+        transform: scale(1.05);
     }
 
-    .cdm-flip-card:hover .cdm-flip-icon-wrap i {
+    .cdm-feat-card:hover .cdm-feat-icon-wrap i {
         color: #ffffff;
     }
 
-    .cdm-flip-front h4 {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1.35;
-    }
-
-    .cdm-flip-back {
-        background: linear-gradient(135deg, #03228f 0%, #1738af 100%);
-        color: #ffffff;
-        transform: rotateY(180deg);
-    }
-
-    .cdm-flip-back h4 {
+    .cdm-feat-card h4 {
         font-size: 15px;
         font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 10px;
+        color: #1e293b;
+        line-height: 1.3;
+        margin-bottom: 6px;
     }
 
-    .cdm-flip-back p {
-        font-size: 12px;
+    .cdm-feat-card p {
+        font-size: 12.5px;
         line-height: 1.5;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 15px;
+        color: #64748b;
+        margin-bottom: 14px;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        flex-grow: 1;
     }
 
-    .cdm-flip-back a {
-        font-size: 12px;
+    .cdm-feat-card a.cdm-feat-link {
+        font-size: 12.5px;
         font-weight: 700;
-        color: #fb9a27;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        color: #03228f;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        transition: all 0.2s ease;
+        text-transform: capitalize;
     }
 
-    .cdm-flip-back a:hover {
-        color: #ffffff;
+    .cdm-feat-card a.cdm-feat-link:hover {
+        color: #fb9a27;
+        gap: 9px;
     }
 
     /* ══════════════════════════════════════════════
@@ -386,9 +357,9 @@ include __DIR__ . '/../../../includes/header.php';
     .cdm-about-content p {
         font-size: 15px;
         color: #475569;
-        line-height: 1.75;
-        margin-bottom: 18px;
-        text-align: justify;
+        line-height: 1.7;
+        margin-bottom: 16px;
+        text-align: left;
     }
 
     .cdm-metrics-strip {
@@ -531,6 +502,20 @@ include __DIR__ . '/../../../includes/header.php';
         padding: 80px 0;
     }
 
+    .cdm-innovative-section {
+        padding: 85px 0;
+        overflow: hidden;
+    }
+
+    .cdm-innovative-title {
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 800;
+        color: #03228f;
+        line-height: 1.25;
+        margin-bottom: 20px;
+        word-break: break-word;
+    }
+
     .cdm-partner-grid {
         max-width: 1240px;
         margin: 0 auto;
@@ -544,43 +529,63 @@ include __DIR__ . '/../../../includes/header.php';
     .cdm-why-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin: 25px 0 30px;
+        gap: 14px;
+        margin: 20px 0 25px;
     }
 
     .cdm-why-item {
         background: #f8faff;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
-        padding: 16px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
         transition: all 0.25s ease;
     }
 
     .cdm-why-item:hover {
         border-color: #fb9a27;
         background: #ffffff;
-        box-shadow: 0 6px 20px rgba(3, 34, 143, 0.08);
+        box-shadow: 0 4px 15px rgba(3, 34, 143, 0.08);
         transform: translateY(-2px);
     }
 
-    .cdm-why-item i {
+    .cdm-why-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(251, 154, 39, 0.12);
         color: #fb9a27;
-        font-size: 20px;
-        margin-bottom: 8px;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 16px;
     }
 
-    .cdm-why-item h5 {
-        font-size: 15px;
+    .cdm-why-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .cdm-why-text h5 {
+        font-size: 14px;
         font-weight: 700;
         color: #03228f;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
+        line-height: 1.3;
     }
 
-    .cdm-why-item p {
+    .cdm-why-text p {
         font-size: 12px;
         color: #64748b;
-        line-height: 1.45;
+        line-height: 1.4;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .cdm-featured-card {
@@ -648,16 +653,23 @@ include __DIR__ . '/../../../includes/header.php';
     .cdm-btn-call {
         background: #fb9a27;
         color: #03228f;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 800;
-        padding: 14px 42px;
+        padding: 14px 38px;
         border-radius: 40px;
         border: 2px solid #fb9a27;
         display: inline-flex;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        gap: 10px;
         transition: all 0.3s ease;
         cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .cdm-btn-call i {
+        font-size: 15px;
+        line-height: 1;
     }
 
     .cdm-btn-call:hover {
@@ -670,10 +682,13 @@ include __DIR__ . '/../../../includes/header.php';
     /* ══════════════════════════════════════════════
        7. PARALLAX STATS COUNTER
        ══════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════
+       7. PARALLAX STATS COUNTER
+       ══════════════════════════════════════════════ */
     .cdm-counter-section {
         background: linear-gradient(135deg, rgba(3, 34, 143, 0.95) 0%, rgba(2, 20, 74, 0.98) 100%),
                     url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
-        padding: 80px 20px;
+        padding: 55px 20px;
         color: #ffffff;
     }
 
@@ -682,47 +697,46 @@ include __DIR__ . '/../../../includes/header.php';
         margin: 0 auto;
         display: grid;
         grid-template-columns: 1fr 2fr;
-        gap: 60px;
+        gap: 45px;
         align-items: center;
     }
-
     .cdm-counter-left {
         text-align: center;
         border-right: 1px solid rgba(255, 255, 255, 0.15);
-        padding-right: 40px;
+        padding-right: 30px;
     }
 
     .cdm-counter-left .number {
-        font-size: 80px;
+        font-size: 58px;
         font-weight: 800;
         color: #fb9a27;
         line-height: 1;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .cdm-counter-left h4 {
-        font-size: 20px;
-        letter-spacing: 2px;
+        font-size: 16px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
         font-weight: 600;
     }
 
     .cdm-counter-right {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
         text-align: center;
     }
 
     .cdm-stat-box h3 {
-        font-size: 42px;
+        font-size: 34px;
         font-weight: 800;
         color: #ffffff;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
     .cdm-stat-box p {
-        font-size: 14px;
+        font-size: 13px;
         color: rgba(255, 255, 255, 0.85);
         font-weight: 500;
     }
@@ -731,7 +745,7 @@ include __DIR__ . '/../../../includes/header.php';
        8. SERVICES FROM DATABASE
        ══════════════════════════════════════════════ */
     .cdm-services-section {
-        padding: 85px 0;
+        padding: 60px 0;
         background: #f8faff;
     }
 
@@ -741,28 +755,30 @@ include __DIR__ . '/../../../includes/header.php';
         padding: 0 20px;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
+        gap: 22px;
     }
 
     .cdm-service-card {
         background: #ffffff;
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(3, 34, 143, 0.06);
+        box-shadow: 0 4px 18px rgba(3, 34, 143, 0.06);
         transition: all 0.3s ease;
         display: flex;
         flex-direction: column;
+        height: 100%;
+        border: 1px solid #eef2f6;
         border-bottom: 3px solid transparent;
     }
 
     .cdm-service-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(3, 34, 143, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(3, 34, 143, 0.12);
         border-color: #fb9a27;
     }
 
     .cdm-service-thumb {
-        height: 200px;
+        height: 160px;
         position: relative;
         overflow: hidden;
     }
@@ -775,56 +791,92 @@ include __DIR__ . '/../../../includes/header.php';
     }
 
     .cdm-service-card:hover .cdm-service-thumb img {
-        transform: scale(1.08);
+        transform: scale(1.06);
     }
 
     .cdm-service-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 12px;
+        right: 12px;
         background: #fb9a27;
         color: #ffffff;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 20px;
+        padding: 3px 10px;
+        border-radius: 14px;
+        letter-spacing: 0.3px;
     }
 
     .cdm-service-body {
-        padding: 26px 24px;
+        padding: 18px 20px 20px;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+        justify-content: space-between;
     }
 
     .cdm-service-body h3 {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
         color: #03228f;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
+        line-height: 1.3;
     }
 
     .cdm-service-body p {
-        font-size: 14px;
+        font-size: 13.5px;
         color: #64748b;
-        line-height: 1.65;
-        margin-bottom: 20px;
-        flex-grow: 1;
+        line-height: 1.55;
+        margin-bottom: 14px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 42px;
     }
 
-    .cdm-service-body a {
-        font-size: 14px;
+    .cdm-service-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .cdm-service-body a.cdm-svc-link {
+        font-size: 13.5px;
         font-weight: 700;
         color: #03228f;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         transition: all 0.2s ease;
     }
 
-    .cdm-service-body a:hover {
+    .cdm-service-body a.cdm-svc-link:hover {
         color: #fb9a27;
-        gap: 12px;
+        gap: 9px;
+    }
+
+    .cdm-btn-svc-quote {
+        background: rgba(251, 154, 39, 0.12);
+        color: #e08316;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cdm-btn-svc-quote:hover {
+        background: #fb9a27;
+        color: #ffffff;
     }
 
     /* ══════════════════════════════════════════════
@@ -916,7 +968,8 @@ include __DIR__ . '/../../../includes/header.php';
         .cdm-about-grid,
         .cdm-partner-grid {
             grid-template-columns: 1fr;
-            gap: 40px;
+            gap: 35px;
+            padding: 0 16px;
         }
         .cdm-counter-grid {
             grid-template-columns: 1fr;
@@ -930,32 +983,106 @@ include __DIR__ . '/../../../includes/header.php';
         }
         .cdm-services-grid {
             grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 0 16px;
+        }
+        .cdm-about-images {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .cdm-about-img1 {
+            height: 280px;
+        }
+        .cdm-about-img2 {
+            display: none;
         }
     }
 
     @media (max-width: 600px) {
         .cdm-hero-slider {
-            min-height: 540px;
+            min-height: 480px;
         }
         .cdm-slide {
-            padding: 80px 15px 140px;
-            min-height: 540px;
+            padding: 55px 16px 125px;
+            min-height: 480px;
+        }
+        .cdm-slide-title {
+            font-size: clamp(1.6rem, 6.5vw, 2.5rem);
+        }
+        .cdm-slide-desc {
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .cdm-slider-dots {
+            bottom: 60px;
+        }
+        .cdm-flip-section {
+            margin-top: -50px;
+            margin-bottom: 45px;
+        }
+        .cdm-flip-grid {
+            padding: 0 16px;
+            gap: 14px;
+        }
+        .cdm-about-section {
+            padding: 45px 0;
+        }
+        .cdm-about-img1 {
+            height: 220px;
+        }
+        .cdm-about-content h2,
+        .cdm-partner-grid h2,
+        .cdm-innovative-title {
+            font-size: clamp(1.35rem, 5.5vw, 1.85rem) !important;
+            word-break: break-word;
+        }
+        .cdm-about-content p,
+        .cdm-partner-grid p,
+        .cdm-innovative-section p {
+            text-align: left !important;
+            font-size: 14px !important;
+        }
+        .cdm-innovative-section {
+            padding: 45px 0 !important;
+        }
+        .cdm-metrics-strip {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding: 16px 0;
+            margin: 20px 0;
         }
         .cdm-clients-grid {
             grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
         .cdm-counter-right {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
         .cdm-services-grid {
             grid-template-columns: 1fr;
+            padding: 0 16px;
         }
         .cdm-why-grid {
             grid-template-columns: 1fr;
         }
+        .cdm-featured-card {
+            padding: 12px;
+        }
+        .cdm-featured-card img {
+            height: 210px;
+        }
         .cdm-cta-container {
             text-align: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .cdm-btn-call {
+            font-size: 16px;
+            padding: 12px 28px;
+            width: 100%;
+            max-width: 260px;
             justify-content: center;
         }
     }
@@ -1069,28 +1196,42 @@ include __DIR__ . '/../../../includes/header.php';
                 $f_img = $base_url . '/' . ltrim($f_img, '/');
             }
         ?>
-        <div class="cdm-flip-card cdm-reveal">
-            <div class="cdm-flip-inner">
-                <div class="cdm-flip-front">
-                    <div class="cdm-flip-icon-wrap">
-                        <i class="fas <?= htmlspecialchars($f_icon) ?>"></i>
-                    </div>
-                    <h4><?= htmlspecialchars($fs['service_name']) ?></h4>
+        <div class="cdm-feat-card cdm-reveal">
+            <div>
+                <div class="cdm-feat-icon-wrap">
+                    <i class="fas <?= htmlspecialchars($f_icon) ?>"></i>
                 </div>
-                <div class="cdm-flip-back" style="<?= !empty($f_img) ? "background: linear-gradient(135deg, rgba(3, 34, 143, 0.94) 0%, rgba(2, 20, 74, 0.96) 100%), url('".htmlspecialchars($f_img)."') center/cover;" : "" ?>">
-                    <h4><?= htmlspecialchars($fs['service_name']) ?></h4>
-                    <p><?= htmlspecialchars($fs['short_description'] ?? 'Expert solutions to scale your business growth and online visibility.') ?></p>
-                    <a href="<?= !empty($fs['slug']) ? $base_url . '/service/' . htmlspecialchars($fs['slug']) : $base_url . '/contact?service=' . urlencode($fs['service_name']) ?>">
-                        Read More <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
+                <h4><?= htmlspecialchars($fs['service_name']) ?></h4>
+                <p><?= htmlspecialchars($fs['short_description'] ?? 'Expert solutions to scale your business growth and online visibility.') ?></p>
             </div>
+            <a href="<?= !empty($fs['slug']) ? $base_url . '/service/' . htmlspecialchars($fs['slug']) : $base_url . '/contact?service=' . urlencode($fs['service_name']) ?>" class="cdm-feat-link">
+                <span>Explore Service</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
         <?php endforeach; ?>
     </div>
 </section>
 
 <!-- 3. ABOUT US SECTION (CONNECTED TO DATABASE SETTINGS) -->
+<?php
+$about_title = !empty($settings['about_title']) ? $settings['about_title'] : 'Best Digital Marketing Company in Pondicherry';
+$about_highlight = !empty($settings['about_highlight']) ? $settings['about_highlight'] : 'Best Digital Marketing';
+$about_p1 = !empty($settings['about_p1']) ? $settings['about_p1'] : ($site_name . ' is an expert digital marketing and custom web architecture firm based in Pondicherry, India. With proven expertise across high-growth industries, our top-rated team empowers businesses with tailored strategies that drive measurable, compounding revenue.');
+$about_p2 = !empty($settings['about_p2']) ? $settings['about_p2'] : 'Specializing in SEO services to boost organic visibility, PPC campaigns for Targeted Advertising, Social Media Marketing for audience engagement, Google Ads for High-Converting Leads, and Content Marketing to captivate and convert, we excel in creating growth-centric solutions.';
+$about_p3 = !empty($settings['about_p3']) ? $settings['about_p3'] : ('Explore the power of digital excellence with ' . $site_name . ' — Pondicherry\'s leading digital partner. Let’s build your brand’s future together!');
+$about_metric1_title = !empty($settings['about_metric1_title']) ? $settings['about_metric1_title'] : 'Drive More Leads';
+$about_metric1_sub = !empty($settings['about_metric1_sub']) ? $settings['about_metric1_sub'] : 'Qualified High-Intent Inquiries';
+$about_metric2_title = !empty($settings['about_metric2_title']) ? $settings['about_metric2_title'] : 'Boost More Sales';
+$about_metric2_sub = !empty($settings['about_metric2_sub']) ? $settings['about_metric2_sub'] : 'Maximized ROI & Conversions';
+$about_exp_title = !empty($settings['about_exp_title']) ? $settings['about_exp_title'] : '5+ Years of Industry Expertise';
+$about_exp_sub = !empty($settings['about_exp_sub']) ? $settings['about_exp_sub'] : 'Pondicherry’s Most Trusted Digital Firm';
+
+$about_rendered_title = htmlspecialchars($about_title);
+if (!empty($about_highlight)) {
+    $about_rendered_title = preg_replace('/(' . preg_quote($about_highlight, '/') . ')/i', '<span class="text-secondary">$1</span>', $about_rendered_title);
+}
+?>
 <section class="cdm-about-section cdm-reveal">
     <div class="cdm-about-grid">
         <div class="cdm-about-images cdm-reveal-left">
@@ -1103,30 +1244,28 @@ include __DIR__ . '/../../../includes/header.php';
         </div>
 
         <div class="cdm-about-content cdm-reveal-right">
-            <h2><span class="text-secondary">Best Digital Marketing</span> Company in Pondicherry</h2>
-            <p>
-                <strong><?= htmlspecialchars($site_name) ?></strong> is an expert digital marketing and custom web architecture firm based in Pondicherry, India. With proven expertise across high-growth industries, our top-rated team empowers businesses with tailored strategies that drive measurable, compounding revenue.
-            </p>
-            <p>
-                Specializing in SEO services to boost organic visibility, PPC campaigns for Targeted Advertising, Social Media Marketing for audience engagement, Google Ads for High-Converting Leads, and Content Marketing to captivate and convert, we excel in creating growth-centric solutions.
-            </p>
-            <p>
-                Explore the power of digital excellence with <?= htmlspecialchars($site_name) ?> — Pondicherry's leading digital partner. Let’s build your brand’s future together!
-            </p>
+            <h2><?= $about_rendered_title ?></h2>
+            <p><?= htmlspecialchars($about_p1) ?></p>
+            <?php if (!empty($about_p2)): ?>
+            <p><?= htmlspecialchars($about_p2) ?></p>
+            <?php endif; ?>
+            <?php if (!empty($about_p3)): ?>
+            <p><?= htmlspecialchars($about_p3) ?></p>
+            <?php endif; ?>
 
             <div class="cdm-metrics-strip">
                 <div class="cdm-metric-item">
                     <i class="fas fa-chart-line"></i>
                     <div>
-                        <h4>Drive More Leads</h4>
-                        <span style="font-size:13px; color:#64748b;">Qualified High-Intent Inquiries</span>
+                        <h4><?= htmlspecialchars($about_metric1_title) ?></h4>
+                        <span style="font-size:13px; color:#64748b;"><?= htmlspecialchars($about_metric1_sub) ?></span>
                     </div>
                 </div>
                 <div class="cdm-metric-item">
                     <i class="fas fa-gauge-high"></i>
                     <div>
-                        <h4>Boost More Sales</h4>
-                        <span style="font-size:13px; color:#64748b;">Maximized ROI & Conversions</span>
+                        <h4><?= htmlspecialchars($about_metric2_title) ?></h4>
+                        <span style="font-size:13px; color:#64748b;"><?= htmlspecialchars($about_metric2_sub) ?></span>
                     </div>
                 </div>
             </div>
@@ -1139,66 +1278,8 @@ include __DIR__ . '/../../../includes/header.php';
     </div>
 </section>
 
-<!-- 4. CLIENTS 3D FLIP LOGO GRID -->
-<section class="cdm-clients-section" id="clientsSection">
-    <div class="cdm-section-heading">
-        <h2>Our <span class="text-secondary">Client's</span></h2>
-        <div class="cdm-divider"></div>
-    </div>
-
-    <div class="cdm-clients-grid">
-        <?php
-        // Combine DB project clients with trusted partners
-        $client_logos = [];
-        if (!empty($projects)) {
-            foreach ($projects as $proj) {
-                if (!empty($proj['client_name'])) {
-                    $client_logos[] = [
-                        'name' => $proj['client_name'],
-                        'icon' => 'fa-building-columns',
-                        'category' => $proj['industry'] ?? 'Enterprise'
-                    ];
-                }
-            }
-        }
-
-        $standard_clients = [
-            ['name' => 'Advanced GroHair & GloSkin', 'icon' => 'fa-spa', 'category' => 'Wellness Clinic'],
-            ['name' => 'Grand Serenaa Hotel & Resorts', 'icon' => 'fa-hotel', 'category' => 'Hospitality'],
-            ['name' => 'Jeno Maran Builders Pvt. Ltd.', 'icon' => 'fa-building', 'category' => 'Construction'],
-            ['name' => 'Kalaialayam', 'icon' => 'fa-palette', 'category' => 'Art & Culture'],
-            ['name' => 'Aishwarya Grand', 'icon' => 'fa-utensils', 'category' => 'Luxury Dining'],
-            ['name' => 'RV Boating', 'icon' => 'fa-ship', 'category' => 'Tourism'],
-            ['name' => 'Aurowellness Castle', 'icon' => 'fa-heart-pulse', 'category' => 'Health Retreat'],
-            ['name' => 'Yas Travels', 'icon' => 'fa-plane-departure', 'category' => 'Global Travel'],
-            ['name' => 'SVM Sweets', 'icon' => 'fa-cake-candles', 'category' => 'Retail Sweets'],
-            ['name' => 'Economic Construction', 'icon' => 'fa-trowel-bricks', 'category' => 'Real Estate'],
-            ['name' => 'Appachi Chettinad', 'icon' => 'fa-bowl-rice', 'category' => 'Restaurant'],
-            ['name' => 'Presidency School', 'icon' => 'fa-graduation-cap', 'category' => 'Education'],
-            ['name' => 'MML Groups', 'icon' => 'fa-briefcase', 'category' => 'Corporate Enterprise'],
-            ['name' => 'Green City Promoters', 'icon' => 'fa-tree-city', 'category' => 'Properties'],
-            ['name' => 'Aakruthi Interiors', 'icon' => 'fa-couch', 'category' => 'Interior Design'],
-            ['name' => 'Cloud 96 Technology', 'icon' => 'fa-cloud', 'category' => 'Software Solutions']
-        ];
-
-        // Merge up to 16 cards
-        $final_clients = array_slice(array_merge($client_logos, $standard_clients), 0, 16);
-
-        foreach ($final_clients as $idx => $client):
-        ?>
-        <div class="cdm-client-card" id="card_<?= $idx ?>">
-            <div class="cdm-client-face front">
-                <i class="fas <?= $client['icon'] ?> cdm-client-logo-icon"></i>
-                <div class="cdm-client-name"><?= htmlspecialchars($client['name']) ?></div>
-            </div>
-            <div class="cdm-client-face back">
-                <i class="fas <?= $client['icon'] ?> cdm-client-logo-icon" style="color: #fb9a27;"></i>
-                <div class="cdm-client-name" style="color: #03228f;"><?= htmlspecialchars($client['category']) ?></div>
-            </div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-</section>
+<!-- 4. REUSABLE CLIENTS 3D FLIP LOGO GRID (FROM DATABASE) -->
+<?php include __DIR__ . '/../../../includes/components/clients_grid.php'; ?>
 
 <!-- 5. WHY CHOOSE US (DYNAMIC FROM DATABASE `why_choose_us` TABLE) -->
 <section class="cdm-partner-section">
@@ -1207,7 +1288,7 @@ include __DIR__ . '/../../../includes/header.php';
             <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; color: #03228f; line-height: 1.25; margin-bottom: 20px;">
                 Your Trusted Digital Marketing Partner in Pondicherry
             </h2>
-            <p style="font-size: 15px; color: #475569; line-height: 1.75; margin-bottom: 20px; text-align: justify;">
+            <p style="font-size: 15px; color: #475569; line-height: 1.7; margin-bottom: 20px; text-align: left;">
                 At <?= htmlspecialchars($site_name) ?>, we pride ourselves on being the go-to agency in Pondicherry that businesses trust for consistent growth and measurable performance:
             </p>
 
@@ -1215,31 +1296,43 @@ include __DIR__ . '/../../../includes/header.php';
                 <?php if (!empty($why_choose_us_items)): ?>
                     <?php foreach ($why_choose_us_items as $w): ?>
                     <div class="cdm-why-item">
-                        <i class="fas <?= htmlspecialchars($w['icon'] ?? 'fa-check-circle') ?>"></i>
-                        <h5><?= htmlspecialchars($w['question']) ?></h5>
-                        <p><?= htmlspecialchars($w['answer']) ?></p>
+                        <div class="cdm-why-icon-box">
+                            <i class="fas <?= htmlspecialchars($w['icon'] ?? 'fa-check-circle') ?>"></i>
+                        </div>
+                        <div class="cdm-why-text">
+                            <h5><?= htmlspecialchars($w['question']) ?></h5>
+                            <p><?= htmlspecialchars($w['answer']) ?></p>
+                        </div>
                     </div>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="cdm-why-item">
-                        <i class="fas fa-trophy"></i>
-                        <h5>Proven Track Record</h5>
-                        <p>Over 500+ successful digital initiatives with measurable ROI.</p>
+                        <div class="cdm-why-icon-box"><i class="fas fa-trophy"></i></div>
+                        <div class="cdm-why-text">
+                            <h5>Proven Track Record</h5>
+                            <p>Over <?= (int)$stat_projects ?>+ successful digital initiatives with measurable ROI.</p>
+                        </div>
                     </div>
                     <div class="cdm-why-item">
-                        <i class="fas fa-users-gear"></i>
-                        <h5>Certified Specialists</h5>
-                        <p>Dedicated specialists in SEO, performance marketing & web dev.</p>
+                        <div class="cdm-why-icon-box"><i class="fas fa-users-gear"></i></div>
+                        <div class="cdm-why-text">
+                            <h5>Certified Specialists</h5>
+                            <p>Dedicated specialists in SEO, performance marketing & web dev.</p>
+                        </div>
                     </div>
                     <div class="cdm-why-item">
-                        <i class="fas fa-chart-line"></i>
-                        <h5>Data-Driven Growth</h5>
-                        <p>Every campaign decision backed by live analytics and ROI metrics.</p>
+                        <div class="cdm-why-icon-box"><i class="fas fa-chart-line"></i></div>
+                        <div class="cdm-why-text">
+                            <h5>Data-Driven Growth</h5>
+                            <p>Every campaign decision backed by live analytics and ROI metrics.</p>
+                        </div>
                     </div>
                     <div class="cdm-why-item">
-                        <i class="fas fa-headset"></i>
-                        <h5>Dedicated Support</h5>
-                        <p>Direct access to account managers and strategy updates.</p>
+                        <div class="cdm-why-icon-box"><i class="fas fa-headset"></i></div>
+                        <div class="cdm-why-text">
+                            <h5>Dedicated Support</h5>
+                            <p>Direct access to account managers and strategy updates.</p>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -1252,30 +1345,31 @@ include __DIR__ . '/../../../includes/header.php';
 
         <div class="cdm-featured-card">
             <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80" alt="Strategy Meeting">
-            <h3>17+ Years of Industry Expertise</h3>
-            <span>Pondicherry’s Most Trusted Digital Firm</span>
+            <h3><?= htmlspecialchars($about_exp_title) ?></h3>
+            <span><?= htmlspecialchars($about_exp_sub) ?></span>
         </div>
     </div>
 </section>
 
-<!-- 6. CALL US PARALLAX BANNER (DYNAMIC PHONE) -->
-<section class="cdm-cta-banner">
-    <div class="cdm-cta-container">
-        <div class="cdm-cta-text">
-            <h3>Ready to Get Started? Let's Discuss your projects.</h3>
-            <p>Pondicherry's Trusted Experts!</p>
-        </div>
-        <div>
-            <a href="tel:<?= preg_replace('/[^0-9+]/', '', $contact_phone) ?>" class="cdm-btn-call">
-                <i class="fas fa-phone-alt"></i>
-                <span>Call Us Now</span>
-            </a>
-        </div>
-    </div>
-</section>
+<!-- 6. REUSABLE CALL US PARALLAX BANNER (CONNECTED TO DATABASE SETTINGS) -->
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 
-<!-- 7. INNOVATIVE STRATEGIES SECTION -->
-<section style="padding: 85px 0;">
+<!-- 7. INNOVATIVE STRATEGIES SECTION (CONNECTED TO DATABASE SETTINGS) -->
+<?php
+$innovative_title = !empty($settings['innovative_title']) ? $settings['innovative_title'] : 'Innovative Strategies for Real Results';
+$innovative_highlight = !empty($settings['innovative_highlight']) ? $settings['innovative_highlight'] : 'Real Results';
+$innovative_desc = !empty($settings['innovative_desc']) ? $settings['innovative_desc'] : ('At ' . $site_name . ', we don’t just follow the trends — we engineer them. Our team of specialists is dedicated to creating innovative digital marketing strategies that yield real, tangible results.');
+$innovative_b1 = !empty($settings['innovative_b1']) ? $settings['innovative_b1'] : 'High-converting audience remarketing & retargeting';
+$innovative_b2 = !empty($settings['innovative_b2']) ? $settings['innovative_b2'] : 'Search-intent content optimization & semantic clustering';
+$innovative_b3 = !empty($settings['innovative_b3']) ? $settings['innovative_b3'] : 'Omni-channel social media engagement & community building';
+$innovative_footer = !empty($settings['innovative_footer']) ? $settings['innovative_footer'] : 'Our innovative approach is all about delivering Growth and Long-Term Business success.';
+
+$innovative_rendered_title = htmlspecialchars($innovative_title);
+if (!empty($innovative_highlight)) {
+    $innovative_rendered_title = preg_replace('/(' . preg_quote($innovative_highlight, '/') . ')/i', '<span class="text-secondary">$1</span>', $innovative_rendered_title);
+}
+?>
+<section class="cdm-innovative-section">
     <div class="cdm-partner-grid">
         <div style="order: 2;">
             <div class="cdm-featured-card">
@@ -1286,26 +1380,31 @@ include __DIR__ . '/../../../includes/header.php';
         </div>
 
         <div style="order: 1;">
-            <h2 style="font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; color: #03228f; line-height: 1.25; margin-bottom: 20px;">
-                Innovative Strategies for <span class="text-secondary">Real Results</span>
+            <h2 class="cdm-innovative-title">
+                <?= $innovative_rendered_title ?>
             </h2>
-            <p style="font-size: 15px; color: #475569; line-height: 1.75; margin-bottom: 20px; text-align: justify;">
-                At <?= htmlspecialchars($site_name) ?>, we don’t just follow the trends — we engineer them. Our team of specialists is dedicated to creating innovative digital marketing strategies that yield real, tangible results. From advanced SEO tactics to PPC campaigns that generate verified leads, our methods are built around data-driven insights.
+            <p style="font-size: 15px; color: #475569; line-height: 1.75; margin-bottom: 20px;">
+                <?= htmlspecialchars($innovative_desc) ?>
             </p>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px;">
-                <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; color: #03228f;">
-                    <i class="fas fa-bullseye" style="color: #fb9a27;"></i> High-converting audience remarketing & retargeting
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; padding: 0;">
+                <li style="display: flex; align-items: flex-start; gap: 12px; font-weight: 600; color: #03228f; line-height: 1.45;">
+                    <i class="fas fa-bullseye" style="color: #fb9a27; margin-top: 3px; flex-shrink: 0;"></i>
+                    <span style="flex: 1; min-width: 0;"><?= htmlspecialchars($innovative_b1) ?></span>
                 </li>
-                <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; color: #03228f;">
-                    <i class="fas fa-pen-nib" style="color: #fb9a27;"></i> Search-intent content optimization & semantic clustering
+                <li style="display: flex; align-items: flex-start; gap: 12px; font-weight: 600; color: #03228f; line-height: 1.45;">
+                    <i class="fas fa-pen-nib" style="color: #fb9a27; margin-top: 3px; flex-shrink: 0;"></i>
+                    <span style="flex: 1; min-width: 0;"><?= htmlspecialchars($innovative_b2) ?></span>
                 </li>
-                <li style="display: flex; align-items: center; gap: 10px; font-weight: 600; color: #03228f;">
-                    <i class="fas fa-chart-pie" style="color: #fb9a27;"></i> Omni-channel social media engagement & community building
+                <li style="display: flex; align-items: flex-start; gap: 12px; font-weight: 600; color: #03228f; line-height: 1.45;">
+                    <i class="fas fa-chart-pie" style="color: #fb9a27; margin-top: 3px; flex-shrink: 0;"></i>
+                    <span style="flex: 1; min-width: 0;"><?= htmlspecialchars($innovative_b3) ?></span>
                 </li>
             </ul>
+            <?php if (!empty($innovative_footer)): ?>
             <p style="font-size: 15px; color: #475569; line-height: 1.75; margin-bottom: 25px;">
-                Our innovative approach is all about delivering Growth and Long-Term Business success.
+                <?= htmlspecialchars($innovative_footer) ?>
             </p>
+            <?php endif; ?>
             <a href="<?= $base_url ?>/why-choose-us" class="cdm-btn-primary">
                 <span>Read More</span>
                 <i class="fas fa-arrow-right"></i>
@@ -1314,33 +1413,8 @@ include __DIR__ . '/../../../includes/header.php';
     </div>
 </section>
 
-<!-- 8. PARALLAX STATS COUNTER (DYNAMIC FROM DATABASE COUNTS) -->
-<section class="cdm-counter-section cdm-reveal">
-    <div class="cdm-counter-grid">
-        <div class="cdm-counter-left cdm-reveal-left">
-            <div class="number" data-count="17+">0+</div>
-            <h4>Years Of Experience</h4>
-        </div>
-        <div class="cdm-counter-right cdm-reveal-right">
-            <div class="cdm-stat-box">
-                <h3 data-count="<?= (int)$stat_clients ?: 156 ?>+">0+</h3>
-                <p>Happy Clients</p>
-            </div>
-            <div class="cdm-stat-box">
-                <h3 data-count="<?= (int)$stat_projects ?: 159 ?>+">0+</h3>
-                <p>Finished Projects</p>
-            </div>
-            <div class="cdm-stat-box">
-                <h3 data-count="110+">0+</h3>
-                <p>Specialists & Staff</p>
-            </div>
-            <div class="cdm-stat-box">
-                <h3 data-count="19">0</h3>
-                <p>Awards Won</p>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- 8. REUSABLE PARALLAX STATS COUNTER (FROM DATABASE SETTINGS) -->
+<?php include __DIR__ . '/../../../includes/components/stats_counter.php'; ?>
 
 <!-- 9. SERVICES SHOWCASE (LIVE DATABASE `services` QUERY) -->
 <section class="cdm-services-section">
@@ -1374,12 +1448,20 @@ include __DIR__ . '/../../../includes/header.php';
                 <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($s['service_name']) ?>" loading="lazy" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80';">
             </div>
             <div class="cdm-service-body">
-                <h3><?= htmlspecialchars($s['service_name']) ?></h3>
-                <p><?= htmlspecialchars($s['short_description'] ?? 'Tailored digital solutions engineered to scale traffic, build authority, and convert visitors into clients.') ?></p>
-                <a href="<?= !empty($s['slug']) ? $base_url . '/service/' . htmlspecialchars($s['slug']) : $base_url . '/contact?service=' . urlencode($s['service_name']) ?>">
-                    <span>Explore Details</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+                <div>
+                    <h3><?= htmlspecialchars($s['service_name']) ?></h3>
+                    <p><?= htmlspecialchars($s['short_description'] ?? 'Tailored digital solutions engineered to scale traffic, build authority, and convert visitors into clients.') ?></p>
+                </div>
+                <div class="cdm-service-actions">
+                    <a href="<?= !empty($s['slug']) ? $base_url . '/service/' . htmlspecialchars($s['slug']) : $base_url . '/contact?service=' . urlencode($s['service_name']) ?>" class="cdm-svc-link">
+                        <span>Details</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <button type="button" class="cdm-btn-svc-quote" onclick="openContactPopup('<?= addslashes(htmlspecialchars($s['service_name'])) ?>')">
+                        <span>Get Quote</span>
+                        <i class="fas fa-paper-plane" style="font-size: 10px;"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <?php endforeach; ?>
@@ -1476,6 +1558,9 @@ include __DIR__ . '/../../../includes/header.php';
         </div>
     </div>
 </section>
+
+<!-- 11. REUSABLE FREQUENTLY ASKED QUESTIONS SECTION (CONNECTED TO DATABASE `faqs`) -->
+<?php include __DIR__ . '/../../../includes/components/faq_section.php'; ?>
 
 <!-- HOMEPAGE INTERACTIVE SCRIPTS -->
 <script>

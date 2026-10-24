@@ -2,6 +2,28 @@
 require_once __DIR__ . '/../../app/config.php';
 header('Content-Type: application/json');
 
+/**
+ * Format a timestamp as a relative "… ago" string.
+ *
+ * Declared before first use and wrapped in a function_exists guard, because
+ * this endpoint can be included more than once in a process and an unguarded
+ * redeclaration (or a call before declaration) is a fatal error.
+ */
+if (!function_exists('timeAgo')) {
+    function timeAgo(string $datetime): string
+    {
+        $time = strtotime($datetime);
+        $diff = time() - $time;
+
+        if ($diff < 5)    return 'Just now';
+        if ($diff < 60)   return $diff . ' secs ago';
+        if ($diff < 3600) return round($diff / 60) . ' mins ago';
+        if ($diff < 86400) return round($diff / 3600) . ' hours ago';
+
+        return date('M d, Y', $time);
+    }
+}
+
 if (!isset($_SESSION['admin_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
@@ -50,7 +72,10 @@ try {
     }
 
     // 3. Fetch recent admin activities
-    $stmt = $conn->prepare("SELECT a.id, a.action, a.details, a.created_at, acc.name as admin_name FROM admin_activities a LEFT JOIN accounts acc ON a.user_id = acc.id ORDER BY a.created_at DESC LIMIT 10");
+    // admin_activities.user_id references the `admin` table — the same join
+    // used by dashboard.php, activity.php and staff.php. Joining `accounts`
+    // here left every activity notification attributed to "System".
+    $stmt = $conn->prepare("SELECT a.id, a.action, a.details, a.created_at, acc.name as admin_name FROM admin_activities a LEFT JOIN admin acc ON a.user_id = acc.id ORDER BY a.created_at DESC LIMIT 10");
     $stmt->execute();
     $activities = $stmt->fetchAll();
     foreach ($activities as $act) {
@@ -104,15 +129,4 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
-}
-
-// Helper to format time as "... ago"
-function timeAgo(string $datetime) {
-    $time = strtotime($datetime);
-    $diff = time() - $time;
-    if ($diff < 5) return 'Just now';
-    if ($diff < 60) return $diff . ' secs ago';
-    if ($diff < 3600) return round($diff / 60) . ' mins ago';
-    if ($diff < 86400) return round($diff / 3600) . ' hours ago';
-    return date('M d, Y', $time);
 }

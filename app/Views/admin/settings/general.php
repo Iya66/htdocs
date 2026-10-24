@@ -280,6 +280,44 @@ require_once __DIR__ . '/../../../../admin/includes/header.php';
 </form>
 
 <!-- ============================================ -->
+<!-- COMPANY STAT FIGURES -->
+<!-- ============================================ -->
+<?php if (!empty($stats_msg)): ?>
+<div class="alert alert-<?= $stats_type ?>"><i class="fas fa-<?= $stats_type === 'success' ? 'check-circle' : 'exclamation-circle' ?>"></i> <?= htmlspecialchars($stats_msg) ?></div>
+<?php endif; ?>
+
+<form method="POST">
+<input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+<div class="settings-card">
+    <h3><i class="fas fa-chart-line"></i> Company Stat Figures</h3>
+    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+        These numbers appear in the homepage counter section and on the testimonials &amp; reviews pages.
+    </p>
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Years Of Experience</label>
+            <input type="number" name="stat_experience" min="0" max="99" value="<?= (int)$stat_experience ?>" required>
+        </div>
+        <div class="form-group">
+            <label>Happy Clients</label>
+            <input type="number" name="stat_clients" min="0" max="99999" value="<?= (int)$stat_clients ?>" required>
+        </div>
+        <div class="form-group">
+            <label>Finished Projects</label>
+            <input type="number" name="stat_projects" min="0" max="99999" value="<?= (int)$stat_projects ?>" required>
+        </div>
+        <div class="form-group">
+            <label>Specialists &amp; Staff</label>
+            <input type="number" name="stat_staff" min="0" max="99999" value="<?= (int)$stat_staff ?>" required>
+        </div>
+    </div>
+    <button type="submit" name="save_stats" class="btn">
+        <i class="fas fa-save"></i> Save Stat Figures
+    </button>
+</div>
+</form>
+
+<!-- ============================================ -->
 <!-- ALL UPLOADED FILES LIST -->
 <!-- ============================================ -->
 <?php if (!empty($all_uploads)): ?>

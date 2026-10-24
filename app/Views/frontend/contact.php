@@ -1,6 +1,7 @@
 <?php 
 /**
  * Contact Us View - CherriDM Theme
+ * Redesigned with "Request a Free Quote" Visual Language
  * 100% Dynamic with Database Integration
  */
 $active_services = $active_services ?? [];
@@ -23,170 +24,315 @@ if (empty($active_services) && isset($conn)) {
     }
 }
 
+// Normalize WhatsApp number for direct wa.me link
+$whatsapp_clean = preg_replace('/[^0-9]/', '', $contact_whatsapp);
+if (strlen($whatsapp_clean) === 10) {
+    $whatsapp_clean = '91' . $whatsapp_clean;
+}
+
 include __DIR__ . '/../../../includes/header.php'; 
 ?>
 
-<!-- CHERRIDM INNER PAGE HERO -->
+<!-- REUSABLE PAGE HERO COMPONENT -->
+<?php 
+$hero_title = 'Contact ' . $site_name;
+$hero_highlight = 'Contact';
+$hero_subtitle = 'Get in touch with Pondicherry\'s leading digital marketing team. Let\'s discuss your goals, scale your reach, and generate verified revenue.';
+$hero_breadcrumbs = [
+    ['label' => 'Home', 'url' => $base_url . '/'],
+    ['label' => 'Contact Us']
+];
+include __DIR__ . '/../../../includes/components/page_hero.php'; 
+?>
+
+<!-- SCOPED CONTACT PAGE STYLES -->
 <style>
-    .cdm-page-hero {
-        background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1600&q=80') center/cover;
-        padding: 90px 20px 80px;
-        text-align: center;
-        color: #ffffff;
+    /* ==========================================================================
+       CLOUD ASPIRE CONTACT PAGE REDESIGN
+       Scoped styling inspired by the "Request a Free Quote" visual language
+       ========================================================================== */
+    .cdm-contact-section {
+        padding: 70px 0 85px;
+        background-color: #f8faff;
         position: relative;
     }
-    .cdm-page-hero h1 {
-        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 14px;
-        letter-spacing: -0.5px;
-    }
-    .cdm-page-hero h1 span.stroke {
-        color: #fb9a27;
-    }
-    .cdm-page-hero p {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 680px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
-    }
-    .cdm-breadcrumb-capsule {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        padding: 7px 22px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .cdm-breadcrumb-capsule a {
-        color: #ffffff;
-        transition: color 0.2s ease;
-        text-decoration: none;
-    }
-    .cdm-breadcrumb-capsule a:hover {
-        color: #fb9a27;
-    }
-    .cdm-breadcrumb-capsule span.sep {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .cdm-breadcrumb-capsule span.active {
-        color: #fb9a27;
+
+    .cdm-contact-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        box-sizing: border-box;
     }
 
-    /* Layout Wrapper */
+    /* Two-column layout */
     .cdm-contact-wrapper {
         display: grid;
-        grid-template-columns: 1.25fr 0.85fr;
+        grid-template-columns: 1.28fr 0.82fr;
         gap: 36px;
         align-items: start;
     }
-    .cdm-contact-form-card {
+
+    /* Common Card Styling */
+    .cdm-contact-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 44px 40px;
-        box-shadow: 0 8px 30px rgba(3, 34, 143, 0.06);
+        box-shadow: 0 10px 32px rgba(3, 34, 143, 0.06);
         position: relative;
         overflow: hidden;
+        transition: box-shadow 0.3s ease;
     }
-    .cdm-contact-form-card::before {
+
+    .cdm-contact-card:hover {
+        box-shadow: 0 16px 42px rgba(3, 34, 143, 0.09);
+    }
+
+    /* Card Accent Top Line */
+    .cdm-contact-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #03228f, #fb9a27, #03228f);
-    }
-    .cdm-contact-form-card h3 {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #03228f;
-        margin: 0 0 8px 0;
-    }
-    .cdm-contact-form-card p.subtitle {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 28px;
-        line-height: 1.6;
+        background: linear-gradient(90deg, #03228f 0%, #fb9a27 100%);
+        z-index: 2;
     }
 
-    /* Input Controls */
-    .cdm-input-label {
-        display: block;
-        font-size: 0.88rem;
+    /* --------------------------------------------------------------------------
+       Left Column: Send Us a Message Form Card
+       -------------------------------------------------------------------------- */
+    .cdm-form-card-inner {
+        padding: 44px 40px;
+    }
+
+    .cdm-contact-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #fb9a27;
         font-weight: 700;
-        color: #03228f;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1.2px;
         margin-bottom: 8px;
     }
-    .cdm-form-input {
-        width: 100%;
-        padding: 13px 16px;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        font-size: 0.95rem;
-        color: #0f172a;
-        background: #f8faff;
-        transition: all 0.25s ease;
-        outline: none;
-        box-sizing: border-box;
-    }
-    .cdm-form-input:focus {
-        background: #ffffff;
-        border-color: #03228f;
-        box-shadow: 0 0 0 3px rgba(3, 34, 143, 0.12);
+
+    .cdm-contact-title {
+        font-size: clamp(1.6rem, 2.8vw, 1.95rem);
+        font-weight: 800;
+        color: #03228f;
+        line-height: 1.25;
+        margin: 0 0 8px 0;
     }
 
-    /* Info Sidebar */
-    .cdm-contact-sidebar {
+    .cdm-contact-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0 0 28px 0;
+    }
+
+    /* Status Notifications */
+    .cdm-alert-status {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 20px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        line-height: 1.5;
+        margin-bottom: 26px;
+        animation: cdmFadeDown 0.35s ease-out forwards;
+    }
+
+    @keyframes cdmFadeDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cdm-alert-status.success {
+        background: #ecfdf5;
+        border: 1.5px solid #a7f3d0;
+        color: #065f46;
+    }
+    .cdm-alert-status.success i {
+        color: #10b981;
+        font-size: 1.35rem;
+        margin-top: 2px;
+    }
+
+    .cdm-alert-status.error {
+        background: #fff1f2;
+        border: 1.5px solid #fecdd3;
+        color: #9f1239;
+    }
+    .cdm-alert-status.error i {
+        color: #ef4444;
+        font-size: 1.35rem;
+        margin-top: 2px;
+    }
+
+    /* Form Fields & Layout */
+    .cdm-form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .cdm-form-group {
         display: flex;
         flex-direction: column;
-        gap: 20px;
     }
-    .cdm-info-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 36px 30px;
-        box-shadow: 0 8px 30px rgba(3, 34, 143, 0.06);
+
+    .cdm-field-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .cdm-field-label .required {
+        color: #ef4444;
+        font-weight: 800;
+    }
+
+    .cdm-input-field {
+        width: 100%;
+        height: 48px;
+        padding: 12px 16px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: #1e293b;
+        background-color: #ffffff;
+        outline: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-sizing: border-box;
+    }
+
+    .cdm-input-field::placeholder {
+        color: #94a3b8;
+    }
+
+    .cdm-input-field:hover {
+        border-color: #94a3b8;
+    }
+
+    .cdm-input-field:focus {
+        border-color: #03228f;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3.5px rgba(3, 34, 143, 0.12);
+    }
+
+    /* Custom Select with styled arrow */
+    select.cdm-input-field {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2303228f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 15px;
+        padding-right: 44px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Textarea Field */
+    textarea.cdm-input-field {
+        height: auto;
+        min-height: 115px;
+        resize: vertical;
+        padding: 14px 16px;
+        line-height: 1.55;
+    }
+
+    /* Primary Orange Submit Button */
+    .cdm-btn-contact-submit {
+        background: linear-gradient(135deg, #fb9a27 0%, #f58220 100%);
+        color: #ffffff;
+        border: none;
+        padding: 15px 28px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        box-shadow: 0 6px 20px rgba(251, 154, 39, 0.35);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 8px;
         position: relative;
         overflow: hidden;
     }
-    .cdm-info-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: #03228f;
+
+    .cdm-btn-contact-submit:hover {
+        background: linear-gradient(135deg, #e68200 0%, #de7012 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(251, 154, 39, 0.45);
+        color: #ffffff;
     }
-    .cdm-info-card h3 {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #03228f;
-        margin: 0 0 20px 0;
+
+    .cdm-btn-contact-submit:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 14px rgba(251, 154, 39, 0.3);
     }
+
+    .cdm-btn-contact-submit i {
+        font-size: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .cdm-btn-contact-submit:hover i {
+        transform: translateX(4px) rotate(-8deg);
+    }
+
+    .cdm-btn-contact-submit.loading {
+        pointer-events: none;
+        opacity: 0.85;
+    }
+
+    /* --------------------------------------------------------------------------
+       Right Column: Direct Connect
+       -------------------------------------------------------------------------- */
+    .cdm-sidebar-card-inner {
+        padding: 38px 32px;
+    }
+
+    .cdm-info-list {
+        display: flex;
+        flex-direction: column;
+        margin-top: 12px;
+    }
+
     .cdm-info-item {
         display: flex;
         align-items: flex-start;
         gap: 16px;
-        padding: 16px 0;
+        padding: 18px 0;
         border-bottom: 1px solid #f1f5f9;
         transition: transform 0.2s ease;
     }
-    .cdm-info-item:last-of-type {
+
+    .cdm-info-item:last-child {
         border-bottom: none;
     }
+
     .cdm-info-item:hover {
         transform: translateX(4px);
     }
-    .cdm-info-icon {
+
+    .cdm-info-icon-box {
         width: 48px;
         height: 48px;
         border-radius: 12px;
@@ -199,11 +345,51 @@ include __DIR__ . '/../../../includes/header.php';
         flex-shrink: 0;
         transition: all 0.3s ease;
     }
-    .cdm-info-item:hover .cdm-info-icon {
-        background: #fb9a27;
+
+    .cdm-info-item:hover .cdm-info-icon-box {
+        background: #03228f;
         color: #ffffff;
-        transform: scale(1.08);
+        transform: scale(1.05);
+        box-shadow: 0 4px 14px rgba(3, 34, 143, 0.25);
     }
+
+    .cdm-info-text {
+        flex: 1;
+    }
+
+    .cdm-info-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .cdm-info-value {
+        font-size: 0.96rem;
+        color: #0f172a;
+        font-weight: 600;
+        line-height: 1.45;
+        display: block;
+    }
+
+    .cdm-info-link {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #03228f;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s ease;
+    }
+
+    .cdm-info-link:hover {
+        color: #fb9a27;
+    }
+
     .cdm-pulse-dot {
         width: 8px;
         height: 8px;
@@ -211,69 +397,28 @@ include __DIR__ . '/../../../includes/header.php';
         background: #10b981;
         display: inline-block;
         margin-right: 6px;
+        vertical-align: middle;
         animation: cdmPulse 2s infinite ease-in-out;
     }
+
     @keyframes cdmPulse {
         0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
         70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
-
-    .cdm-whatsapp-banner {
-        margin-top: 20px;
-        padding: 15px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-        color: #ffffff;
-        font-weight: 700;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        text-decoration: none;
-        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
-        transition: all 0.3s ease;
-    }
-    .cdm-whatsapp-banner:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45);
-        color: #ffffff;
-    }
-
-    .cdm-guarantee-strip {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-top: 24px;
-    }
-    .cdm-guarantee-chip {
-        background: #f8faff;
-        border: 1px solid #e2e8f0;
-        padding: 12px 14px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.84rem;
-        font-weight: 600;
-        color: #475569;
-    }
-    .cdm-guarantee-chip i {
-        color: #fb9a27;
-        font-size: 1rem;
-    }
-
-    /* Map Box */
+    /* --------------------------------------------------------------------------
+       Map Card Section
+       -------------------------------------------------------------------------- */
     .cdm-map-card {
-        margin-top: 50px;
+        margin-top: 55px;
         border-radius: 16px;
         overflow: hidden;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 8px 30px rgba(3, 34, 143, 0.06);
+        box-shadow: 0 10px 32px rgba(3, 34, 143, 0.06);
         background: #ffffff;
         position: relative;
     }
+
     .cdm-map-card::before {
         content: '';
         position: absolute;
@@ -285,194 +430,342 @@ include __DIR__ . '/../../../includes/header.php';
         z-index: 2;
     }
 
+    .cdm-map-header {
+        padding: 16px 24px;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .cdm-map-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+    }
+
+    .cdm-map-title i {
+        color: #fb9a27;
+        font-size: 1.15rem;
+    }
+
+    .cdm-map-title strong {
+        color: #03228f;
+        font-weight: 700;
+    }
+
+    .cdm-map-title span {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .cdm-map-link {
+        color: #03228f;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s ease;
+    }
+
+    .cdm-map-link:hover {
+        color: #fb9a27;
+    }
+
+    /* --------------------------------------------------------------------------
+       Responsive Breakpoints
+       -------------------------------------------------------------------------- */
     @media (max-width: 992px) {
         .cdm-contact-wrapper {
             grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        .cdm-form-card-inner {
+            padding: 36px 30px;
+        }
+        .cdm-sidebar-card-inner {
+            padding: 34px 28px;
         }
     }
-    @media (max-width: 640px) {
-        .cdm-contact-form-card {
-            padding: 30px 20px;
+
+    @media (max-width: 680px) {
+        .cdm-contact-section {
+            padding: 50px 0 65px;
         }
-        .cdm-guarantee-strip {
+        .cdm-contact-container {
+            padding: 0 16px;
+        }
+        .cdm-form-card-inner {
+            padding: 28px 20px;
+        }
+        .cdm-sidebar-card-inner {
+            padding: 28px 20px;
+        }
+        .cdm-form-grid-2 {
             grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .cdm-map-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
 </style>
 
-<section class="cdm-page-hero">
-    <div class="container">
-        <h1>Contact <span class="stroke">Us</span></h1>
-        <p>Let's discuss how we can accelerate your digital growth and maximize your marketing ROI</p>
-        <div class="cdm-breadcrumb-capsule">
-            <a href="<?= $base_url ?>/"><i class="fas fa-home"></i> Home</a>
-            <span class="sep">/</span>
-            <span class="active">Contact</span>
-        </div>
-    </div>
-</section>
-
-<section style="padding: 70px 0; background-color: #f8faff;">
-    <div class="container">
+<!-- MAIN CONTACT SECTION -->
+<section class="cdm-contact-section">
+    <div class="cdm-contact-container">
+        
         <div class="cdm-contact-wrapper">
             
-            <!-- Left Form Column -->
-            <div class="cdm-contact-form-card cdm-reveal-left">
-                <h3>Send Us a Message</h3>
-                <p class="subtitle">Fill out the form below and our strategy team will respond within 2 hours.</p>
-
-                <?php if ($msg_status === 'success'): ?>
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px 20px; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
-                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.3rem;"></i>
-                        <div><?= $msg_text ?></div>
-                    </div>
-                <?php elseif ($msg_status === 'error'): ?>
-                    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991B1B; padding: 16px 20px; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-weight: 500;">
-                        <i class="fas fa-exclamation-circle" style="color: #EF4444; font-size: 1.3rem;"></i>
-                        <div><?= $msg_text ?></div>
-                    </div>
-                <?php endif; ?>
-
-                <form action="" method="POST" id="contactForm">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCSRFToken()) ?>">
+            <!-- LEFT COLUMN: SEND US A MESSAGE -->
+            <div class="cdm-contact-card cdm-reveal-left">
+                <div class="cdm-form-card-inner">
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
-                        <div>
-                            <label class="cdm-input-label">Full Name <span style="color: #ef4444;">*</span></label>
-                            <input type="text" name="name" class="cdm-form-input" placeholder="e.g. John Doe" value="<?= isset($_POST['name']) ? htmlspecialchars($_POST['name']) : '' ?>" required>
-                        </div>
-                        <div>
-                            <label class="cdm-input-label">Email Address <span style="color: #ef4444;">*</span></label>
-                            <input type="email" name="email" class="cdm-form-input" placeholder="e.g. john@company.com" value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" required>
-                        </div>
-                    </div>
+                    <span class="cdm-contact-badge">
+                        <i class="fas fa-paper-plane" style="font-size: 11px;"></i>
+                        Send Us a Message
+                    </span>
+                    <h3 class="cdm-contact-title">Send Us a Message</h3>
+                    <p class="cdm-contact-subtitle">Fill out the form below and our strategy team will respond within 2 hours.</p>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px;">
-                        <div>
-                            <label class="cdm-input-label">Phone Number <span style="color: #ef4444;">*</span></label>
-                            <input type="tel" name="phone" class="cdm-form-input" placeholder="+91 80988 30937" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>" required>
+                    <!-- Alert / Status Notification -->
+                    <?php if ($msg_status === 'success'): ?>
+                        <div class="cdm-alert-status success">
+                            <i class="fas fa-check-circle"></i>
+                            <div><?= $msg_text ?></div>
                         </div>
-                        <div>
-                            <label class="cdm-input-label">Select Service <span style="color: #ef4444;">*</span></label>
-                            <select name="service" class="cdm-form-input" required>
-                                <option value="" disabled <?= empty($_POST['service']) && empty($_GET['service']) ? 'selected' : '' ?>>Select a Service</option>
-                                <?php
-                                $current_sel = $_POST['service'] ?? ($_GET['service'] ?? '');
-                                foreach ($active_services as $svc):
-                                    $sname = $svc['service_name'] ?? '';
-                                    $is_sel = (strcasecmp($sname, $current_sel) === 0);
-                                ?>
-                                    <option value="<?= htmlspecialchars($sname) ?>" <?= $is_sel ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($sname) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                    <?php elseif ($msg_status === 'error'): ?>
+                        <div class="cdm-alert-status error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div><?= $msg_text ?></div>
                         </div>
-                    </div>
+                    <?php endif; ?>
 
-                    <div style="margin-top: 18px; margin-bottom: 24px;">
-                        <label class="cdm-input-label">Your Message / Project Goals <span style="color: #ef4444;">*</span></label>
-                        <textarea name="message" class="cdm-form-input" rows="4" placeholder="Tell us about your business goals, target audience, or current digital challenges..." required><?= isset($_POST['message']) ? htmlspecialchars($_POST['message']) : '' ?></textarea>
-                    </div>
+                    <!-- Form preserving all original processing & CSRF -->
+                    <form action="" method="POST" id="contactForm" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCSRFToken()) ?>">
+                        
+                        <!-- Row 1: Full Name & Email Address -->
+                        <div class="cdm-form-grid-2">
+                            <div class="cdm-form-group">
+                                <label class="cdm-field-label" for="contact_name">
+                                    Full Name <span class="required">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="contact_name" 
+                                    name="name" 
+                                    class="cdm-input-field" 
+                                    placeholder="e.g. John Doe" 
+                                    value="<?= isset($_POST['name']) ? htmlspecialchars($_POST['name']) : '' ?>" 
+                                    required
+                                    autocomplete="name"
+                                >
+                            </div>
 
-                    <button type="submit" class="cdm-btn-quote" style="width: 100%; justify-content: center; padding: 15px;">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>Send Strategic Inquiry</span>
-                    </button>
-                </form>
+                            <div class="cdm-form-group">
+                                <label class="cdm-field-label" for="contact_email">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <input 
+                                    type="email" 
+                                    id="contact_email" 
+                                    name="email" 
+                                    class="cdm-input-field" 
+                                    placeholder="e.g. john@company.com" 
+                                    value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" 
+                                    required
+                                    autocomplete="email"
+                                >
+                            </div>
+                        </div>
 
-                <div class="cdm-guarantee-strip">
-                    <div class="cdm-guarantee-chip"><i class="fas fa-shield-halved"></i> 100% Confidential</div>
-                    <div class="cdm-guarantee-chip"><i class="fas fa-bolt"></i> 2-Hour Response SLA</div>
+                        <!-- Row 2: Phone Number & Service Select -->
+                        <div class="cdm-form-grid-2">
+                            <div class="cdm-form-group">
+                                <label class="cdm-field-label" for="contact_phone">
+                                    Phone Number <span class="required">*</span>
+                                </label>
+                                <input 
+                                    type="tel" 
+                                    id="contact_phone" 
+                                    name="phone" 
+                                    class="cdm-input-field" 
+                                    placeholder="+91 80988 30937" 
+                                    value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>" 
+                                    required
+                                    autocomplete="tel"
+                                >
+                            </div>
+
+                            <div class="cdm-form-group">
+                                <label class="cdm-field-label" for="contact_service">
+                                    Select Service <span class="required">*</span>
+                                </label>
+                                <select id="contact_service" name="service" class="cdm-input-field" required>
+                                    <option value="" disabled <?= empty($_POST['service']) && empty($_GET['service']) && empty($selected_service) ? 'selected' : '' ?>>Select Desired Service*</option>
+                                    <?php
+                                    $current_sel = !empty($_POST['service']) ? $_POST['service'] : (!empty($_GET['service']) ? $_GET['service'] : $selected_service);
+                                    foreach ($active_services as $svc):
+                                        $sname = $svc['service_name'] ?? '';
+                                        $is_sel = (strcasecmp($sname, $current_sel) === 0);
+                                    ?>
+                                        <option value="<?= htmlspecialchars($sname) ?>" <?= $is_sel ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($sname) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($active_services)): ?>
+                                        <option value="SEO Optimization">SEO Optimization</option>
+                                        <option value="Google & Meta Ads">Google & Meta Ads</option>
+                                        <option value="Social Media Marketing">Social Media Marketing</option>
+                                        <option value="Website & App Development">Website & App Development</option>
+                                        <option value="Brand Identity & Design">Brand Identity & Design</option>
+                                        <option value="Content Marketing & Copywriting">Content Marketing & Copywriting</option>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Message / Project Goals -->
+                        <div class="cdm-form-group" style="margin-bottom: 22px;">
+                            <label class="cdm-field-label" for="contact_message">
+                                Your Message / Project Goals <span class="required">*</span>
+                            </label>
+                            <textarea 
+                                id="contact_message" 
+                                name="message" 
+                                class="cdm-input-field" 
+                                rows="4" 
+                                placeholder="Tell us about your business goals, target audience, or current digital challenges..." 
+                                required
+                            ><?= isset($_POST['message']) ? htmlspecialchars($_POST['message']) : '' ?></textarea>
+                        </div>
+
+                        <!-- Primary Orange Submit Button with Paper Plane Icon -->
+                        <button type="submit" class="cdm-btn-contact-submit" id="btnContactSubmit">
+                            <span>Send Message</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+
+                    </form>
+
                 </div>
             </div>
 
-            <!-- Right Info Column -->
-            <div class="cdm-contact-sidebar">
-                <?php
-                $whatsapp_clean = preg_replace('/[^0-9]/', '', $contact_whatsapp);
-                if (strlen($whatsapp_clean) === 10) {
-                    $whatsapp_clean = '91' . $whatsapp_clean;
-                }
-                ?>
-                <div class="cdm-info-card cdm-reveal-right">
-                    <h3>Direct Connect</h3>
-                    
-                    <div class="cdm-info-item">
-                        <div class="cdm-info-icon"><i class="fas fa-phone"></i></div>
-                        <div>
-                            <strong style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Direct Phone</strong>
-                            <a href="tel:<?= htmlspecialchars($contact_phone) ?>" style="font-weight: 700; color: #03228f; font-size: 1.05rem; text-decoration: none;">
-                                <?= htmlspecialchars($contact_phone) ?>
-                            </a>
-                        </div>
-                    </div>
+            <!-- RIGHT COLUMN: DIRECT CONNECT -->
+            <div class="cdm-contact-sidebar cdm-reveal-right">
+                
+                <div class="cdm-contact-card">
+                    <div class="cdm-sidebar-card-inner">
+                        
+                        <span class="cdm-contact-badge">
+                            <i class="fas fa-bolt" style="font-size: 11px;"></i>
+                            Direct Connect
+                        </span>
+                        <h3 class="cdm-contact-title" style="font-size: 1.55rem; margin-bottom: 6px;">Direct Connect</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5; margin: 0 0 16px 0;">
+                            Reach our agency strategists directly or schedule an on-site consultation.
+                        </p>
 
-                    <div class="cdm-info-item">
-                        <div class="cdm-info-icon"><i class="fas fa-envelope"></i></div>
-                        <div>
-                            <strong style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Email Inquiries</strong>
-                            <a href="mailto:<?= htmlspecialchars($contact_email) ?>" style="font-weight: 600; color: #03228f; text-decoration: none;">
-                                <?= htmlspecialchars($contact_email) ?>
-                            </a>
-                        </div>
-                    </div>
+                        <div class="cdm-info-list">
+                            
+                            <!-- Phone Item -->
+                            <div class="cdm-info-item">
+                                <div class="cdm-info-icon-box">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="cdm-info-text">
+                                    <span class="cdm-info-label">Direct Phone</span>
+                                    <a href="tel:<?= htmlspecialchars($contact_phone) ?>" class="cdm-info-link">
+                                        <?= htmlspecialchars($contact_phone) ?>
+                                    </a>
+                                </div>
+                            </div>
 
-                    <div class="cdm-info-item">
-                        <div class="cdm-info-icon"><i class="fas fa-map-marker-alt"></i></div>
-                        <div>
-                            <strong style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Headquarters</strong>
-                            <span style="font-size: 0.92rem; color: #0f172a; font-weight: 500; line-height: 1.4;">
-                                <?= htmlspecialchars($contact_address) ?>
-                            </span>
-                        </div>
-                    </div>
+                            <!-- Email Item -->
+                            <div class="cdm-info-item">
+                                <div class="cdm-info-icon-box">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="cdm-info-text">
+                                    <span class="cdm-info-label">Email Inquiries</span>
+                                    <a href="mailto:<?= htmlspecialchars($contact_email) ?>" class="cdm-info-link" style="font-size: 0.95rem;">
+                                        <?= htmlspecialchars($contact_email) ?>
+                                    </a>
+                                </div>
+                            </div>
 
-                    <div class="cdm-info-item">
-                        <div class="cdm-info-icon"><i class="fas fa-clock"></i></div>
-                        <div>
-                            <strong style="font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px;">Operating Hours</strong>
-                            <span style="font-size: 0.92rem; color: #0f172a; font-weight: 600;">
-                                <span class="cdm-pulse-dot"></span> <?= htmlspecialchars($contact_hours) ?>
-                            </span>
-                        </div>
-                    </div>
+                            <!-- Headquarters Item -->
+                            <div class="cdm-info-item">
+                                <div class="cdm-info-icon-box">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="cdm-info-text">
+                                    <span class="cdm-info-label">Headquarters</span>
+                                    <span class="cdm-info-value" style="font-size: 0.92rem; font-weight: 500;">
+                                        <?= htmlspecialchars($contact_address) ?>
+                                    </span>
+                                </div>
+                            </div>
 
-                    <a href="https://wa.me/<?= $whatsapp_clean ?>" target="_blank" rel="noopener noreferrer" class="cdm-whatsapp-banner">
-                        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i>
-                        <span>Chat Instantly on WhatsApp</span>
-                    </a>
+                            <!-- Operating Hours Item -->
+                            <div class="cdm-info-item">
+                                <div class="cdm-info-icon-box">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="cdm-info-text">
+                                    <span class="cdm-info-label">Operating Hours</span>
+                                    <span class="cdm-info-value" style="font-size: 0.92rem;">
+                                        <span class="cdm-pulse-dot"></span> <?= htmlspecialchars($contact_hours) ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
+
             </div>
 
         </div>
 
-        <!-- Google Map Interactive Preview Section -->
+        <!-- GOOGLE MAP & INTERACTIVE DIRECTIONS SECTION -->
         <?php
         $display_location = !empty($settings['contact_map_location']) ? $settings['contact_map_location'] : $contact_address;
         $directions_url = 'https://maps.google.com/?q=' . urlencode($display_location);
         ?>
         <div class="cdm-map-card">
-            <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-location-dot" style="color: #fb9a27; font-size: 1.1rem;"></i>
-                    <strong style="color: #03228f; font-size: 0.95rem;"><?= htmlspecialchars($site_name) ?> Headquarters</strong>
-                    <span style="color: #64748b; font-size: 0.85rem;">&bull; <?= htmlspecialchars($display_location) ?></span>
+            <div class="cdm-map-header">
+                <div class="cdm-map-title">
+                    <i class="fas fa-location-dot"></i>
+                    <div>
+                        <strong><?= htmlspecialchars($site_name) ?> Headquarters</strong>
+                        <span>&bull; <?= htmlspecialchars($display_location) ?></span>
+                    </div>
                 </div>
-                <a href="<?= $directions_url ?>" target="_blank" rel="noopener noreferrer" style="color: #03228f; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <a href="<?= $directions_url ?>" target="_blank" rel="noopener noreferrer" class="cdm-map-link">
                     <span>Open in Google Maps</span>
-                    <i class="fas fa-arrow-up-right-from-square"></i>
+                    <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
                 </a>
             </div>
 
-            <!-- DOM Map Container -->
+            <!-- Map DOM Target -->
             <div id="contactMapDOM" style="width: 100%; height: 380px;"></div>
         </div>
 
     </div>
 </section>
 
-<!-- MAP SCRIPTS -->
+<!-- MAP SCRIPTS WITH AUTOMATIC FALLBACK TO LEAFLET -->
 <?php 
 $gmaps_api_param = !empty($settings['google_maps_api_key']) ? '&key=' . urlencode($settings['google_maps_api_key']) : '';
 ?>
@@ -580,23 +873,71 @@ function fallbackToLeafletMap() {
         </div>
     `);
 }
-</script>
 
-<!-- BOTTOM CTA BANNER -->
-<section style="background: linear-gradient(135deg, #02144a 0%, #03228f 100%); padding: 70px 20px; color: #ffffff; text-align: center;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 8px;">
-            // Let's Build Together //
-        </span>
-        <h3 style="font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px;">Prefer an In-Person Meeting?</h3>
-        <p style="font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px;">
-            Visit our Pondicherry digital strategy office or schedule a high-level video consultation with our founders.
-        </p>
-        <button type="button" class="cdm-btn-quote" style="display: inline-flex;" onclick="openContactPopup()">
-            <span>Schedule Strategic Call</span>
-            <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-</section>
+// Client-Side Validation & Loading State Feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('btnContactSubmit');
+
+    if (contactForm && submitBtn) {
+        contactForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            const requiredFields = contactForm.querySelectorAll('[required]');
+            
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.style.borderColor = '#ef4444';
+                    field.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.12)';
+                } else {
+                    field.style.borderColor = '';
+                    field.style.boxShadow = '';
+                }
+            });
+
+            // Email format check
+            const emailField = document.getElementById('contact_email');
+            if (emailField && emailField.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailField.value.trim())) {
+                    isValid = false;
+                    emailField.style.borderColor = '#ef4444';
+                    emailField.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.12)';
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll smoothly to first invalid field
+                const firstInvalid = contactForm.querySelector('[required]:invalid, [style*="border-color: rgb(239, 68, 68)"]');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+                return false;
+            }
+
+            // Valid submission - show active loading state
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Sending Message...</span>';
+        });
+
+        // Reset error highlight on user input
+        contactForm.querySelectorAll('.cdm-input-field').forEach(function(input) {
+            input.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.style.borderColor = '';
+                    this.style.boxShadow = '';
+                }
+            });
+            input.addEventListener('change', function() {
+                if (this.value.trim()) {
+                    this.style.borderColor = '';
+                    this.style.boxShadow = '';
+                }
+            });
+        });
+    }
+});
+</script>
 
 <?php include __DIR__ . '/../../../includes/footer.php'; ?>

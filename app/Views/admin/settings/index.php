@@ -319,13 +319,25 @@ require_once __DIR__ . '/../../../../admin/includes/header.php';
         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
         <input type="hidden" name="update_profile" value="1">
         <div class="saas-card-body">
+            <?php
+            $settings_avatar_url = getAdminAvatarUrl($admin['avatar'] ?? '', '../../');
+            ?>
             <div class="profile-hero">
-                <div class="profile-hero-avatar" aria-hidden="true">
-                    <?= strtoupper(substr($admin['username'] ?? 'A', 0, 1)) ?>
+                <div class="profile-hero-avatar" style="overflow:hidden;" aria-hidden="true">
+                    <?php if (!empty($settings_avatar_url)): ?>
+                        <img src="<?= htmlspecialchars($settings_avatar_url, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($admin['username'] ?? 'Admin', ENT_QUOTES, 'UTF-8') ?>" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit;">
+                    <?php else: ?>
+                        <?= strtoupper(substr($admin['username'] ?? 'A', 0, 1)) ?>
+                    <?php endif; ?>
                 </div>
                 <div class="profile-hero-details">
                     <h3><?= htmlspecialchars($admin['username'] ?? 'Admin') ?></h3>
                     <p><i class="fas fa-envelope" aria-hidden="true"></i> <?= htmlspecialchars($admin['email'] ?? 'No email configured') ?></p>
+                    <div style="margin-top: 8px;">
+                        <a href="../../accounts.php" class="btn btn-sm" style="font-size: 12px; padding: 4px 12px; border-radius: 6px; text-decoration: none; background: #EEF2FF; color: #4F46E5; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #C7D2FE;">
+                            <i class="fas fa-camera"></i> Change Photo & Account Settings
+                        </a>
+                    </div>
                 </div>
             </div>
 

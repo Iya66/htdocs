@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_contact'])) {
         $contact_phone = trim($_POST['contact_phone'] ?? '');
         $contact_whatsapp = trim($_POST['contact_whatsapp'] ?? '');
         $contact_hours = trim($_POST['contact_hours'] ?? '');
+        $contact_address = trim($_POST['contact_address'] ?? '');
+        $maps_url = trim($_POST['maps_url'] ?? '');
         $map_location = trim($_POST['map_location'] ?? '');
         $google_maps_api_key = trim($_POST['google_maps_api_key'] ?? '');
         $raw_map_iframe = trim($_POST['contact_map_iframe'] ?? '');
@@ -66,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_contact'])) {
             $stmt->execute(['contact_phone', $contact_phone]);
             $stmt->execute(['contact_whatsapp', $contact_whatsapp]);
             $stmt->execute(['contact_hours', $contact_hours]);
+            $stmt->execute(['contact_address', $contact_address]);
+            $stmt->execute(['maps_url', $maps_url]);
             if (!empty($contact_map_iframe)) {
                 $stmt->execute(['contact_map_iframe', $contact_map_iframe]);
             }
@@ -101,6 +105,8 @@ $contact_email = getSetting($conn, 'contact_email', 'tamilaninstamedia1@gmail.co
 $contact_phone = getSetting($conn, 'contact_phone', '8098830937');
 $contact_whatsapp = getSetting($conn, 'contact_whatsapp', '8098830937');
 $contact_hours = getSetting($conn, 'contact_hours', 'Mon - Sat: 9:00 AM - 7:00 PM');
+$contact_address = getSetting($conn, 'contact_address', 'No. 53, Auvai Nagar, Puducherry, 605008');
+$maps_url = getSetting($conn, 'maps_url', 'https://maps.google.com/?q=No+53+Auvai+Nagar+Puducherry');
 $contact_map_iframe = getSetting($conn, 'contact_map_iframe', '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.2527998699!2d-74.14448787425354!3d40.69763123337346!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sbd!4v1692291580970!5m2!1sen!2sbd" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>');
 $social_facebook = getSetting($conn, 'social_facebook', 'https://facebook.com');
 $social_instagram = getSetting($conn, 'social_instagram', 'https://instagram.com');

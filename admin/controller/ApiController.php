@@ -173,7 +173,8 @@ class ApiController {
     public function getLiveStats(): array {
         try {
             $leadsCount = (int)$this->conn->query("SELECT COUNT(*) FROM leads")->fetchColumn();
-            $newLeads = (int)$this->conn->query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
+            // Both the current "New Lead" stage and the legacy "new" value count as new.
+            $newLeads = (int)$this->conn->query("SELECT COUNT(*) FROM leads WHERE status IN ('new_lead','new')")->fetchColumn();
             $projectsCount = (int)$this->conn->query("SELECT COUNT(*) FROM projects")->fetchColumn();
             $servicesCount = (int)$this->conn->query("SELECT COUNT(*) FROM services WHERE status = 'active'")->fetchColumn();
             

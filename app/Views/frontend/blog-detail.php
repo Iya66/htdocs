@@ -519,4 +519,5 @@ include __DIR__ . '/../../../includes/header.php';
 
 </div>
 
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 <?php include __DIR__ . '/../../../includes/footer.php'; ?>

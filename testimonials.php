@@ -13,25 +13,17 @@ try {
 }
 
 // Fetch dynamic database counts & metrics directly from MySQL tables (Zero hardcoding)
-$db_leads = 0;
-$db_projects = 0;
 $stat_satisfaction = '0%';
 $stat_growth = '0%';
 
 try {
-    // 1. Enterprise & Growth Partners (from `leads` table)
-    $db_leads = (int)$conn->query("SELECT COUNT(*) FROM leads")->fetchColumn();
-    
-    // 2. Successful Projects (from `projects` table)
-    $db_projects = (int)$conn->query("SELECT COUNT(*) FROM projects")->fetchColumn();
-
-    // 3. Client Satisfaction Rate (from `reviews` table)
+    // 1. Client Satisfaction Rate (from `reviews` table)
     $db_avg_rating = $conn->query("SELECT AVG(star_rating) FROM reviews WHERE status = 'approved' OR status IS NULL")->fetchColumn();
     if ($db_avg_rating !== null && (float)$db_avg_rating > 0) {
         $stat_satisfaction = round(((float)$db_avg_rating / 5) * 100) . '%';
     }
 
-    // 4. Average Client Growth (dynamically calculated from `projects.results` in database)
+    // 2. Average Client Growth (dynamically calculated from `projects.results` in database)
     $pResults = $conn->query("SELECT results FROM projects WHERE results IS NOT NULL AND results != ''")->fetchAll(PDO::FETCH_COLUMN);
     $growth_rates = [];
     foreach ($pResults as $res) {
@@ -48,8 +40,9 @@ try {
     error_log("Error calculating testimonial stats: " . $e->getMessage());
 }
 
-$stat_partners = $db_leads > 0 ? $db_leads . '+' : '0+';
-$stat_projects = $db_projects > 0 ? $db_projects . '+' : '0+';
+// 3. Enterprise & Growth Partners and Successful Projects — editable from Admin > Settings
+$stat_partners = (int)($settings['stat_clients'] ?? 2) . '+';
+$stat_projects = (int)($settings['stat_projects'] ?? 1) . '+';
 
 require_once __DIR__ . '/app/Views/frontend/testimonials.php';
 

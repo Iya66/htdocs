@@ -1,0 +1,490 @@
+# ==============================================================================
+# CLOUD ASPIRE — COMPLETE CODEBASE CONTEXT & ARCHITECTURE MANIFEST
+# File: codebase.ctx
+# Target: Cloud Aspire Solutions Digital Marketing Portal & CMS
+# Last Updated: 2026-10-14
+# ==============================================================================
+
+[PROJECT_METADATA]
+Project_Name        : Cloud Aspire (Cloud Aspire Solutions / CherriDM Digital Marketing Portal)
+Description         : Full-featured Digital Marketing Portal, Public Website & SaaS Admin Management System
+Industry            : Digital Marketing, SEO, Paid Ads (Google/Meta), Web Design & Growth Marketing
+Geographic_Focus    : Thoothukudi, Puducherry, Tamil Nadu, Pan-India
+Primary_Domain      : https://cloudaspire.in / https://cloudaspiresolutions.in
+Admin_Portal        : /admin/
+Repository_Type     : PHP / Vanilla Web Application (Clean MVC / Front-Controller Hybrid)
+
+[RUNTIME_ENVIRONMENT]
+Language            : PHP 8.4+ (ea-php84 on cPanel / PHP 8.x in local XAMPP)
+Database            : MySQL 5.7+ / MariaDB 10.3+ (Engine: InnoDB, Collation: utf8mb4_unicode_ci)
+Web_Server          : Apache 2.4+ (mod_rewrite, mod_deflate, mod_expires, mod_headers)
+Dependencies        : Composer (phpmailer/phpmailer ^7.1)
+Styling             : Vanilla CSS3, Custom SaaS Themes, Glassmorphism, Responsive CSS Grid & Flexbox
+Frontend_Libraries  : FontAwesome, Boxicons, LordIcon, Bootstrap (minimal bundle), Google Fonts (Inter, Roboto)
+Local_Path          : c:\xampp\htdocs
+Production_Host     : NinzaHost cPanel (portel.cloudaspire.in)
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. Directory & File Tree Structure
+2. Application Architecture & Routing Flow
+3. Database Architecture & Complete Data Dictionary
+4. Authentication & Security Engine
+5. Email, WhatsApp & Asynchronous Queue Pipeline
+6. REST & AJAX API Endpoints
+7. Admin CMS Modules & Settings Hierarchy
+8. Environment Configuration & Deployment Guidelines
+
+================================================================================
+1. DIRECTORY & FILE TREE STRUCTURE
+================================================================================
+
+c:\xampp\htdocs\
+├── .htaccess                     # Master Apache configuration: caching, rewrites, security headers, file blocks
+├── .gitignore                    # Git ignore file (excludes vendor, .env, backups, runtime logs)
+├── .user.ini                     # User PHP ini overrides for cPanel / local CGI execution
+├── php.ini                       # Local PHP configuration defaults
+├── README.md                     # Short repo summary
+├── composer.json                 # Composer dependencies (PHPMailer 7.1)
+├── composer.lock                 # Locked dependency versions
+├── codebase.ctx                  # Master codebase context file (single source of truth)
+├── database.sql                  # Primary SQL dump / database structure
+├── database_migration.sql        # Production migration script (safe, idempotent, re-runnable)
+├── migrate.php                   # Browser/CLI database migration execution utility
+├── robots.txt                    # Search engine crawlers directive
+├── sitemap.xml                   # XML Sitemap for search indexing
+├── llms.txt                      # LLM-friendly summary of brand services & endpoints
+├── ai-catalog.json               # Structured AI catalog manifest (specVersion 1.0)
+│
+├── 404.html                      # Static fallback 404 error page
+├── 404.php                       # Dynamic branded 404 page with navigation and search
+│
+├── [PUBLIC FRONTEND CONTROLLERS]
+├── index.php                     # Default entry point (includes home.php)
+├── home.php                      # Homepage controller (fetches services, reviews, projects, FAQs, stats)
+├── services.php                  # Services listing controller
+├── service-detail.php            # Dynamic single service detail controller (by slug)
+├── projects.php                  # Portfolio & case studies controller
+├── reviews.php                   # Customer reviews & feedback controller
+├── testimonials.php              # Client testimonials controller
+├── why-choose-us.php             # Value propositions & agency strengths controller
+├── contact.php                   # Contact page controller with inquiry form
+├── contact-insert.php            # Legacy contact form submission handler
+├── footer-form.php               # Footer audit & quick inquiry submission handler
+├── blog.php                      # Blog listing controller
+├── blog-detail.php               # Single blog post detail controller (by slug)
+├── leads.php                     # Public lead capture handler
+├── login.php                     # Public client / user login page
+├── privacy-policy.php            # Privacy Policy view controller
+├── refund-policy.php             # Refund Policy view controller
+├── terms.php                     # Terms & Conditions view controller
+│
+├── app/                          # Core Application Backend Logic
+│   ├── .env                      # Local environment variable file (DB, SMTP, keys)
+│   ├── .env.php                  # Environment loader helper (defines constants from .env)
+│   ├── .htaccess                 # Direct access denial to sensitive application configs
+│   ├── config.php                # Global config, session start, security headers, CSRF, audit logger, encryption
+│   ├── database.php              # High-performance PDO connection layer (zero auto-queries)
+│   ├── email_helper.php          # High-level transactional email wrappers (leads, alerts, verification)
+│   ├── smtp_factory.php          # Centralized PHPMailer factory (IPv4 fallback, SSL, retry with backoff)
+│   ├── mail_queue.php            # Mail queue database enqueue/dequeue library
+│   ├── queue_worker.php          # Cron / CLI daemon worker script to dispatch queued emails
+│   ├── security_notifier.php     # Admin security alert notification dispatcher
+│   ├── whatsapp_helper.php       # WhatsApp message trigger wrapper
+│   │
+│   ├── helpers/
+│   │   ├── .gitkeep
+│   │   └── SiteHelper.php        # Helper utilities for string formats, slugs, status badges, pagination
+│   ├── models/
+│   │   └── .gitkeep
+│   ├── services/
+│   │   ├── .gitkeep
+│   │   └── WhatsAppService.php   # WhatsApp Business API / Gateway dispatch integration
+│   │
+│   └── Views/                    # Separated Presentation Layer
+│       ├── frontend/             # Frontend HTML/PHP view templates
+│       │   ├── home.php          # Homepage template (Hero, Services, Why Us, Projects, Reviews, FAQs)
+│       │   ├── services.php      # Services catalog grid
+│       │   ├── service-detail.php# Service single view (features, process, FAQ, booking)
+│       │   ├── projects.php      # Portfolio grid with filter tabs
+│       │   ├── reviews.php       # Review submission form & testimonials wall
+│       │   ├── testimonials.php  # Client testimonial slider & cards
+│       │   ├── why-choose-us.php # Why Choose Us presentation
+│       │   ├── contact.php       # Contact form, Google map, office info
+│       │   ├── blog.php          # Blog article cards grid
+│       │   ├── blog-detail.php   # Blog reader view with sidebar & related posts
+│       │   ├── privacy-policy.php# Legal text: Privacy Policy
+│       │   ├── refund-policy.php # Legal text: Refund Policy
+│       │   └── terms.php         # Legal text: Terms of Service
+│       └── admin/                # Admin Panel View Templates
+│           ├── accounts.php      # User accounts management view
+│           ├── activity.php      # Admin activity logs & audit trail
+│           ├── backup.php        # System & database backup control interface
+│           ├── blogs-pro.php     # Blog manager (rich editor, category, tags, cover)
+│           ├── contact-us.php    # Contact inquiries & messages inbox
+│           ├── dashboard-pro.php # Modern SaaS dashboard layout with metrics & charts
+│           ├── faqs.php          # FAQ item manager (question, answer, order)
+│           ├── files.php         # File manager & media library
+│           ├── leads-pro.php     # Leads CRM view (status tracking, filters, quick actions)
+│           ├── mail_logs.php     # Outgoing email dispatch status & delivery logs
+│           ├── map.php           # Google Map embed & coordinates manager
+│           ├── pages.php         # Custom pages manager
+│           ├── privacy-policy.php# Privacy policy editor
+│           ├── projects.php      # Project & portfolio manager
+│           ├── refund-policy.php # Refund policy editor
+│           ├── reports.php       # Analytics, lead conversion & inquiry reports
+│           ├── reviews.php       # Customer reviews moderation & approval queue
+│           ├── services-pro.php  # Service CRUD editor with features & metadata
+│           ├── staff.php         # Admin staff & permission management
+│           ├── terms-and-conditions.php # Terms editor
+│           ├── testimonials.php  # Testimonials CRUD manager
+│           ├── why-choose-us.php # Why Choose Us bullet items editor
+│           └── settings/
+│               ├── index.php     # Settings tab coordinator
+│               ├── general.php   # Site name, logo, favicon, contact details
+│               ├── appearance.php# Theme selection, colors, typography
+│               ├── integration.php # Google Maps API, Analytics, WhatsApp API keys
+│               ├── mailsettings.php# SMTP host, port, credentials, test mail tool
+│               └── module.php    # Toggle enable/disable for system modules
+│
+├── admin/                        # Admin Portal Entry Points & Controllers
+│   ├── index.php                 # Admin root (redirects to dashboard or login)
+│   ├── login.php                 # Admin authentication login screen
+│   ├── logout.php                # Session destruction and logout handler
+│   ├── auth.php                  # Authentication guard middleware (30-min idle timeout)
+│   ├── auth-google.php           # Google OAuth SSO sign-in handler
+│   ├── dashboard.php             # Dashboard controller (aggregates statistics & queries)
+│   ├── leads.php                 # Leads CRM controller
+│   ├── services.php              # Services manager controller
+│   ├── blogs.php                 # Blogs manager controller
+│   ├── projects.php              # Projects manager controller
+│   ├── reviews.php               # Reviews manager controller
+│   ├── testimonials.php          # Testimonials manager controller
+│   ├── why-choose-us.php         # Why Choose Us controller
+│   ├── faqs.php                  # FAQs manager controller
+│   ├── pages.php                 # Pages manager controller
+│   ├── contact-us.php            # Contact messages controller
+│   ├── accounts.php              # Client accounts controller
+│   ├── staff.php                 # Staff & team controller
+│   ├── activity.php              # Activity log viewer controller
+│   ├── mail_logs.php             # Email delivery logs controller
+│   ├── backup.php                # Database backup runner controller
+│   ├── map.php                   # Map settings controller
+│   ├── reports.php               # Reports controller
+│   ├── privacy-policy.php        # Policy editor controller
+│   ├── refund-policy.php         # Policy editor controller
+│   ├── terms-and-conditions.php  # Terms editor controller
+│   ├── files.php                 # Media library controller
+│   │
+│   ├── api/                      # Admin AJAX & Internal JSON Endpoints
+│   │   ├── controller.php        # Central AJAX dispatcher for admin CRUD operations
+│   │   ├── email_preview.php     # Live preview renderer for outgoing email templates
+│   │   ├── files.php             # Media upload, delete, and list API
+│   │   ├── map.php               # Map coordinate update API
+│   │   ├── notifications.php     # Live admin badge notification poller
+│   │   ├── search.php            # Global admin search API (leads, services, blogs)
+│   │   └── whatsapp.php          # WhatsApp test message & notification trigger
+│   │
+│   ├── controller/               # Object-Oriented Admin Controllers
+│   │   ├── ApiController.php     # API logic controller
+│   │   ├── MapController.php     # Map logic controller
+│   │   └── backup/
+│   │       └── BackupController.php # Automated & manual database backup coordinator
+│   ├── model/
+│   │   └── backup/
+│   │       └── BackupModel.php   # Backup generation, compression, and prune engine
+│   ├── css/                      # Admin panel stylesheets
+│   │   ├── theme.css             # Base admin styles
+│   │   ├── theme-saas.css        # Modern SaaS theme
+│   │   ├── theme-professional.css# Enterprise professional theme
+│   │   ├── admin-white-theme.css # Clean light theme
+│   │   └── components.css        # Reusable badges, cards, data tables, modals
+│   ├── fonts/                    # Admin custom fonts
+│   │   └── FiolexGirls.ttf
+│   ├── includes/                 # Admin layout headers, footers & partials
+│   │   ├── header.php            # Default admin header
+│   │   ├── header-pro.php        # Pro theme header with responsive sidebar & user dropdown
+│   │   ├── footer.php            # Default admin footer
+│   │   ├── footer-pro.php        # Pro theme footer with script assets
+│   │   ├── media-picker-modal.php# Reusable modal for selecting uploaded assets
+│   │   └── settings-nav.php      # Settings sidebar navigation
+│   ├── settings/                 # Direct settings subpages
+│   │   ├── appearance.php
+│   │   ├── general.php
+│   │   ├── index.php
+│   │   ├── integration.php
+│   │   ├── mailsettings.php
+│   │   ├── module.php
+│   │   └── save-notifications.php# AJAX endpoint to persist notification preferences
+│   ├── uploads/backups/          # Admin backup archive storage (.htaccess protected)
+│   └── view/backup/              # Backup view assets (backup.css, backup.js)
+│
+├── api/                          # Public Frontend AJAX & REST Endpoints
+│   ├── lead-capture.php          # Primary lead capture endpoint (modal + footer form)
+│   ├── services.php              # Public JSON catalog of active services
+│   └── testimonials.php          # Public JSON stream of approved testimonials
+│
+├── includes/                     # Frontend Shared Layout Partials
+│   ├── header.php                # Site navigation, branding, meta tags, CSS links
+│   └── footer.php                # Site footer, inquiry popup modal, copyright, JS links
+│
+├── assets/                       # Static Frontend Assets
+│   ├── css/                      # Public stylesheets (style.css, responsive.css, animations)
+│   ├── js/                       # Public JavaScript (main.js, slider, AJAX form handlers)
+│   ├── images/                   # Brand graphics, icons, illustration SVG/PNGs
+│   └── vendor/                   # Front-end vendor assets (Swiper, Bootstrap, FontAwesome)
+│
+├── scripts/                      # Developer Maintenance Scripts
+│   ├── create_blogs_table.php    # Standalone table creation script for blogs
+│   └── seed_rich_services.php    # Rich demo content seeder for services catalog
+│
+├── backups/                      # System backup destination directory
+├── uploads/                      # Dynamic client & CMS uploads (images, logos, avatars)
+└── vendor/                       # Composer packages (PHPMailer)
+
+================================================================================
+2. APPLICATION ARCHITECTURE & ROUTING FLOW
+================================================================================
+
+2.1 ARCHITECTURAL PATTERN: Front-Controller & View-Presenter Hybrid
+- The frontend uses a clean separation:
+  - Top-level files (`home.php`, `service-detail.php`, `blog.php`) act as Controllers:
+    1. Include `app/config.php` to initialize environment, session, and DB connection.
+    2. Query required database records with PDO prepared statements.
+    3. Aggregate stats, sanitize inputs, and set `$pageTitle` / `$metaDescription`.
+    4. Delegate rendering to corresponding view in `app/Views/frontend/*.php`.
+- The admin dashboard uses dedicated route files in `admin/*.php` guarded by `admin/auth.php`, which delegates views to `app/Views/admin/*.php` wrapped between `admin/includes/header-pro.php` and `footer-pro.php`.
+
+2.2 URL REWRITING & ROUTING MATRIX (.htaccess)
+- Clean URLs:
+  - `/services`                 --> `services.php`
+  - `/services/{slug}`          --> `service-detail.php?slug={slug}`
+  - `/blogs` or `/blog`         --> `blog.php`
+  - `/blogs/{slug}`             --> `blog-detail.php?slug={slug}`
+  - `/admin/{route}.php`        --> 301 Redirect to `/admin/{route}` (clean extensionless URLs)
+  - `/{page}`                   --> Rewritten internally to `{page}.php` if the file exists.
+- Static Caching & Compression:
+  - Images, WebP, SVG, Fonts    : 1-Year public immutable cache
+  - CSS & JS                    : 1-Month public immutable cache
+  - HTML, PHP, JSON             : 0-second must-revalidate cache
+  - Gzip (DEFLATE)              : Enabled for text, html, css, js, xml, fonts
+
+================================================================================
+3. DATABASE ARCHITECTURE & COMPLETE DATA DICTIONARY
+================================================================================
+
+Connection Layer: `app/database.php`
+- Uses PHP PDO with strict error mode (`PDO::ERRMODE_EXCEPTION`).
+- Default Fetch Mode: `PDO::FETCH_ASSOC`.
+- Native Prepares Enabled (`PDO::ATTR_EMULATE_PREPARES => false`).
+- Charset: `utf8mb4` with `utf8mb4_unicode_ci` collation.
+- Dynamic error diagnostics for MySQL service down (2002), unknown DB (1049), and access denied (1045).
+
+3.1 TABLE INVENTORY (23 Tables Total)
+1.  `accounts`             : Client & user portal accounts (username, email, password hash, role: admin/manager/user/viewer, google_id).
+2.  `admin`                : Primary administrative users for the admin dashboard.
+3.  `registered_emails`    : Registered emails for verification, newsletter, and alerts.
+4.  `modules`              : Toggle switch registry for application modules (blogs, leads, testimonials, etc.).
+5.  `settings`             : Key-value global configuration store (site_name, logo, favicon, SMTP keys, map iframe, API keys).
+6.  `uploads`              : Media library asset ledger (file_name, file_path, file_size, file_type, uploaded_by).
+7.  `services`             : Digital marketing services catalog (title, slug, short_desc, full_desc, icon, thumbnail, status).
+8.  `plans`                : Pricing packages and deliverables associated with services.
+9.  `projects`             : Case studies and completed portfolio projects (title, client_name, results, thumbnail, status).
+10. `testimonials`         : Client testimonials (client_name, company, rating, feedback, avatar, status).
+11. `reviews`              : Public client reviews with star ratings (1-5) and approval moderation workflow (`pending`, `approved`, `rejected`).
+12. `why_choose_us`        : Differentiating value proposition points shown on homepage and about sections.
+13. `faqs`                 : Frequently Asked Questions categorized by topic with sorting order.
+14. `pages`                : Custom CMS content pages (slug, title, body_content, meta_keywords, meta_description).
+15. `leads`                : Inbound prospect inquiries captured from forms (name, phone, email, service, message, status: `new`, `contacted`, `confirmed`, `lose`).
+16. `admin_activities`     : Granular audit trail for all admin operations (user_id, action, details, ip_address, user_agent, device_info, timestamp).
+17. `admin_sessions`       : Active login sessions for tracking concurrent sessions and enforcing single-sign-on constraints.
+18. `security_alerts`      : High-priority security warnings (brute-force detections, unauthorized access attempts).
+19. `rate_limits`          : Persistent IP and action rate-limiting buckets.
+20. `ip_blocks`            : Banned IP addresses blocked from submitting forms or accessing authentication endpoints.
+21. `mail_logs`            : Transactional email history (recipient, subject, status: `sent`/`failed`, error_message, sent_at).
+22. `mail_queue`           : Asynchronous outgoing email queue (recipient, subject, body_html, alt_body, attempts, max_attempts, status: `queued`/`processing`/`sent`/`failed`).
+23. `blogs`                : Editorial blog posts (title, slug, excerpt, content, cover_image, category, tags, views, status: `draft`/`published`).
+
+================================================================================
+4. AUTHENTICATION & SECURITY ENGINE
+================================================================================
+
+4.1 SESSION MANAGEMENT & TIMEOUT
+- Strict cookie parameters: `HttpOnly`, `SameSite=Strict`, `use_only_cookies=1`.
+- Automatic HTTPS detection: sets cookie `secure` flag when HTTPS is active.
+- Session regeneration every 30 minutes to prevent session fixation.
+- Inactivity Timeout: `admin/auth.php` checks `$_SESSION['last_activity']`; automatically destroys session and redirects to `/admin/login?timeout=1` after 1800 seconds (30 minutes) of inactivity.
+
+4.2 CSRF DEFENSE
+- Functions in `app/config.php`:
+  - `generateCSRFToken()`: Cryptographically secure 32-byte hex token stored with 1-hour expiration.
+  - `verifyCSRFToken(?string $token)`: Constant-time comparison using `hash_equals()`.
+  - `csrfField()`: Generates hidden input tag for seamless embedding into HTML forms.
+
+4.3 AUDIT TRAIL & LOGGING
+- `logAudit(PDO $conn, string $action, string $details, ?int $user_id)`:
+  - Logs IP address via `getClientIP()` (honors Cloudflare `HTTP_CF_CONNECTING_IP` and trusted proxies).
+  - Categorizes user agent into Desktop, Mobile, or Tablet with browser identifier.
+  - Inserts directly into `admin_activities`.
+
+4.4 ENCRYPTION AT REST
+- Two-way AES-256-CBC cipher with SHA-256 key derivation:
+  - `encryptSensitive(string $plaintext)`: Generates a random 16-byte IV, encrypts plaintext, and returns base64 string (`IV + Ciphertext`).
+  - `decryptSensitive(string $encoded)`: Unpacks IV and decrypts ciphertext. Used for SMTP credentials and third-party API secrets.
+
+4.5 INPUT SANITIZATION & RATE LIMITING
+- Recursive string sanitization (`sanitize()` with `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`).
+- File path sanitization (`sanitizeFilename()`) removing traversal sequences `..` and illegal characters.
+- Session-based and database-backed rate limiting (`checkRateLimit()`) preventing brute force submissions on contact and login forms.
+
+4.6 SERVER-LEVEL HARDENING (.htaccess)
+- Denial of direct HTTP access to sensitive extensions:
+  `.env`, `.log`, `.ini`, `.conf`, `.git`, `.sql`, `.bak`, `.md`, `.sh`, `.zip`, `.phar`, `.lock`, `.json`
+- Directory browsing disabled (`Options -Indexes`).
+- Security Headers:
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: SAMEORIGIN`
+  - `X-XSS-Protection: 1; mode=block`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: geolocation=(self), microphone=(), camera=()`
+
+================================================================================
+5. EMAIL, WHATSAPP & ASYNCHRONOUS QUEUE PIPELINE
+================================================================================
+
+5.1 SMTP FACTORY (`app/smtp_factory.php`)
+- Centralized PHPMailer 7.1 configuration manager.
+- Resolves IPv6 vs IPv4 issues common on shared hosting (e.g. NinzaHost / cPanel) via DNS lookup `resolveSmtpHostIPv4()` rather than fragile socket bindto.
+- Automatically decrypts stored SMTP passwords.
+- Anti-Spam Optimizations:
+  - Clears `XMailer` header to prevent PHPMailer fingerprint spam scoring.
+  - Sets custom Message-ID host and Return-Path sender domain for SPF/DKIM/DMARC alignment.
+  - Implements `htmlToCleanPlainText()` for high-deliverability multipart MIME bodies.
+- Resilience:
+  - `sendWithRetry()`: Exponential backoff with up to 3 attempts, smart detection of permanent 5xx/auth errors to abort redundant attempts.
+
+5.2 ASYNCHRONOUS QUEUE & WORKER
+- `app/mail_queue.php`:
+  - `enqueueMail()`: Inserts email payload into `mail_queue` table for non-blocking UI response times.
+- `app/queue_worker.php`:
+  - Worker process (executable via cPanel Cron: `php -q /home/.../app/queue_worker.php`).
+  - Fetches pending batches, locks rows, sends via `smtp_factory`, logs result into `mail_logs`, and marks queue entries as sent or failed.
+
+5.3 WHATSAPP INTEGRATION
+- `app/services/WhatsAppService.php` & `app/whatsapp_helper.php`:
+  - Dispatches instant WhatsApp notifications to agency administrators upon new lead submission.
+  - Configurable in `admin/settings/integration.php`.
+
+================================================================================
+6. REST & AJAX API ENDPOINTS
+================================================================================
+
+6.1 PUBLIC API ENDPOINTS
+- `POST /api/lead-capture.php`
+  - Request: `name`, `phone`/`mobile`, `email`, `service`, `website`, `message`
+  - Validates contact details, normalizes phone numbers.
+  - Saves lead into `leads` table with status `new`.
+  - Fires background email alerts (`sendLeadNotification`), thank-you emails (`sendLeadThankYouEmail`), and WhatsApp alert (`sendLeadWhatsAppAlert`).
+  - Returns JSON `{status: "success"|"error", message: "..."}`.
+- `GET /api/services.php`
+  - Returns JSON array of all active digital marketing services.
+- `GET /api/testimonials.php`
+  - Returns JSON array of approved client testimonials and ratings.
+
+6.2 ADMIN AJAX API ENDPOINTS
+- `POST /admin/api/controller.php`
+  - Master AJAX CRUD router for leads, services, testimonials, FAQs, and settings.
+- `POST /admin/api/files.php`
+  - Uploads images, verifies MIME types and extensions, generates unique names, inserts record into `uploads` table, and returns asset URL.
+- `GET /admin/api/notifications.php`
+  - Polling endpoint returning count of new unread leads and security alerts for dashboard badge indicators.
+- `GET /admin/api/search.php`
+  - Omnisearch query across leads, services, and blogs for the top navigation bar.
+- `POST /admin/api/whatsapp.php`
+  - Sends test WhatsApp messages to verify gateway credentials.
+- `GET /admin/api/email_preview.php`
+  - Renders HTML email templates with dummy data for visual testing before broadcast.
+
+================================================================================
+7. ADMIN CMS MODULES & SETTINGS HIERARCHY
+================================================================================
+
+7.1 DASHBOARD (`/admin/dashboard.php`)
+- Real-time KPI Metric Cards: Total Leads, Active Services, Approved Reviews, Why Choose Us Items, Staff Count.
+- 7-Day Inbound Lead Velocity Chart.
+- Top Services demand distribution breakdown.
+- Recent Leads table with inline status toggles.
+- Real-time Audit Activity feed.
+
+7.2 LEADS CRM (`/admin/leads.php`)
+- Status Workflow:
+  - `new`        : Newly captured lead, needs initial response.
+  - `contacted`  : Outreach initiated via call/WhatsApp/email.
+  - `confirmed`  : Lead qualified and converted to active client.
+  - `lose`       : Lead unqualified or dropped out.
+- Quick filters, CSV export, inline notes, and communication action links.
+
+7.3 CONTENT CMS MODULES
+- Services (`/admin/services.php`): Title, slug, icon, short summary, detailed deliverables, status.
+- Blogs (`/admin/blogs.php`): Article title, slug, content, tags, featured image, SEO meta tags.
+- Projects (`/admin/projects.php`): Portfolio case studies with client name, campaign results, and imagery.
+- Reviews (`/admin/reviews.php`): Direct moderation queue to approve or decline client ratings.
+- Testimonials (`/admin/testimonials.php`): Client quotes and ratings.
+- Why Choose Us (`/admin/why-choose-us.php`): Core competitive advantages.
+- FAQs (`/admin/faqs.php`): FAQ items with sorting order.
+- Pages (`/admin/pages.php`): Custom legal and informational pages.
+
+7.4 SYSTEM & SETTINGS ENGINE (`/admin/settings/`)
+- General Settings      : Site Title, Favicon, Header Logo, Contact Email, Contact Phone, WhatsApp Number, Business Hours.
+- Appearance Settings   : Active Theme (SaaS Pro, Enterprise, Light), primary color schemes.
+- Integration Settings  : Google Maps Embed URL / API Key, Google Analytics ID, WhatsApp Gateway Token.
+- Mail Settings         : SMTP Host, Port, Protocol (TLS/SSL), Username, Encrypted Password, Sender Name, Test Mail Tool.
+- Module Switcher       : Global toggle to activate or deactivate modules across frontend and admin.
+- Backup Manager        : Automated & one-click manual database backup engine (`admin/model/backup/BackupModel.php`) with archive pruning.
+
+================================================================================
+8. ENVIRONMENT CONFIGURATION & DEPLOYMENT GUIDELINES
+================================================================================
+
+8.1 ENVIRONMENT FILE (`app/.env`)
+Structure:
+--------------------------------------------------------------------------------
+DB_HOST=localhost
+DB_NAME=qaschyan_cloudaspire
+DB_USER=qaschyan_cloudaspire
+DB_PASS=qaschyan_cloudaspire
+DB_CHARSET=utf8mb4
+
+SITE_URL=https://cloudaspire.in
+SITE_NAME="Cloud Aspire"
+ENCRYPTION_KEY="random_32_character_hex_key"
+
+SMTP_HOST=portel.cloudaspire.in
+SMTP_PORT=587
+SMTP_USER=noreply@cloudaspire.in
+SMTP_PASS=your_smtp_password
+SMTP_FROM=noreply@cloudaspire.in
+SMTP_FROM_NAME="Cloud Aspire"
+--------------------------------------------------------------------------------
+
+8.2 LOCAL DEVELOPMENT ON XAMPP
+1. Place repository in `c:\xampp\htdocs`.
+2. Start Apache and MySQL from XAMPP Control Panel.
+3. If using default MySQL root with no password, adjust `app/.env`:
+   `DB_USER=root`, `DB_PASS=`.
+4. Import `database_migration.sql` or run `http://localhost/migrate.php` in browser.
+5. Access site at `http://localhost` and admin at `http://localhost/admin`.
+
+8.3 PRODUCTION DEPLOYMENT (cPanel / Apache)
+1. Ensure PHP version is 8.2 or 8.4 (`ea-php84`).
+2. Run `composer install --no-dev --optimize-autoloader`.
+3. Set appropriate permissions: `uploads/` and `backups/` directories must be writable (`755` or `775`).
+4. Ensure `.htaccess` is present in document root for URL rewriting and security headers.
+5. Configure Cron Job for asynchronous email dispatch:
+   `* * * * * /usr/local/bin/php /home/user/public_html/app/queue_worker.php > /dev/null 2>&1`
+6. Verify SMTP Host is `portel.cloudaspire.in` on Port 587 (TLS).
+
+================================================================================
+END OF CODEBASE CONTEXT MANIFEST
+================================================================================

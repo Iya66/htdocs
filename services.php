@@ -6,7 +6,7 @@ require_once __DIR__ . '/app/config.php';
 $services = [];
 try {
     if (isset($conn)) {
-        $services = $conn->query("SELECT * FROM services WHERE status = 'active' ORDER BY created_at ASC")->fetchAll(PDO::FETCH_ASSOC);
+        $services = $conn->query("SELECT * FROM services WHERE status = 'active' ORDER BY sort_order ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
     error_log("[Services] Fetch services failed: " . $e->getMessage());

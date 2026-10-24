@@ -1,13 +1,41 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * Cloud Aspire — Global CSS Variables & Design Tokens
+ * Master brand colors, typography, elevations, and responsive radii
+ * ═══════════════════════════════════════════════════════════════
+ */
 :root {
-  --primary: #6C3BFF;
-  --secondary: #4F46E5;
-  --accent: #8B5CF6;
-  --bg: #FFFFFF;
-  --card-bg: #F8FAFC;
-  --text: #111827;
-  --text-secondary: #6B7280;
-  --gradient: linear-gradient(135deg, #6C3BFF, #4F46E5);
-  --shadow: 0 4px 24px rgba(108,59,255,0.10);
-  --radius: 16px;
-  --font: 'Inter', sans-serif;
+    /* Brand Colors - CherriDM Suite */
+    --primary-color: #03228f;
+    --primary-dark: #021a6e;
+    --primary-soft: rgba(3, 34, 143, 0.08);
+    --secondary-color: #fb9a27;
+    --secondary-hover: #e08316;
+    --secondary-soft: rgba(251, 154, 39, 0.12);
+
+    /* Text & Surfaces */
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --bg-light: #f8faff;
+    --bg-ice: #e9eeff;
+    --white: #ffffff;
+    --border-color: #e2e8f0;
+
+    /* Shadows & Elevations */
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 25px -3px rgba(3, 34, 143, 0.08);
+    --shadow-lg: 0 20px 35px -4px rgba(3, 34, 143, 0.15);
+
+    /* Typography & Sizing */
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --cdm-header-height: 88px;
+
+    /* Backward Compatibility Aliases */
+    --primary: var(--primary-color);
+    --secondary: var(--secondary-color);
+    --text: var(--text-dark);
+    --bg: var(--white);
+    --card-bg: var(--bg-light);
 }

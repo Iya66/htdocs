@@ -6,11 +6,12 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../app/config.php';
 require_once __DIR__ . '/../app/email_helper.php';
 require_once __DIR__ . '/../app/security_notifier.php';
+require_once __DIR__ . '/../app/profile_photo_helper.php';
 
 $message = '';
 $message_type = '';
 
-$user_id = $_SESSION['admin_id'];
+$user_id = (int)$_SESSION['admin_id'];
 $stmt = $conn->prepare("SELECT * FROM admin WHERE id = ?");
 $stmt->execute([$user_id]);
 $current_user = $stmt->fetch();
@@ -18,6 +19,26 @@ $current_user = $stmt->fetch();
 if (!$current_user) {
     header('Location: logout.php');
     exit;
+}
+
+// Handle remove photo action via direct POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_avatar'])) {
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $message = 'Invalid request token. Please refresh and try again.';
+        $message_type = 'error';
+    } else {
+        $err = null;
+        if (removeAdminProfilePhoto($conn, $user_id, $err)) {
+            $message = 'Profile photo removed successfully.';
+            $message_type = 'success';
+            $stmt = $conn->prepare("SELECT * FROM admin WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $current_user = $stmt->fetch();
+        } else {
+            $message = $err ?: 'Failed to remove profile photo.';
+            $message_type = 'error';
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
@@ -29,10 +50,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $wa_number = trim($_POST['wa_number'] ?? '');
-        $avatar = trim($_POST['avatar'] ?? '');
+        $avatar = trim($_POST['avatar'] ?? ($current_user['avatar'] ?? ''));
         $current_password = $_POST['current_password'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
+
+        // Check if a new avatar file was uploaded via standard form
+        if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $uploadErr = null;
+            $newAvatarPath = uploadAdminProfilePhoto($conn, $user_id, $_FILES['avatar_file'], $uploadErr);
+            if ($newAvatarPath) {
+                $avatar = $newAvatarPath;
+            } else {
+                $message = $uploadErr ?: 'Failed to upload profile photo.';
+                $message_type = 'error';
+            }
+        }
 
         if (empty($name) || empty($username) || empty($email)) {
             $message = 'Name, Username, and Email are required!';
@@ -91,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                         $stmt = $conn->prepare("SELECT * FROM admin WHERE id = ?");
                         $stmt->execute([$user_id]);
                         $current_user = $stmt->fetch();
+                        $_SESSION['admin_avatar'] = $current_user['avatar'] ?? '';
                     }
                 }
             }

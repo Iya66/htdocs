@@ -22,11 +22,21 @@ if (empty($slug)) {
     exit;
 }
 
-// Fetch active service by slug
+// Fetch active service by slug (or allow draft preview if authorized admin)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$is_admin = !empty($_SESSION['admin_logged_in']) || !empty($_SESSION['admin_id']);
+$preview_mode = !empty($_GET['preview']) && $is_admin;
+
 $service = null;
 try {
     if (isset($conn)) {
-        $stmt = $conn->prepare("SELECT * FROM services WHERE slug = ? AND status = 'active' LIMIT 1");
+        if ($preview_mode) {
+            $stmt = $conn->prepare("SELECT * FROM services WHERE slug = ? LIMIT 1");
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM services WHERE slug = ? AND status = 'active' LIMIT 1");
+        }
         $stmt->execute([$slug]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -37,7 +47,7 @@ try {
 // Handle 404 if service does not exist or is inactive
 if (!$service) {
     http_response_code(404);
-    $pageTitle = 'Service Not Found - ' . $site_name;
+    $pageTitle = 'Service Not Found - ' . ($site_name ?? 'Cloud Aspire');
     $pageDesc = 'The requested service could not be found or has been relocated.';
     if (file_exists(__DIR__ . '/404.php')) {
         include __DIR__ . '/404.php';
@@ -81,12 +91,45 @@ if (!empty($service['process_steps'])) {
     }
 }
 
-// 4. Parse Service-Specific FAQs
+// 4. Parse Service-Specific FAQs (supporting both question/answer and q/a formats)
 $service_faqs = [];
 if (!empty($service['faqs'])) {
     $decoded = json_decode($service['faqs'], true);
     if (is_array($decoded)) {
-        $service_faqs = $decoded;
+        foreach ($decoded as $item) {
+            $q = trim($item['question'] ?? ($item['q'] ?? ''));
+            $a = trim($item['answer'] ?? ($item['a'] ?? ''));
+            if (!empty($q) && !empty($a)) {
+                $service_faqs[] = [
+                    'question' => $q,
+                    'answer'   => $a,
+                    'q'        => $q,
+                    'a'        => $a
+                ];
+            }
+        }
+    }
+}
+if (empty($service_faqs) && isset($conn)) {
+    try {
+        $sId = (int)($service['id'] ?? 0);
+        $stmtF = $conn->prepare("SELECT question, answer FROM faqs WHERE status = 'active' AND (service_id = :sid OR service_id IS NULL) ORDER BY COALESCE(sort_order, 0) ASC, id ASC LIMIT 5");
+        $stmtF->execute([':sid' => $sId]);
+        $rows = $stmtF->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $r) {
+            $q = trim($r['question'] ?? '');
+            $a = trim($r['answer'] ?? '');
+            if (!empty($q) && !empty($a)) {
+                $service_faqs[] = [
+                    'question' => $q,
+                    'answer'   => $a,
+                    'q'        => $q,
+                    'a'        => $a
+                ];
+            }
+        }
+    } catch (Exception $e) {
+        $service_faqs = [];
     }
 }
 
@@ -94,7 +137,7 @@ if (!empty($service['faqs'])) {
 $other_services = [];
 try {
     if (isset($conn)) {
-        $stmtOther = $conn->query("SELECT id, service_name, slug, icon, short_description, price, image FROM services WHERE status = 'active' ORDER BY created_at ASC");
+        $stmtOther = $conn->query("SELECT id, service_name, slug, icon, short_description, price, image FROM services WHERE status = 'active' ORDER BY sort_order ASC, id ASC");
         $other_services = $stmtOther->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
@@ -105,7 +148,13 @@ try {
 $pageTitle = !empty($service['seo_title']) ? $service['seo_title'] : $service['service_name'] . ' - ' . $site_name;
 $pageDesc = !empty($service['meta_description']) ? $service['meta_description'] : ($service['short_description'] ?? 'Expert ' . $service['service_name'] . ' services in Pondicherry by Cloud Aspire.');
 $metaKeywords = !empty($service['meta_keywords']) ? $service['meta_keywords'] : strtolower($service['service_name']) . ', digital marketing pondicherry, cloud aspire';
+$base_url = $base_url ?? '';
 $canonicalUrl = $base_url . '/service/' . urlencode($service['slug']);
 
+$ogImage = !empty($service['og_image']) ? $service['og_image'] : (!empty($service['image']) ? $service['image'] : '');
+if (!empty($ogImage) && !str_starts_with($ogImage, 'http')) {
+    $ogImage = rtrim($base_url, '/') . '/' . ltrim($ogImage, '/');
+}
+
 // Render View Layer
-require_once __DIR__ . '/app/Views/frontend/service-detail.php';
+require __DIR__ . '/app/Views/frontend/service-detail.php';

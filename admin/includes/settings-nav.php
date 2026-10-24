@@ -3,6 +3,7 @@
 $settings_nav_items = [
     ['url' => 'index', 'icon' => 'fa-user-cog', 'label' => 'Admin Profile'],
     ['url' => 'general', 'icon' => 'fa-sliders-h', 'label' => 'Site Settings'],
+    ['url' => 'homepage', 'icon' => 'fa-home', 'label' => 'Homepage & Content'],
     ['url' => 'mailsettings', 'icon' => 'fa-envelope', 'label' => 'Mail Settings'],
     ['url' => 'integration', 'icon' => 'fa-plug', 'label' => 'SEO & Integrations'],
     ['url' => 'module', 'icon' => 'fa-cubes', 'label' => 'Modules'],

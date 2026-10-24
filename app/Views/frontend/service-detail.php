@@ -37,10 +37,40 @@ if (empty($s_image)) {
     $s_image = $base_url . '/' . ltrim($s_image, '/');
 }
 
+// Hero background image
+$s_hero_bg = $service['hero_bg_image'] ?? '';
+if (!empty($s_hero_bg) && !str_starts_with($s_hero_bg, 'http')) {
+    $s_hero_bg = $base_url . '/' . ltrim($s_hero_bg, '/');
+}
+if (empty($s_hero_bg)) {
+    $s_hero_bg = $s_image;
+}
+
 // Split service name into words for styled hero header
 $name_parts = explode(' ', $s_name);
 $first_word = $name_parts[0] ?? '';
 $remaining_words = count($name_parts) > 1 ? implode(' ', array_slice($name_parts, 1)) : '';
+
+// Custom Hero Heading & Highlight
+$custom_heading = trim($service['hero_heading'] ?? '');
+$custom_highlight = trim($service['hero_highlight'] ?? '');
+if (!empty($custom_heading)) {
+    if (!empty($custom_highlight) && stripos($custom_heading, $custom_highlight) !== false) {
+        $escaped_heading = htmlspecialchars($custom_heading);
+        $escaped_highlight = htmlspecialchars($custom_highlight);
+        $hero_title_html = str_ireplace($escaped_highlight, '<span class="stroke">' . $escaped_highlight . '</span>', $escaped_heading);
+    } else {
+        $hero_title_html = htmlspecialchars($custom_heading);
+    }
+} else {
+    $hero_title_html = htmlspecialchars($first_word) . ' <span class="stroke">' . htmlspecialchars($remaining_words) . '</span>';
+}
+
+// Button Texts & URLs
+$learn_more_text = !empty($service['learn_more_text']) ? $service['learn_more_text'] : 'Learn More';
+$learn_more_url = !empty($service['learn_more_url']) ? $service['learn_more_url'] : '#cdm-deliverables';
+$explore_btn_text = !empty($service['explore_btn_text']) ? $service['explore_btn_text'] : 'Explore Service';
+$explore_btn_url = !empty($service['explore_btn_url']) ? $service['explore_btn_url'] : '#cdm-quote-card';
 
 include __DIR__ . '/../../../includes/header.php';
 ?>
@@ -72,13 +102,15 @@ include __DIR__ . '/../../../includes/header.php';
     <?php 
     $faq_json_items = [];
     foreach ($service_faqs as $sfq) {
-        if (!empty($sfq['question']) && !empty($sfq['answer'])) {
+        $q_name = $sfq['question'] ?? ($sfq['q'] ?? '');
+        $a_text = $sfq['answer'] ?? ($sfq['a'] ?? '');
+        if (!empty($q_name) && !empty($a_text)) {
             $faq_json_items[] = json_encode([
                 "@type" => "Question",
-                "name" => $sfq['question'],
+                "name" => $q_name,
                 "acceptedAnswer" => [
                     "@type" => "Answer",
-                    "text" => $sfq['answer']
+                    "text" => $a_text
                 ]
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
@@ -95,7 +127,7 @@ include __DIR__ . '/../../../includes/header.php';
     /* Hero Banner */
     .cdm-svc-hero {
         background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('<?= htmlspecialchars($s_image) ?>') center/cover;
+                    url('<?= htmlspecialchars($s_hero_bg) ?>') center/cover;
         padding: 95px 20px 85px;
         text-align: center;
         color: #ffffff;
@@ -395,13 +427,20 @@ include __DIR__ . '/../../../includes/header.php';
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 14px;
         cursor: pointer;
         font-family: inherit;
+    }
+    .cdm-faq-trigger span {
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
     }
     .cdm-faq-trigger i {
         color: #fb9a27;
         font-size: 14px;
         transition: transform 0.3s ease;
+        flex-shrink: 0;
     }
     .cdm-faq-item.active .cdm-faq-trigger i {
         transform: rotate(180deg);
@@ -412,6 +451,7 @@ include __DIR__ . '/../../../includes/header.php';
         font-size: 14.5px;
         color: #475569;
         line-height: 1.7;
+        word-break: break-word;
     }
     .cdm-faq-item.active .cdm-faq-content {
         display: block;
@@ -442,19 +482,19 @@ include __DIR__ . '/../../../includes/header.php';
     /* Right Sidebar (Sticky) */
     .cdm-svc-sidebar {
         position: sticky;
-        top: 95px;
+        top: 105px;
         display: flex;
         flex-direction: column;
-        gap: 30px;
+        gap: 25px;
     }
 
     /* Sidebar Form Card */
     .cdm-side-card {
         background: #ffffff;
-        border-radius: 14px;
+        border-radius: 12px;
         border: 1px solid #e2e8f0;
-        padding: 30px 24px;
-        box-shadow: 0 12px 30px rgba(3, 34, 143, 0.07);
+        padding: 24px 20px;
+        box-shadow: 0 10px 25px rgba(3, 34, 143, 0.06);
     }
     .cdm-side-card h4 {
         font-size: 19px;
@@ -660,8 +700,24 @@ include __DIR__ . '/../../../includes/header.php';
             width: 100%;
             justify-content: center;
         }
+        .cdm-faq-trigger {
+            padding: 16px 18px;
+            font-size: 15px;
+        }
+        .cdm-faq-content {
+            padding: 0 18px 20px;
+            font-size: 14px;
+        }
     }
 </style>
+
+<?php if (!empty($preview_mode) && ($service['status'] ?? '') === 'inactive'): ?>
+<div style="background: linear-gradient(90deg, #d97706, #f59e0b); color: #ffffff; padding: 12px 20px; font-weight: 700; text-align: center; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 9999; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <i class="fas fa-eye-slash" style="font-size: 16px;"></i>
+    <span>ADMIN DRAFT PREVIEW — This service is unpublished (Draft) and hidden from public visitors.</span>
+    <a href="<?= $base_url ?>/admin/services.php" style="color: #ffffff; text-decoration: underline; margin-left: 10px; font-weight: 800;">Return to Services Manager</a>
+</div>
+<?php endif; ?>
 
 <!-- 1. HERO BANNER -->
 <section class="cdm-svc-hero">
@@ -670,7 +726,7 @@ include __DIR__ . '/../../../includes/header.php';
             <i class="fas <?= htmlspecialchars($s_icon) ?>"></i> Specialized Growth Division
         </div>
         <h1>
-            <?= htmlspecialchars($first_word) ?> <span class="stroke"><?= htmlspecialchars($remaining_words) ?></span>
+            <?= $hero_title_html ?>
         </h1>
         <p>
             <?= htmlspecialchars($pageDesc) ?>
@@ -681,6 +737,16 @@ include __DIR__ . '/../../../includes/header.php';
             <a href="<?= $base_url ?>/services">Services</a>
             <span class="sep">/</span>
             <span class="active"><?= htmlspecialchars($s_name) ?></span>
+        </div>
+        <div class="cdm-hero-action-btns" style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 26px;">
+            <a href="<?= htmlspecialchars($learn_more_url) ?>" class="cdm-btn-learn-more" style="background: #fb9a27; color: #ffffff; font-weight: 700; padding: 12px 28px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                <span><?= htmlspecialchars($learn_more_text) ?></span>
+                <i class="fas fa-chevron-down" style="font-size: 11px;"></i>
+            </a>
+            <a href="<?= htmlspecialchars($explore_btn_url) ?>" class="cdm-btn-explore-svc" style="background: rgba(255, 255, 255, 0.15); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); font-weight: 700; padding: 12px 28px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; backdrop-filter: blur(8px); transition: all 0.2s ease;">
+                <span><?= htmlspecialchars($explore_btn_text) ?></span>
+                <i class="fas fa-arrow-right" style="font-size: 11px;"></i>
+            </a>
         </div>
     </div>
 </section>
@@ -704,7 +770,7 @@ include __DIR__ . '/../../../includes/header.php';
 
         <!-- Deliverables & Core Features Grid -->
         <?php if (!empty($features)): ?>
-        <section class="cdm-features-wrap cdm-reveal">
+        <section class="cdm-features-wrap cdm-reveal" id="cdm-deliverables">
             <div class="cdm-svc-heading">
                 <span class="tagline">// Comprehensive Scope & Solutions //</span>
                 <h3>What We Deliver in <?= htmlspecialchars($s_name) ?></h3>
@@ -781,14 +847,17 @@ include __DIR__ . '/../../../includes/header.php';
                 <h3>Frequently Asked Questions</h3>
             </div>
             <div class="cdm-faqs-list" id="cdmServiceFaqs">
-                <?php foreach ($service_faqs as $fq_idx => $sfq): ?>
+                <?php foreach ($service_faqs as $fq_idx => $sfq): 
+                    $q_title = $sfq['question'] ?? ($sfq['q'] ?? '');
+                    $a_body  = $sfq['answer'] ?? ($sfq['a'] ?? '');
+                ?>
                 <div class="cdm-faq-item <?= $fq_idx === 0 ? 'active' : '' ?>">
                     <button type="button" class="cdm-faq-trigger" onclick="toggleSvcFaq(this)">
-                        <span><?= htmlspecialchars($sfq['question'] ?? '') ?></span>
+                        <span><?= htmlspecialchars($q_title) ?></span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="cdm-faq-content">
-                        <?= nl2br(htmlspecialchars($sfq['answer'] ?? '')) ?>
+                        <?= nl2br(htmlspecialchars($a_body)) ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -803,7 +872,7 @@ include __DIR__ . '/../../../includes/header.php';
                 <p>Schedule a 1-on-1 strategy discovery session with our senior digital specialists today.</p>
             </div>
             <div>
-                <button type="button" class="cdm-btn-quote" onclick="openContactPopup()">
+                <button type="button" class="cdm-btn-quote" onclick="openContactPopup('<?= addslashes(htmlspecialchars($s_name)) ?>')">
                     <span>Claim Free Consultation</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -816,7 +885,7 @@ include __DIR__ . '/../../../includes/header.php';
     <aside class="cdm-svc-sidebar">
 
         <!-- 1. Quick Free Quote / Audit Form -->
-        <div class="cdm-side-card cdm-reveal">
+        <div class="cdm-side-card cdm-reveal" id="cdm-quote-card">
             <h4>Request Free Strategy Audit</h4>
             <p class="subtitle">Receive a complimentary performance analysis & roadmap for <?= htmlspecialchars($s_name) ?>.</p>
 
@@ -966,4 +1035,5 @@ function handleSideLeadSubmit(e) {
 }
 </script>
 
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 <?php include __DIR__ . '/../../../includes/footer.php'; ?>

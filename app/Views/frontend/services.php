@@ -10,63 +10,25 @@ $contact_phone = !empty($settings['contact_phone']) ? $settings['contact_phone']
 include __DIR__ . '/../../../includes/header.php'; 
 ?>
 
-<!-- CHERRIDM INNER PAGE HEADER -->
-<style>
-    .cdm-page-hero {
-        background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80') center/cover;
-        padding: 90px 20px 80px;
-        text-align: center;
-        color: #ffffff;
-        position: relative;
-    }
-    .cdm-page-hero h1 {
-        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 14px;
-        letter-spacing: -0.5px;
-    }
-    .cdm-page-hero h1 span.stroke {
-        color: #fb9a27;
-    }
-    .cdm-page-hero p {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 680px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
-    }
-    .cdm-breadcrumb-capsule {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        padding: 7px 22px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .cdm-breadcrumb-capsule a {
-        color: #ffffff;
-        transition: color 0.2s ease;
-    }
-    .cdm-breadcrumb-capsule a:hover {
-        color: #fb9a27;
-    }
-    .cdm-breadcrumb-capsule span.sep {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .cdm-breadcrumb-capsule span.active {
-        color: #fb9a27;
-    }
+<!-- REUSABLE PAGE HERO COMPONENT -->
+<?php 
+$hero_title = 'Our Services';
+$hero_highlight = 'Services';
+$hero_subtitle = 'Discover tailored digital marketing, search optimization, and modern web development solutions designed to scale your business.';
+$hero_breadcrumbs = [
+    ['label' => 'Home', 'url' => $base_url . '/'],
+    ['label' => 'Our Services']
+];
+include __DIR__ . '/../../../includes/components/page_hero.php'; 
+?>
 
+<style>
     /* Service Rows */
     .cdm-services-container {
-        padding: 80px 0;
+        padding: 50px 0;
     }
     .cdm-service-block {
-        padding: 70px 0;
+        padding: 45px 0;
         border-bottom: 1px solid #e2e8f0;
     }
     .cdm-service-block:nth-child(even) {
@@ -78,7 +40,7 @@ include __DIR__ . '/../../../includes/header.php';
         padding: 0 20px;
         display: grid;
         grid-template-columns: 1.1fr 1fr;
-        gap: 60px;
+        gap: 45px;
         align-items: center;
     }
     .cdm-service-block:nth-child(even) .cdm-service-inner {
@@ -113,9 +75,9 @@ include __DIR__ . '/../../../includes/header.php';
     .cdm-svc-desc {
         font-size: 15px;
         color: #475569;
-        line-height: 1.75;
-        margin-bottom: 24px;
-        text-align: justify;
+        line-height: 1.7;
+        margin-bottom: 22px;
+        text-align: left;
     }
     .cdm-svc-pricing {
         font-size: 18px;
@@ -138,8 +100,8 @@ include __DIR__ . '/../../../includes/header.php';
     .cdm-svc-image-card {
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 15px 35px rgba(3, 34, 143, 0.12);
-        height: 380px;
+        box-shadow: 0 12px 30px rgba(3, 34, 143, 0.1);
+        height: 320px;
         position: relative;
     }
     .cdm-svc-image-card img {
@@ -190,19 +152,6 @@ include __DIR__ . '/../../../includes/header.php';
     }
 </style>
 
-<!-- PAGE HERO -->
-<section class="cdm-page-hero">
-    <div class="container">
-        <h1>Our <span class="stroke">Services</span></h1>
-        <p>Result-driven digital marketing and development solutions engineered to scale your business online</p>
-        <div class="cdm-breadcrumb-capsule">
-            <a href="<?= $base_url ?>/">Home</a>
-            <span class="sep">/</span>
-            <span class="active">Services</span>
-        </div>
-    </div>
-</section>
-
 <!-- SERVICES LISTING -->
 <?php if (!empty($services)): ?>
     <div class="cdm-services-container">
@@ -233,14 +182,18 @@ include __DIR__ . '/../../../includes/header.php';
                         <?= htmlspecialchars($s['full_description'] ?? ($s['short_description'] ?? 'Tailored digital marketing campaigns engineered to drive targeted traffic, maximize qualified sales inquiries, and elevate brand authority.')) ?>
                     </p>
                     <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-                        <a href="<?= !empty($s['slug']) ? $base_url . '/service/' . htmlspecialchars($s['slug']) : $base_url . '/services' ?>" class="cdm-btn-service-cta">
-                            <span>Explore Deliverables & Scope</span>
+                        <?php 
+                        $exp_text = !empty($s['explore_btn_text']) ? $s['explore_btn_text'] : 'Explore Deliverables & Scope';
+                        $exp_url = !empty($s['explore_btn_url']) ? $s['explore_btn_url'] : (!empty($s['slug']) ? $base_url . '/service/' . htmlspecialchars($s['slug']) : $base_url . '/services');
+                        ?>
+                        <a href="<?= $exp_url ?>" class="cdm-btn-service-cta">
+                            <span><?= htmlspecialchars($exp_text) ?></span>
                             <i class="fas fa-arrow-right"></i>
                         </a>
-                        <a href="<?= $base_url ?>/contact?service=<?= urlencode($s['service_name'] ?? '') ?>" class="cdm-btn-service-cta" style="background: transparent; color: #03228f; border-color: #03228f;">
+                        <button type="button" class="cdm-btn-service-cta" style="background: transparent; color: #03228f; border-color: #03228f; cursor: pointer;" onclick="openContactPopup('<?= addslashes(htmlspecialchars($s['service_name'] ?? '')) ?>')">
                             <span>Request Quote</span>
                             <i class="fas fa-paper-plane"></i>
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -262,18 +215,7 @@ include __DIR__ . '/../../../includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- BOTTOM CALLOUT BANNER -->
-<section style="background: linear-gradient(135deg, #02144a 0%, #03228f 100%); padding: 70px 20px; color: #ffffff; text-align: center;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h3 style="font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px;">Need a Tailored Multi-Channel Strategy?</h3>
-        <p style="font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px;">
-            Our specialists build custom digital marketing roadmaps aligned specifically with your revenue goals and acquisition timeline.
-        </p>
-        <button type="button" class="cdm-btn-quote" style="display: inline-flex;" onclick="openContactPopup()">
-            <span>Request Free Custom Consultation</span>
-            <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-</section>
+<!-- REUSABLE CTA BANNER (CONNECTED TO DATABASE SETTINGS) -->
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 
 <?php include __DIR__ . '/../../../includes/footer.php'; ?>

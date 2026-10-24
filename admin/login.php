@@ -739,7 +739,7 @@ $csrf_token = generateCSRFToken();
  <a href="login?state=forgot" style="color: var(--primary); font-size: 0.8rem; text-decoration: none; font-weight: 500;">Forgot Password?</a>
  </div>
  <div class="input-group">
- <input type="password" id="password" name="password" class="form-control" placeholder="&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;" required autocomplete="current-password" style="padding-right: 2.75rem;">
+ <input type="password" id="password" name="password" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required autocomplete="current-password" style="padding-right: 2.75rem;">
  <i class="fa-solid fa-lock input-icon"></i>
  <button type="button" class="password-toggle" onclick="togglePassword('password', this)" aria-label="Show password">
  <i class="fa-regular fa-eye"></i>
@@ -825,7 +825,7 @@ $csrf_token = generateCSRFToken();
  <div class="form-group">
  <label for="new_password" class="form-label">New Password</label>
  <div class="input-group">
- <input type="password" id="new_password" name="new_password" class="form-control" placeholder="&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;" required autocomplete="new-password" autofocus style="padding-right: 2.75rem;">
+ <input type="password" id="new_password" name="new_password" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required autocomplete="new-password" autofocus style="padding-right: 2.75rem;">
  <i class="fa-solid fa-lock input-icon"></i>
  <button type="button" class="password-toggle" onclick="togglePassword('new_password', this)" aria-label="Show password">
  <i class="fa-regular fa-eye"></i>
@@ -836,7 +836,7 @@ $csrf_token = generateCSRFToken();
  <div class="form-group">
  <label for="confirm_password" class="form-label">Confirm New Password</label>
  <div class="input-group">
- <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;&#bull;" required autocomplete="new-password" style="padding-right: 2.75rem;">
+ <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required autocomplete="new-password" style="padding-right: 2.75rem;">
  <i class="fa-solid fa-lock input-icon"></i>
  <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)" aria-label="Show password">
  <i class="fa-regular fa-eye"></i>

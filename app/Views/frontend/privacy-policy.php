@@ -75,60 +75,10 @@ EOT;
 }
 
 include __DIR__ . '/../../../includes/header.php'; 
+require_once __DIR__ . '/../../../includes/components/page_hero.php';
 ?>
 
-<!-- CHERRIDM INNER PAGE HERO -->
 <style>
-    .cdm-page-hero {
-        background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80') center/cover;
-        padding: 90px 20px 80px;
-        text-align: center;
-        color: #ffffff;
-        position: relative;
-    }
-    .cdm-page-hero h1 {
-        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 14px;
-        letter-spacing: -0.5px;
-    }
-    .cdm-page-hero h1 span.stroke {
-        color: #fb9a27;
-    }
-    .cdm-page-hero p {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 680px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
-    }
-    .cdm-breadcrumb-capsule {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        padding: 7px 22px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .cdm-breadcrumb-capsule a {
-        color: #ffffff;
-        transition: color 0.2s ease;
-        text-decoration: none;
-    }
-    .cdm-breadcrumb-capsule a:hover {
-        color: #fb9a27;
-    }
-    .cdm-breadcrumb-capsule span.sep {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .cdm-breadcrumb-capsule span.active {
-        color: #fb9a27;
-    }
-
     /* Switcher Pills */
     .cdm-legal-switcher {
         display: flex;
@@ -285,17 +235,15 @@ include __DIR__ . '/../../../includes/header.php';
     }
 </style>
 
-<section class="cdm-page-hero">
-    <div class="container">
-        <h1>Privacy <span class="stroke">Policy</span></h1>
-        <p>Our commitment to protecting your personal data, confidentiality, and digital privacy</p>
-        <div class="cdm-breadcrumb-capsule">
-            <a href="<?= $base_url ?>/"><i class="fas fa-home"></i> Home</a>
-            <span class="sep">/</span>
-            <span class="active">Privacy Policy</span>
-        </div>
-    </div>
-</section>
+<?php
+render_page_hero([
+    'title' => 'Privacy',
+    'highlight' => 'Policy',
+    'subtitle' => 'Our commitment to protecting your personal data, confidentiality, and digital privacy',
+    'breadcrumb_active' => 'Privacy Policy',
+    'base_url' => $base_url
+]);
+?>
 
 <section style="padding: 60px 0; background-color: #f8faff;">
     <div class="container">

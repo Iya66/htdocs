@@ -7,12 +7,21 @@
 $total_uploads = $uploads_count ?? 0;
 $icon_path = '/files/lcons/';
 
-// Pipeline percentages
-$total_p = max(1, $leads_count);
-$p_new = round(($lead_status_counts['new'] / $total_p) * 100);
-$p_contacted = round(($lead_status_counts['contacted'] / $total_p) * 100);
-$p_confirmed = round(($lead_status_counts['confirmed'] / $total_p) * 100);
-$p_lose = round(($lead_status_counts['lose'] / $total_p) * 100);
+$call_not_answered_count = $call_not_answered_count ?? 0;
+$call_back_later_count = $call_back_later_count ?? 0;
+$already_has_website_count = $already_has_website_count ?? 0;
+$no_website_count = $no_website_count ?? 0;
+$website_improvement_count = $website_improvement_count ?? 0;
+$interested_count = $interested_count ?? 0;
+$followup_pending_count = $followup_pending_count ?? 0;
+$meeting_scheduled_count = $meeting_scheduled_count ?? 0;
+$proposal_sent_count = $proposal_sent_count ?? 0;
+$converted_count = $converted_count ?? 0;
+$not_interested_count = $not_interested_count ?? 0;
+$overdue_followups_count = $overdue_followups_count ?? 0;
+$upcoming_followups_count = $upcoming_followups_count ?? 0;
+$conversion_rate = $conversion_rate ?? 0.0;
+
 
 // Dashboard stat cards — each maps to a GIF icon and a link
 $dash_cards = [
@@ -315,9 +324,159 @@ $dash_cards = [
 .ad7 { animation-delay: 0.28s; }
 .ad8 { animation-delay: 0.32s; }
 .ad9 { animation-delay: 0.38s; }
+
+/* ── ADMIN WELCOME & PROFILE BANNER ── */
+.dash-welcome-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid #2563EB;
+}
+.dash-welcome-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.dash-welcome-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #2563EB;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    flex-shrink: 0;
+    border: 2px solid #FFFFFF;
+}
+.dash-welcome-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.dash-welcome-initial {
+    line-height: 1;
+}
+.dash-welcome-greeting {
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 4px;
+}
+.dash-welcome-greeting strong {
+    color: #2563EB;
+}
+.dash-welcome-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #64748B;
+}
+.dash-role-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #EFF6FF;
+    color: #2563EB;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.dash-welcome-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.dash-welcome-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: #F1F5F9;
+    color: #334155;
+    border: 1px solid #CBD5E1;
+    transition: all 0.2s ease;
+}
+.dash-welcome-btn:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+.dash-welcome-btn-primary {
+    background: #2563EB;
+    color: #FFFFFF;
+    border-color: #2563EB;
+}
+.dash-welcome-btn-primary:hover {
+    background: #1D4ED8;
+    color: #FFFFFF;
+}
+@media (max-width: 768px) {
+    .dash-welcome-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+    .dash-welcome-actions {
+        width: 100%;
+    }
+    .dash-welcome-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
 </style>
 
 <div class="dash-wrap">
+
+    <!-- ═══ ADMIN WELCOME & PROFILE BANNER ═══ -->
+    <div class="dash-welcome-card anim-card">
+        <div class="dash-welcome-left">
+            <div class="dash-welcome-avatar">
+                <?php if (!empty($admin_avatar_url)): ?>
+                    <img src="<?= htmlspecialchars($admin_avatar_url, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($admin_name ?? 'Admin', ENT_QUOTES, 'UTF-8') ?>" class="dash-welcome-avatar-img" onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'dash-welcome-initial\'><?= htmlspecialchars($admin_initial ?? 'A', ENT_QUOTES, 'UTF-8') ?></span>';">
+                <?php else: ?>
+                    <span class="dash-welcome-initial"><?= htmlspecialchars($admin_initial ?? 'A', ENT_QUOTES, 'UTF-8') ?></span>
+                <?php endif; ?>
+            </div>
+            <div class="dash-welcome-text">
+                <div class="dash-welcome-greeting">Welcome back, <strong><?= htmlspecialchars($admin_name ?? 'Administrator', ENT_QUOTES, 'UTF-8') ?></strong>!</div>
+                <div class="dash-welcome-meta">
+                    <span class="dash-role-pill"><i class="fas fa-shield-alt"></i> <?= htmlspecialchars(ucfirst((string)($admin_role ?? 'admin')), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span><i class="far fa-calendar-alt"></i> <?= date('l, F j, Y') ?></span>
+                </div>
+            </div>
+        </div>
+        <div class="dash-welcome-actions">
+            <a href="<?= $base_path ?>accounts.php" class="dash-welcome-btn">
+                <i class="fas fa-camera"></i> Change Photo
+            </a>
+            <a href="<?= $base_path ?>accounts.php" class="dash-welcome-btn dash-welcome-btn-primary">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </a>
+        </div>
+    </div>
 
     <!-- ═══ 1. STAT CARDS GRID (4 x 2) ═══ -->
     <div class="dash-grid">
@@ -367,49 +526,87 @@ $dash_cards = [
                 <span style="font-size: 11px; font-weight: 700; color: #FFFFFF; background: #5CB338; padding: 4px 12px; border-radius: 6px;"><?= $leads_count ?> Total</span>
             </div>
 
+<?php
+// Pipeline rows are generated from app/lead_statuses.php so the dashboard
+// always agrees with the Leads CRM. Percentages are relative to the grouped
+// total, which keeps the bars comparable even as stages are added.
+$group_counts = $lead_group_counts ?? [];
+$group_total = max(1, array_sum(array_column($group_counts, 'count')));
+?>
+<?php foreach ($group_counts as $group): ?>
             <div class="dash-pipe-row">
-                <div class="dash-pipe-dot" style="background: #F59E0B;"></div>
+                <div class="dash-pipe-dot" style="background: <?= htmlspecialchars($group['color'], ENT_QUOTES, 'UTF-8') ?>;"></div>
                 <div class="dash-pipe-info">
-                    <div class="dash-pipe-name">New Inquiries</div>
+                    <div class="dash-pipe-name"><?= htmlspecialchars($group['label'], ENT_QUOTES, 'UTF-8') ?></div>
                     <div class="dash-pipe-track">
-                        <div class="dash-pipe-fill" style="width: <?= $p_new ?>%; background: linear-gradient(90deg, #F59E0B, #FBBF24);"></div>
+                        <div class="dash-pipe-fill" style="width: <?= round(($group['count'] / $group_total) * 100) ?>%; background: linear-gradient(90deg, <?= htmlspecialchars($group['color'], ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars($group['color'], ENT_QUOTES, 'UTF-8') ?>cc);"></div>
                     </div>
                 </div>
-                <div class="dash-pipe-val"><?= $lead_status_counts['new'] ?> <span class="dash-pipe-pct">(<?= $p_new ?>%)</span></div>
+                <div class="dash-pipe-val"><?= number_format($group['count']) ?> <span class="dash-pipe-pct">(<?= round(($group['count'] / $group_total) * 100) ?>%)</span></div>
             </div>
+<?php endforeach; ?>
+            <div style="margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--border-light);">
+              <a href="<?= $base_path ?>leads" style="font-size: 11px; font-weight: 600; color: var(--primary); text-decoration: none;">
+                Manage all <?= count(leadStatusKeys()) ?> pipeline stages <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+        </div>
+    </div>
 
-            <div class="dash-pipe-row">
-                <div class="dash-pipe-dot" style="background: #3B82F6;"></div>
-                <div class="dash-pipe-info">
-                    <div class="dash-pipe-name">In Discussion</div>
-                    <div class="dash-pipe-track">
-                        <div class="dash-pipe-fill" style="width: <?= $p_contacted ?>%; background: linear-gradient(90deg, #3B82F6, #60A5FA);"></div>
-                    </div>
-                </div>
-                <div class="dash-pipe-val"><?= $lead_status_counts['contacted'] ?> <span class="dash-pipe-pct">(<?= $p_contacted ?>%)</span></div>
+    <!-- ═══ 3. LEAD STAGES & FOLLOW-UP PERFORMANCE (SECTION 8) ═══ -->
+    <div class="dash-panel anim-card" style="margin-top: 24px; padding: 24px;">
+        <div class="dash-panel-head" style="flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <div class="dash-panel-title">
+                <i class="fas fa-layer-group" style="color: var(--primary, #3B82F6); font-size: 18px;"></i>
+                <span>12-Stage Lead Performance & Follow-up Tracking</span>
             </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 12px; font-weight: 700; color: #10B981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 5px 12px; border-radius: 9999px;">
+                    <i class="fas fa-chart-line"></i> Conversion Rate: <?= $conversion_rate ?>%
+                </span>
+                <?php if ($overdue_followups_count > 0): ?>
+                <a href="<?= $base_path ?>leads?stage=overdue" style="font-size: 12px; font-weight: 700; color: #EF4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); padding: 5px 12px; border-radius: 9999px; text-decoration: none;">
+                    <i class="fas fa-exclamation-triangle"></i> <?= $overdue_followups_count ?> Overdue Follow-up<?= $overdue_followups_count > 1 ? 's' : '' ?>
+                </a>
+                <?php endif; ?>
+                <?php if ($upcoming_followups_count > 0): ?>
+                <a href="<?= $base_path ?>leads?stage=upcoming" style="font-size: 12px; font-weight: 600; color: #3B82F6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); padding: 5px 12px; border-radius: 9999px; text-decoration: none;">
+                    <i class="fas fa-calendar-alt"></i> <?= $upcoming_followups_count ?> Upcoming
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
 
-            <div class="dash-pipe-row">
-                <div class="dash-pipe-dot" style="background: #10B981;"></div>
-                <div class="dash-pipe-info">
-                    <div class="dash-pipe-name">Won / Closed</div>
-                    <div class="dash-pipe-track">
-                        <div class="dash-pipe-fill" style="width: <?= $p_confirmed ?>%; background: linear-gradient(90deg, #10B981, #34D399);"></div>
-                    </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-top: 14px;">
+            <?php
+            $stageCards = [
+                ['label' => 'New Leads', 'key' => 'new_lead', 'count' => $new_leads, 'icon' => 'fa-inbox', 'color' => '#3B82F6'],
+                ['label' => 'Call Not Answered', 'key' => 'call_not_answered', 'count' => $call_not_answered_count, 'icon' => 'fa-phone-slash', 'color' => '#64748B'],
+                ['label' => 'Call Back Later', 'key' => 'call_back_later', 'count' => $call_back_later_count, 'icon' => 'fa-clock', 'color' => '#F59E0B'],
+                ['label' => 'Already Has Website', 'key' => 'already_has_website', 'count' => $already_has_website_count, 'icon' => 'fa-globe', 'color' => '#06B6D4'],
+                ['label' => 'No Website', 'key' => 'no_website', 'count' => $no_website_count, 'icon' => 'fa-laptop-code', 'color' => '#14B8A6'],
+                ['label' => 'Improvement Needed', 'key' => 'website_improvement', 'count' => $website_improvement_count, 'icon' => 'fa-wrench', 'color' => '#6366F1'],
+                ['label' => 'Interested', 'key' => 'interested', 'count' => $interested_count, 'icon' => 'fa-thumbs-up', 'color' => '#8B5CF6'],
+                ['label' => 'Follow-up Pending', 'key' => 'followup_pending', 'count' => $followup_pending_count, 'icon' => 'fa-bell', 'color' => '#F97316'],
+                ['label' => 'Meeting Scheduled', 'key' => 'meeting_scheduled', 'count' => $meeting_scheduled_count, 'icon' => 'fa-calendar-check', 'color' => '#0EA5E9'],
+                ['label' => 'Proposal Sent', 'key' => 'proposal_sent', 'count' => $proposal_sent_count, 'icon' => 'fa-file-invoice-dollar', 'color' => '#D946EF'],
+                ['label' => 'Converted', 'key' => 'converted', 'count' => $converted_count, 'icon' => 'fa-circle-check', 'color' => '#10B981'],
+                ['label' => 'Not Interested', 'key' => 'not_interested', 'count' => $not_interested_count, 'icon' => 'fa-circle-xmark', 'color' => '#EF4444'],
+            ];
+            foreach ($stageCards as $sc):
+            ?>
+            <a href="<?= $base_path ?>leads?stage=<?= $sc['key'] ?>" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #FAFBFD; border: 1px solid #EEF2F6; border-radius: 8px; text-decoration: none; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas <?= $sc['icon'] ?>" style="color: <?= $sc['color'] ?>; font-size: 14px;"></i>
+                    <span style="font-size: 11px; font-weight: 600; color: #475569;"><?= htmlspecialchars($sc['label']) ?></span>
                 </div>
-                <div class="dash-pipe-val"><?= $lead_status_counts['confirmed'] ?> <span class="dash-pipe-pct">(<?= $p_confirmed ?>%)</span></div>
-            </div>
-
-            <div class="dash-pipe-row">
-                <div class="dash-pipe-dot" style="background: #EF4444;"></div>
-                <div class="dash-pipe-info">
-                    <div class="dash-pipe-name">Lost</div>
-                    <div class="dash-pipe-track">
-                        <div class="dash-pipe-fill" style="width: <?= $p_lose ?>%; background: linear-gradient(90deg, #EF4444, #F87171);"></div>
-                    </div>
-                </div>
-                <div class="dash-pipe-val"><?= $lead_status_counts['lose'] ?> <span class="dash-pipe-pct">(<?= $p_lose ?>%)</span></div>
-            </div>
+                <span style="font-size: 13px; font-weight: 700; color: #0F172A;"><?= number_format($sc['count']) ?></span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <div style="font-size: 11px; color: #94A3B8; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <span><i class="fas fa-info-circle"></i> Conversion Rate = (Converted Leads / Total Leads) &times; 100</span>
+            <a href="<?= $base_path ?>leads" style="color: var(--primary, #3B82F6); font-weight: 600; text-decoration: none;">View CRM Pipeline &rarr;</a>
         </div>
     </div>
 

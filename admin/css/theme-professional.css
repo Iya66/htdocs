@@ -448,8 +448,13 @@ a:hover {
 .topbar-left {
  display: flex;
  align-items: center;
- gap: var(--space-4);
+ gap: var(--space-3);
  flex: 1;
+ min-width: 0;
+}
+
+.topbar-menu {
+ flex-shrink: 0;
 }
 
 .page-title {
@@ -459,6 +464,7 @@ a:hover {
  color: var(--text-primary);
 }
 
+/* Breadcrumb */
 .breadcrumb {
  display: flex;
  align-items: center;
@@ -466,14 +472,31 @@ a:hover {
  font-size: var(--text-xs);
  color: var(--text-secondary);
  font-weight: 500;
+ min-width: 0;
 }
 
 .breadcrumb a {
  color: var(--text-secondary);
+ white-space: nowrap;
 }
 
 .breadcrumb a:hover {
  color: var(--primary);
+}
+
+.breadcrumb-sep {
+ font-size: 8px;
+ opacity: 0.5;
+ flex-shrink: 0;
+}
+
+.breadcrumb-current {
+ color: var(--text-primary);
+ font-weight: 600;
+ font-size: var(--text-sm);
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
 }
 
 /* Topbar Right */
@@ -481,6 +504,7 @@ a:hover {
  display: flex;
  align-items: center;
  gap: var(--space-2);
+ flex-shrink: 0;
 }
 
 /* Search */
@@ -492,19 +516,44 @@ a:hover {
  background: var(--bg-surface);
  border: 1px solid var(--border-light);
  border-radius: var(--radius-md);
- min-width: 200px;
- transition: all var(--duration-fast) var(--ease-out);
+ min-width: 220px;
+ transition: border-color var(--duration-fast) var(--ease-out),
+             box-shadow var(--duration-fast) var(--ease-out);
 }
 
+/* On phones the search box is collapsed to an icon button; .topbar-search-toggle
+   reveals it as a full-width bar. */
 @media (max-width: 768px) {
  .search-box {
  display: none;
+ position: absolute;
+ top: calc(100% + 6px);
+ left: var(--space-3);
+ right: var(--space-3);
+ min-width: 0;
+ padding: var(--space-3);
+ box-shadow: var(--shadow-lg);
+ z-index: var(--z-dropdown);
+ }
+
+ .search-box.search-open {
+ display: flex;
+ }
+}
+
+.topbar-search-toggle {
+ display: none;
+}
+
+@media (max-width: 768px) {
+ .topbar-search-toggle {
+ display: inline-flex;
  }
 }
 
 .search-box:focus-within {
  border-color: var(--border-focus);
- box-shadow: 0 0 0 2px var(--primary-soft);
+ box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .search-box i {
@@ -520,6 +569,7 @@ a:hover {
  color: var(--text-primary);
  width: 100%;
  font-family: inherit;
+ min-width: 0;
 }
 
 .search-box input::placeholder {
@@ -527,18 +577,106 @@ a:hover {
 }
 
 .search-kbd {
-	font-size: 11px;
-	font-family: inherit;
-	font-weight: 600;
-	color: var(--text-tertiary);
-	background: var(--bg-surface-secondary);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
-	padding: 2px 6px;
-	line-height: 1;
-	pointer-events: none;
-	letter-spacing: 0.02em;
-	margin-left: auto;
+ font-size: 11px;
+ font-family: inherit;
+ font-weight: 600;
+ color: var(--text-tertiary);
+ background: var(--bg-surface-secondary);
+ border: 1px solid var(--border-light);
+ border-radius: var(--radius-sm);
+ padding: 2px 6px;
+ line-height: 1;
+ pointer-events: none;
+ white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+ .search-kbd {
+ display: none;
+ }
+}
+
+/* Search results dropdown */
+.search-results {
+ min-width: 320px;
+ max-width: 420px;
+ max-height: 60vh;
+ overflow-y: auto;
+ padding: var(--space-2);
+ display: none;
+}
+
+.search-results.active {
+ display: flex;
+}
+
+.search-group {
+ font-size: 11px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.06em;
+ color: var(--text-tertiary);
+ padding: var(--space-2) var(--space-3) var(--space-1);
+}
+
+.search-item {
+ display: flex;
+ align-items: flex-start;
+ gap: var(--space-3);
+ padding: var(--space-2) var(--space-3);
+ border-radius: var(--radius-md);
+ color: var(--text-primary);
+ text-decoration: none;
+ transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.search-item > i {
+ color: var(--text-tertiary);
+ font-size: 13px;
+ margin-top: 3px;
+ flex-shrink: 0;
+}
+
+.search-item:hover,
+.search-item.active {
+ background: var(--bg-hover);
+}
+
+.search-item-body {
+ display: flex;
+ flex-direction: column;
+ min-width: 0;
+}
+
+.search-item-title {
+ font-size: var(--text-sm);
+ font-weight: 500;
+ color: var(--text-primary);
+}
+
+.search-item-desc {
+ font-size: 11px;
+ color: var(--text-tertiary);
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+}
+
+.search-empty {
+ padding: var(--space-4);
+ text-align: center;
+ font-size: var(--text-sm);
+ color: var(--text-tertiary);
+}
+
+@media (max-width: 768px) {
+ .search-results {
+ min-width: 0;
+ max-width: none;
+ position: static;
+ box-shadow: none;
+ margin-top: var(--space-2);
+ }
 }
 
 /* Icon Buttons - Refined */
@@ -566,6 +704,21 @@ a:hover {
  transform: scale(0.95);
 }
 
+/* Theme icons. The header renders both and CSS shows the right one, so the
+   correct icon appears immediately on load instead of after the footer script
+   runs. Dark mode shows a sun (click to go light). */
+.theme-icon-sun {
+ display: none;
+}
+
+[data-theme="dark"] .theme-icon-moon {
+ display: none;
+}
+
+[data-theme="dark"] .theme-icon-sun {
+ display: inline-flex;
+}
+
 /* Badge - Refined */
 .badge {
  display: inline-flex;
@@ -581,6 +734,26 @@ a:hover {
  color: var(--text-inverse);
 }
 
+/* Notification counter, pinned to the bell */
+.badge-notif {
+ position: absolute;
+ top: 2px;
+ right: 2px;
+ background: var(--danger);
+ color: #FFFFFF;
+ border: 2px solid var(--topbar-bg);
+ min-width: 16px;
+ height: 16px;
+ padding: 0 3px;
+ font-size: 10px;
+ line-height: 1;
+ transform: scale(1);
+}
+
+.badge-notif[hidden] {
+ display: none;
+}
+
 /* Profile */
 .profile-btn {
  display: flex;
@@ -591,7 +764,9 @@ a:hover {
  border: 1px solid var(--border-light);
  border-radius: var(--radius-md);
  cursor: pointer;
- transition: all var(--duration-fast) var(--ease-out);
+ text-decoration: none;
+ transition: border-color var(--duration-fast) var(--ease-out),
+             background-color var(--duration-fast) var(--ease-out);
 }
 
 .profile-btn:hover {
@@ -600,9 +775,9 @@ a:hover {
 }
 
 .profile-avatar {
- width: 28px;
- height: 28px;
- border-radius: var(--radius-sm);
+ width: 32px;
+ height: 32px;
+ border-radius: 50%;
  background: var(--primary);
  color: var(--text-inverse);
  display: flex;
@@ -610,6 +785,27 @@ a:hover {
  justify-content: center;
  font-size: var(--text-sm);
  font-weight: 600;
+ flex-shrink: 0;
+ overflow: hidden;
+ position: relative;
+ border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-avatar img,
+.profile-avatar .profile-avatar-img {
+ width: 100%;
+ height: 100%;
+ object-fit: cover;
+ display: block;
+ border-radius: 50%;
+}
+
+.profile-avatar .profile-avatar-initial {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ width: 100%;
+ height: 100%;
 }
 
 .profile-info {
@@ -1000,6 +1196,101 @@ tr:hover td {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+ BADGES - Lead Pipeline Stages (12-stage CRM workflow)
+ One modifier per stage. Keys mirror app/lead_statuses.php.
+ ═══════════════════════════════════════════════════════════════ */
+
+/* Engagement — blue */
+.badge-blue {
+ background: #EFF6FF;
+ color: #1E40AF;
+ border: 1px solid #BFDBFE;
+}
+
+/* Call Not Answered — slate */
+.badge-slate {
+ background: #F1F5F9;
+ color: #334155;
+ border: 1px solid #CBD5E1;
+}
+
+/* Call Back Later — amber */
+.badge-amber {
+ background: #FFFBEB;
+ color: #92400E;
+ border: 1px solid #FDE68A;
+}
+
+/* Already Has Website — cyan */
+.badge-cyan {
+ background: #ECFEFF;
+ color: #155E75;
+ border: 1px solid #A5F3FC;
+}
+
+/* No Website — teal */
+.badge-teal {
+ background: #F0FDFA;
+ color: #115E59;
+ border: 1px solid #99F6E4;
+}
+
+/* Website Improvement — indigo */
+.badge-indigo {
+ background: #EEF2FF;
+ color: #3730A3;
+ border: 1px solid #C7D2FE;
+}
+
+/* Interested — violet */
+.badge-violet {
+ background: #F5F3FF;
+ color: #5B21B6;
+ border: 1px solid #DDD6FE;
+}
+
+/* Follow-up Pending — orange */
+.badge-orange {
+ background: #FFF7ED;
+ color: #9A3412;
+ border: 1px solid #FED7AA;
+}
+
+/* Meeting / Demo Scheduled — sky */
+.badge-sky {
+ background: #F0F9FF;
+ color: #075985;
+ border: 1px solid #BAE6FD;
+}
+
+/* Proposal Sent — fuchsia */
+.badge-fuchsia {
+ background: #FDF4FF;
+ color: #86198F;
+ border: 1px solid #F5D0FE;
+}
+
+/* Converted / Not Interested reuse badge-success & badge-danger.
+   Legacy values keep their historical colours so old rows still read
+   correctly until an admin re-assigns them. */
+
+/* Dark theme parity */
+[data-theme="dark"] .badge-blue,
+[data-theme="dark"] .badge-slate,
+[data-theme="dark"] .badge-amber,
+[data-theme="dark"] .badge-cyan,
+[data-theme="dark"] .badge-teal,
+[data-theme="dark"] .badge-indigo,
+[data-theme="dark"] .badge-violet,
+[data-theme="dark"] .badge-orange,
+[data-theme="dark"] .badge-sky,
+[data-theme="dark"] .badge-fuchsia {
+ background: rgba(148, 163, 184, 0.16);
+ color: #E2E8F0;
+ border-color: rgba(148, 163, 184, 0.28);
+}
+
+/* ═══════════════════════════════════════════════════════════════
  FORMS - Professional
  ═══════════════════════════════════════════════════════════════ */
 
@@ -1277,6 +1568,135 @@ tr:hover td {
  display: flex;
 }
 
+/* ─── Notification panel ─────────────────────────────────────────────── */
+
+.notif-menu {
+ min-width: 340px;
+ max-width: 92vw;
+ padding: 0;
+}
+
+@media (max-width: 480px) {
+ .notif-menu {
+ position: fixed;
+ top: calc(var(--header-height) + 8px);
+ left: var(--space-3);
+ right: var(--space-3);
+ min-width: 0;
+ max-width: none;
+ }
+}
+
+.notif-head {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: var(--space-3);
+ padding: var(--space-3) var(--space-4);
+ border-bottom: 1px solid var(--border-light);
+ flex-shrink: 0;
+}
+
+.notif-title {
+ font-size: var(--text-sm);
+ font-weight: 600;
+ color: var(--text-primary);
+}
+
+.notif-mark-all {
+ background: none;
+ border: none;
+ padding: 0;
+ font: inherit;
+ font-size: var(--text-xs);
+ font-weight: 500;
+ color: var(--accent);
+ cursor: pointer;
+ border-radius: var(--radius-sm);
+}
+
+.notif-mark-all:hover {
+ text-decoration: underline;
+}
+
+.notif-list {
+ max-height: 60vh;
+ overflow-y: auto;
+ display: flex;
+ flex-direction: column;
+ padding: var(--space-1);
+}
+
+.notif-item {
+ display: flex;
+ align-items: flex-start;
+ gap: var(--space-3);
+ padding: var(--space-3);
+ border-radius: var(--radius-md);
+ text-decoration: none;
+ color: var(--text-primary);
+ transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.notif-item:hover {
+ background: var(--bg-hover);
+}
+
+.notif-item > i {
+ font-size: 13px;
+ margin-top: 2px;
+ flex-shrink: 0;
+ color: var(--text-tertiary);
+}
+
+.notif-item.unread > i {
+ color: var(--accent);
+}
+
+.notif-item-body {
+ display: flex;
+ flex-direction: column;
+ gap: 2px;
+ min-width: 0;
+}
+
+.notif-item-title {
+ font-size: var(--text-sm);
+ font-weight: 600;
+ color: var(--text-primary);
+}
+
+.notif-item.unread .notif-item-title::after {
+ content: "";
+ display: inline-block;
+ width: 6px;
+ height: 6px;
+ margin-left: 6px;
+ border-radius: var(--radius-pill);
+ background: var(--accent);
+ vertical-align: middle;
+}
+
+.notif-item-text {
+ font-size: 12px;
+ color: var(--text-secondary);
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+}
+
+.notif-item-time {
+ font-size: 11px;
+ color: var(--text-tertiary);
+}
+
+.notif-empty {
+ padding: var(--space-8) var(--space-4);
+ text-align: center;
+ font-size: var(--text-sm);
+ color: var(--text-tertiary);
+}
+
 .dropdown-item {
  padding: var(--space-2) var(--space-3);
  color: var(--text-secondary);
@@ -1415,12 +1835,34 @@ tr:hover td {
 .hidden { display: none; }
 .w-full { width: 100%; }
 
-@media (min-width: 640px) {
- .sm\\:hidden { display: none !important; }
+/*
+ Responsive utilities.
+
+ Two bugs existed here before:
+
+  1. The breakpoints were inverted. The "md" hide utility was scoped to a
+     min-width query of 768px — the opposite of what it should do — and then
+     again to a min-width of 1025px at the bottom of the file. The sidebar
+     itself slides off-canvas at max-width 1024px, so the hamburger button
+     must stay visible on every screen up to that width. With the inverted
+     rule, tablets between 768px and 1024px had the sidebar hidden *and* the
+     button that opens it hidden, leaving the panel unnavigable.
+
+  2. The colon in the class name was double-escaped. Two backslashes mean "an
+     element whose class literally contains a backslash", so the selector
+     never matched the HTML class at all and the utility was dead code.
+     A single backslash is the correct escape for a colon in an identifier.
+
+ Both are corrected here. Only one rule now exists, matching the sidebar's
+ own breakpoint.
+*/
+
+@media (max-width: 1024px) {
+ .md\:hidden { display: none !important; }
 }
 
-@media (min-width: 768px) {
- .md\\:hidden { display: none !important; }
+@media (max-width: 640px) {
+ .sm\:hidden { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2067,4 +2509,260 @@ table tr:hover td {
 /* UTILITIES & OVERLAYS */
 .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.4); backdrop-filter: blur(4px); z-index: 1025; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
 .sidebar-overlay.active { opacity: 1; visibility: visible; }
-@media (min-width: 1025px) { .md\:hidden { display: none !important; } }
+
+/* The responsive hide utilities (sm/md) are defined once, in the Utilities
+   section near the top of this file. */
+
+/* ═══════════════════════════════════════════════════════════════
+   MERGED FROM theme-saas.css
+   -----------------------------------------------------------------
+   admin/css/theme-saas.css was loaded only by the old header.php, so the
+   20 pages using it styled .btn-primary, .page-title, .content-card,
+   .pagination, .badge-*, .saas-page-header and .table-responsive differently
+   from the 6 "-pro" pages. That split is why the lead-status badges rendered
+   correctly on Leads but grey elsewhere.
+
+   The token-driven definitions in theme-professional.css now win for every
+   overlapping selector. Only the genuinely unique SaaS components are kept
+   here, with hardcoded colours converted to tokens so dark mode works on the
+   pages that use them (Activity, Reports, Backup).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Page header band used by most admin views */
+.saas-page-header {
+ background: var(--bg-surface);
+ padding: var(--space-6) var(--space-8);
+ border-radius: var(--radius-xl);
+ border: 1px solid var(--border-light);
+ box-shadow: var(--shadow-xs);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ gap: var(--space-4);
+ flex-wrap: wrap;
+ margin-bottom: var(--space-6);
+}
+
+.page-subtitle {
+ font-size: var(--text-sm);
+ color: var(--text-secondary);
+ margin: 0;
+}
+
+@media (max-width: 640px) {
+ .saas-page-header {
+ padding: var(--space-5);
+ }
+}
+
+/* Stat pills (Activity log) */
+.stat-pills {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+ gap: var(--space-5);
+ margin-bottom: var(--space-6);
+}
+
+.stat-pill {
+ background: var(--bg-surface);
+ border: 1px solid var(--border-light);
+ border-radius: var(--radius-xl);
+ padding: var(--space-5) var(--space-6);
+ display: flex;
+ align-items: center;
+ gap: var(--space-4);
+ box-shadow: var(--shadow-xs);
+ transition: box-shadow var(--duration-base) var(--ease-out),
+             transform var(--duration-base) var(--ease-out);
+}
+
+.stat-pill:hover {
+ box-shadow: var(--shadow-md);
+ transform: translateY(-2px);
+}
+
+.stat-pill .icon {
+ width: 48px;
+ height: 48px;
+ border-radius: 14px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 20px;
+ flex-shrink: 0;
+}
+
+.stat-pill .icon.blue   { background: var(--accent-soft); color: var(--accent); }
+.stat-pill .icon.green  { background: var(--success-soft); color: var(--success-text); }
+.stat-pill .icon.red    { background: var(--danger-soft);  color: var(--danger-text); }
+.stat-pill .icon.orange { background: var(--warning-soft); color: var(--warning-text); }
+
+.stat-pill .info strong {
+ font-size: 26px;
+ color: var(--text-primary);
+ display: block;
+ font-weight: 700;
+ margin-bottom: 2px;
+ line-height: 1.1;
+}
+
+.stat-pill .info span {
+ font-size: 12px;
+ color: var(--text-secondary);
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+}
+
+/* Filter bar (Activity log) */
+.activity-filters {
+ display: flex;
+ gap: var(--space-4);
+ flex-wrap: wrap;
+ margin-bottom: var(--space-6);
+ align-items: flex-end;
+ background: var(--bg-surface);
+ padding: var(--space-5) var(--space-6);
+ border-radius: var(--radius-xl);
+ border: 1px solid var(--border-light);
+ box-shadow: var(--shadow-xs);
+}
+
+.filter-group {
+ display: flex;
+ flex-direction: column;
+ gap: var(--space-2);
+ flex: 1;
+ min-width: 150px;
+}
+
+.filter-group label {
+ font-size: 12px;
+ color: var(--text-secondary);
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input {
+ padding: 10px 14px;
+ border: 1px solid var(--border-light);
+ border-radius: var(--radius-md);
+ background: var(--bg-surface-secondary);
+ color: var(--text-primary);
+ font-size: var(--text-sm);
+ font-weight: 500;
+ font-family: inherit;
+ transition: border-color var(--duration-fast) var(--ease-out),
+             background-color var(--duration-fast) var(--ease-out);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+ outline: none;
+ border-color: var(--border-focus);
+ background: var(--bg-surface);
+ box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* Activity log table */
+.activity-table {
+ width: 100%;
+ border-collapse: separate;
+ border-spacing: 0;
+}
+
+.activity-table th {
+ color: var(--text-secondary);
+ padding: var(--space-4) var(--space-6);
+ text-align: left;
+ font-size: 12px;
+ font-weight: 600;
+ text-transform: uppercase;
+ letter-spacing: 0.05em;
+ border-bottom: 1px solid var(--border-light);
+ background: var(--bg-surface-secondary);
+}
+
+.activity-table td {
+ padding: var(--space-4) var(--space-6);
+ border-bottom: 1px solid var(--border-light);
+ background: var(--bg-surface);
+ font-size: var(--text-sm);
+ color: var(--text-primary);
+ font-weight: 500;
+}
+
+.activity-table tr:last-child td {
+ border-bottom: none;
+}
+
+.activity-table tr:hover td {
+ background: var(--bg-hover);
+}
+
+.activity-badge {
+ display: inline-flex;
+ padding: 4px 10px;
+ border-radius: var(--radius-pill);
+ font-size: 11px;
+ font-weight: 700;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+}
+
+.badge-login {
+ background: var(--accent-soft);
+ color: var(--info-text);
+}
+
+.user-cell {
+ display: flex;
+ align-items: center;
+ gap: var(--space-3);
+}
+
+.user-avatar {
+ width: 36px;
+ height: 36px;
+ border-radius: var(--radius-pill);
+ background: var(--bg-surface-secondary);
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ color: var(--text-secondary);
+ font-weight: 700;
+ font-size: var(--text-sm);
+ flex-shrink: 0;
+}
+
+.ip-cell {
+ font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+ color: var(--text-secondary);
+ font-size: 12px;
+ background: var(--bg-surface-secondary);
+ padding: 2px 6px;
+ border-radius: var(--radius-sm);
+ display: inline-block;
+}
+
+.time-cell {
+ font-size: 13px;
+ color: var(--text-secondary);
+ white-space: nowrap;
+}
+
+/* Empty state */
+.empty-state {
+ text-align: center;
+ padding: var(--space-16) var(--space-5);
+ color: var(--text-secondary);
+}
+
+.empty-state i {
+ font-size: 48px;
+ opacity: 0.3;
+ display: block;
+ margin-bottom: var(--space-4);
+}

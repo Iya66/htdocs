@@ -36,6 +36,7 @@ function ensureMailQueueTable(?PDO $conn = null): void
                 `max_attempts` INT DEFAULT 3,
                 `error_message` TEXT NULL,
                 `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 `processed_at` DATETIME NULL,
                 INDEX (`status`),
                 INDEX (`created_at`)

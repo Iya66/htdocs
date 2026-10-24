@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../app/config.php';
+require_once __DIR__ . '/../../app/lead_statuses.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['admin_id'])) {
@@ -63,6 +64,8 @@ try {
                 'phone' => htmlspecialchars($row['phone'], ENT_QUOTES, 'UTF-8'),
                 'service' => htmlspecialchars($row['service'], ENT_QUOTES, 'UTF-8'),
                 'status' => htmlspecialchars($row['status'], ENT_QUOTES, 'UTF-8'),
+                // Never leak the raw enum key to the UI — legacy rows included.
+                'status_label' => leadStatusLabel($row['status']),
             ];
         }, $matched_leads)
     ]);

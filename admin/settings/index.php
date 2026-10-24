@@ -6,6 +6,7 @@ require_once __DIR__ . '/../auth.php';
 require_once __DIR__ . '/../../app/config.php';
 require_once __DIR__ . '/../../app/email_helper.php';
 require_once __DIR__ . '/../../app/security_notifier.php';
+require_once __DIR__ . '/../../app/profile_photo_helper.php';
 
 // Admin-only access
 $stmt = $conn->prepare("SELECT role FROM admin WHERE id = ?");
@@ -25,9 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $message = 'Invalid request. Please refresh and try again.';
         $message_type = 'error';
+    } elseif (isset($_POST['remove_avatar'])) {
+        $err = null;
+        if (removeAdminProfilePhoto($conn, (int)$_SESSION['admin_id'], $err)) {
+            $message = 'Profile photo removed successfully.';
+            $message_type = 'success';
+        } else {
+            $message = $err ?: 'Failed to remove profile photo.';
+            $message_type = 'error';
+        }
     } elseif (isset($_POST['update_profile'])) {
         $username = trim($_POST['username']);
         $email = trim($_POST['email']);
+
+        // Check if an avatar was uploaded
+        if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $uploadErr = null;
+            if (!uploadAdminProfilePhoto($conn, (int)$_SESSION['admin_id'], $_FILES['avatar_file'], $uploadErr)) {
+                $message = $uploadErr ?: 'Failed to upload profile photo.';
+                $message_type = 'error';
+            }
+        }
         if (empty($username) || empty($email)) {
             $message = 'Username and email are required!';
             $message_type = 'error';

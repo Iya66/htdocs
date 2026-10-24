@@ -25,7 +25,7 @@ $maps_url = !empty($settings['maps_url']) ? $settings['maps_url'] : 'https://map
 $nav_services = [];
 if (isset($conn)) {
     try {
-        $nav_services = $conn->query("SELECT service_name, slug FROM services WHERE status = 'active' ORDER BY created_at ASC LIMIT 8")->fetchAll(PDO::FETCH_ASSOC);
+        $nav_services = $conn->query("SELECT service_name, slug FROM services WHERE status = 'active' ORDER BY sort_order ASC, id ASC LIMIT 25")->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         $nav_services = [];
     }
@@ -124,7 +124,11 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
 
     <!-- CherriDM Theme Core CSS -->
     <style>
+        /* ═══════════════════════════════════════════════════════════════
+           1. CSS VARIABLES AND DESIGN TOKENS
+           ═══════════════════════════════════════════════════════════════ */
         :root {
+            --cdm-header-height: 88px;
             --primary-color: #03228f;
             --primary-dark: #021a6e;
             --secondary-color: #fb9a27;
@@ -141,19 +145,46 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           2. GLOBAL RESET AND BASE STYLES
+           ═══════════════════════════════════════════════════════════════ */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
+        html {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            scroll-padding-top: var(--cdm-header-height);
+        }
+
         body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
             font-family: var(--font-main);
             color: var(--text-dark);
             background-color: #ffffff;
             line-height: 1.6;
-            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+        }
+
+        img, iframe, video, svg, canvas {
+            max-width: 100% !important;
+            height: auto;
+            display: inline-block;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           3. TYPOGRAPHY
+           ═══════════════════════════════════════════════════════════════ */
+        h1, h2, h3, h4, h5, h6, p, span, a, li {
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         a {
@@ -162,117 +193,126 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             transition: all 0.25s ease;
         }
 
-        img {
+        .text-secondary {
+            color: var(--secondary-color, #fb9a27) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color, #03228f) !important;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           4. SHARED LAYOUT AND CONTAINERS
+           ═══════════════════════════════════════════════════════════════ */
+        /* Site-wide containment wrapper to 100% prevent horizontal scrolling on mobile */
+        .cdm-site-wrapper {
+            width: 100%;
             max-width: 100%;
-            height: auto;
-            display: inline-block;
+            overflow-x: clip;
+            overflow-y: visible;
+            position: relative;
+        }
+        @supports not (overflow-x: clip) {
+            .cdm-site-wrapper {
+                overflow-x: hidden;
+            }
         }
 
-        /* Top Bar */
-        .cdm-top-bar {
-            background-color: #03228f;
-            color: #ffffff;
-            padding: 9px 0;
-            font-size: 13px;
-            font-weight: 500;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .cdm-top-bar .container {
+        /* Universal responsive container with consistent balanced margins */
+        .container {
+            width: 100%;
             max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 20px;
+            padding-right: 20px;
+            box-sizing: border-box;
         }
 
-        .cdm-top-info {
-            display: flex;
-            align-items: center;
-            gap: 25px;
+        /* Grid item containment - prevent grid blowout across mobile viewports */
+        .cdm-about-grid > div,
+        .cdm-partner-grid > div,
+        .cdm-counter-grid > div,
+        .cdm-counter-grid-comp > div,
+        .cdm-services-grid > div,
+        .cdm-flip-grid > div,
+        .cdm-clients-grid > div,
+        .cdm-clients-grid-comp > div,
+        .cdm-why-grid > div,
+        .cdm-footer-main-grid > div,
+        .cdm-footer-top-grid > div {
+            min-width: 0;
+            max-width: 100%;
         }
 
-        .cdm-top-info a {
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .cdm-top-info a i {
-            color: var(--secondary-color);
-            font-size: 14px;
-        }
-
-        .cdm-top-info a:hover {
-            color: var(--secondary-color);
-        }
-
-        .cdm-top-social {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            list-style: none;
-        }
-
-        .cdm-top-social a {
-            width: 28px;
-            height: 28px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .cdm-top-social a:hover {
-            background: var(--secondary-color);
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-
-        /* Header Navbar */
+        /* ═══════════════════════════════════════════════════════════════
+           5. HEADER AND NAVIGATION
+           ═══════════════════════════════════════════════════════════════ */
+        /* Fixed Header Navbar */
         .cdm-header {
-            position: sticky;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
+            width: 100%;
+            height: var(--cdm-header-height);
             background: #ffffff;
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease, background-color 0.3s ease;
         }
 
         .cdm-header.scrolled {
-            box-shadow: 0 8px 30px rgba(3, 34, 143, 0.12);
+            box-shadow: 0 6px 24px rgba(3, 34, 143, 0.1);
+        }
+
+        /* In-flow spacer so page content never hides behind fixed header */
+        .cdm-header-spacer {
+            display: block;
+            width: 100%;
+            height: var(--cdm-header-height);
+            flex-shrink: 0;
         }
 
         .cdm-header .container {
             max-width: 1240px;
+            width: 100%;
+            height: 100%;
             margin: 0 auto;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 85px;
+            box-sizing: border-box;
         }
 
         .cdm-logo {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 12px;
-            font-weight: 800;
-            font-size: 24px;
-            color: var(--primary-color);
+            flex-shrink: 0;
+            text-decoration: none;
+            line-height: 1;
         }
 
         .cdm-logo img {
-            max-height: 52px;
-            width: auto;
+            width: 180px;
+            max-width: 195px;
+            height: auto;
+            max-height: 56px;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.25s ease;
+        }
+
+        .cdm-logo img:hover {
+            transform: scale(1.02);
+        }
+
+        .cdm-logo span {
+            font-weight: 800;
+            font-size: 24px;
+            color: var(--primary-color);
         }
 
         .cdm-logo span.accent {
@@ -283,7 +323,7 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
         .cdm-nav {
             display: flex;
             align-items: center;
-            gap: 30px;
+            gap: 26px;
             list-style: none;
         }
 
@@ -370,6 +410,316 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             font-size: 11px;
         }
 
+        /* Mobile Hamburger */
+        .cdm-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            font-size: 22px;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .cdm-menu-toggle:hover,
+        .cdm-menu-toggle:focus-visible {
+            background-color: #f1f5f9;
+            color: var(--secondary-color);
+            outline: none;
+        }
+
+        .cdm-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Mobile Navigation Drawer Backdrop Overlay */
+        .cdm-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 99998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+            touch-action: none;
+        }
+
+        .cdm-drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile Navigation Drawer */
+        .cdm-mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(320px, 84vw);
+            max-width: 340px;
+            height: 100vh;
+            height: 100dvh;
+            background: #ffffff;
+            box-shadow: -10px 0 35px rgba(15, 23, 42, 0.16);
+            z-index: 99999;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            overscroll-behavior: contain;
+            pointer-events: auto;
+        }
+
+        .cdm-mobile-drawer.active {
+            transform: translateX(0);
+        }
+
+        /* Sticky Drawer Header: Logo + Close Button */
+        .cdm-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            background: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .cdm-drawer-brand {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .cdm-drawer-logo {
+            width: auto;
+            max-width: 125px;
+            max-height: 38px;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .cdm-drawer-logo-text {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--primary-color, #03228f);
+        }
+
+        .cdm-drawer-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 16px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .cdm-drawer-close:hover,
+        .cdm-drawer-close:focus-visible {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5;
+            outline: none;
+        }
+
+        /* Scrollable Drawer Body */
+        .cdm-drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 14px 18px 24px;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .cdm-drawer-nav {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .cdm-drawer-item {
+            display: block;
+            position: relative;
+        }
+
+        .cdm-drawer-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 13px 14px;
+            font-size: 15.5px;
+            font-weight: 600;
+            color: #1e293b;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-family: inherit;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .cdm-drawer-item:last-child .cdm-drawer-link {
+            border-bottom: none;
+        }
+
+        .cdm-drawer-link:hover,
+        .cdm-drawer-link:focus-visible,
+        .cdm-drawer-link.active {
+            background: #f8fafc;
+            color: var(--primary-color, #03228f);
+        }
+
+        .cdm-drawer-toggle-btn {
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .cdm-drawer-arrow-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            margin-left: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .cdm-drawer-link:hover .cdm-drawer-arrow-wrapper,
+        .cdm-drawer-toggle-btn.open .cdm-drawer-arrow-wrapper {
+            background: rgba(251, 154, 39, 0.15);
+        }
+
+        .cdm-drawer-arrow {
+            font-size: 12px;
+            color: #64748b;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+        }
+
+        .cdm-drawer-arrow.open,
+        .cdm-drawer-toggle-btn.open .cdm-drawer-arrow {
+            transform: rotate(180deg);
+            color: var(--secondary-color, #fb9a27);
+        }
+
+        /* Collapsible Services Submenu */
+        .cdm-drawer-submenu {
+            list-style: none;
+            margin: 0;
+            padding: 0 8px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary-color, #fb9a27);
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, padding 0.3s ease, margin 0.3s ease;
+        }
+
+        .cdm-drawer-submenu.open {
+            max-height: 520px;
+            opacity: 1;
+            padding: 8px;
+            margin: 6px 0 8px;
+        }
+
+        .cdm-drawer-subitem {
+            display: block;
+        }
+
+        .cdm-drawer-sublink {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .cdm-drawer-sublink i {
+            font-size: 11px;
+            color: var(--secondary-color, #fb9a27);
+            transition: transform 0.2s ease;
+            width: 12px;
+            text-align: center;
+        }
+
+        .cdm-drawer-sublink:hover,
+        .cdm-drawer-sublink:focus-visible,
+        .cdm-drawer-sublink.active {
+            background: #ffffff;
+            color: var(--primary-color, #03228f);
+            transform: translateX(4px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .cdm-drawer-subitem-all {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .cdm-drawer-sublink-all {
+            font-weight: 600;
+            color: var(--primary-color, #03228f);
+        }
+
+        /* Drawer Footer CTA */
+        .cdm-drawer-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .cdm-drawer-cta {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+            font-size: 14.5px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           6. BUTTONS AND REUSABLE COMPONENTS
+           ═══════════════════════════════════════════════════════════════ */
         /* Free Quote Button - CherriDM signature style */
         .cdm-btn-quote {
             display: inline-flex;
@@ -386,6 +736,7 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             text-transform: capitalize;
             box-shadow: 0 4px 15px rgba(251, 154, 39, 0.3);
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .cdm-btn-quote:hover {
@@ -404,143 +755,125 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             transform: translateX(4px);
         }
 
-        /* Mobile Hamburger */
-        .cdm-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--primary-color);
-            cursor: pointer;
-            padding: 8px;
+        /* ═══════════════════════════════════════════════════════════════
+           7. PAGE-SPECIFIC UTILITIES & DRAWER STATES
+           ═══════════════════════════════════════════════════════════════ */
+        /* Prevent background scroll when drawer is open */
+        body.cdm-drawer-open {
+            overflow: hidden !important;
+            touch-action: none !important;
         }
 
-        /* Mobile Drawer */
-        .cdm-mobile-drawer {
-            position: fixed;
-            top: 0;
-            right: -320px;
-            width: 300px;
-            height: 100vh;
-            background: #ffffff;
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
-            z-index: 9999;
-            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 30px 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+        body.cdm-drawer-open .cdm-site-wrapper {
+            pointer-events: none !important;
+            user-select: none !important;
         }
 
-        .cdm-mobile-drawer.active {
-            right: 0;
+        /* WhatsApp floating button suppression when drawer is open */
+        body.cdm-drawer-open .cdm-float-wa,
+        body.cdm-drawer-open .cdm-floating-actions {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transform: scale(0.8) !important;
+            transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
         }
 
-        .cdm-drawer-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(3, 34, 143, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 9998;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .cdm-drawer-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .cdm-drawer-close {
-            align-self: flex-end;
-            background: none;
-            border: none;
-            font-size: 26px;
-            color: #64748b;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-
-        .cdm-drawer-nav {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .cdm-drawer-nav a {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1e293b;
-            display: block;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .cdm-drawer-nav a:hover,
-        .cdm-drawer-nav a.active {
-            color: var(--primary-color);
+        /* ═══════════════════════════════════════════════════════════════
+           8. RESPONSIVE MEDIA QUERIES
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 1200px) and (min-width: 993px) {
+            :root {
+                --cdm-header-height: 84px;
+            }
+            .cdm-header .container {
+                padding: 0 16px;
+            }
+            .cdm-logo img {
+                width: 165px;
+                max-height: 52px;
+            }
+            .cdm-nav {
+                gap: 16px;
+            }
+            .cdm-nav > li > a {
+                font-size: 14px;
+            }
+            .cdm-btn-quote {
+                padding: 10px 20px;
+                font-size: 13.5px;
+            }
         }
 
         @media (max-width: 992px) {
-            .cdm-top-bar .cdm-top-social {
-                display: none;
+            :root {
+                --cdm-header-height: 74px;
             }
             .cdm-nav {
                 display: none;
             }
             .cdm-menu-toggle {
-                display: block;
+                display: inline-flex;
+            }
+            .cdm-header .container {
+                padding: 0 20px;
+            }
+            .cdm-logo img {
+                width: 140px;
+                max-width: 150px;
+                max-height: 48px;
             }
             .cdm-btn-quote {
-                padding: 8px 18px;
+                padding: 8px 16px;
                 font-size: 13px;
+            }
+            .cdm-header-actions {
+                gap: 12px;
             }
         }
 
-        @media (max-width: 600px) {
-            .cdm-top-bar {
-                font-size: 12px;
+        @media (max-width: 650px) {
+            :root {
+                --cdm-header-height: 64px;
             }
-            .cdm-top-info {
-                gap: 15px;
+            .cdm-header .container,
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
             }
-            .cdm-header .container {
-                height: 72px;
+            .cdm-logo {
+                display: inline-flex;
+                align-items: center;
+                flex-shrink: 0;
             }
             .cdm-logo img {
-                max-height: 40px;
+                width: 118px;
+                max-width: 128px;
+                height: auto;
+                max-height: 42px;
+                object-fit: contain;
+                display: block;
+            }
+            .cdm-logo span {
+                font-size: 19px;
+            }
+            .cdm-btn-quote {
+                display: none !important; /* Mobile header displays logo + hamburger toggle cleanly */
+            }
+            .cdm-header-actions {
+                gap: 0;
+            }
+            .cdm-menu-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- TOP BAR -->
-    <div class="cdm-top-bar">
-        <div class="container">
-            <div class="cdm-top-info">
-                <a href="tel:<?= preg_replace('/[^0-9+]/', '', $contact_phone) ?>">
-                    <i class="fas fa-phone-alt"></i>
-                    <strong><?= htmlspecialchars($contact_phone) ?></strong>
-                </a>
-                <a href="mailto:<?= htmlspecialchars($contact_email) ?>">
-                    <i class="fas fa-envelope"></i>
-                    <span><?= htmlspecialchars($contact_email) ?></span>
-                </a>
-            </div>
-            <ul class="cdm-top-social">
-                <li><a href="<?= htmlspecialchars($facebook_url) ?>" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="<?= htmlspecialchars($twitter_url) ?>" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="<?= htmlspecialchars($instagram_url) ?>" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a></li>
-                <li><a href="<?= htmlspecialchars($linkedin_url) ?>" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a></li>
-                <li><a href="<?= htmlspecialchars($maps_url) ?>" target="_blank" rel="noopener" aria-label="Google Maps"><i class="fas fa-map-marker-alt"></i></a></li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- MAIN NAVBAR -->
+    <!-- MAIN FIXED NAVBAR -->
     <header class="cdm-header" id="cdmHeader">
         <div class="container">
             <a href="<?= $base_url ?>/" class="cdm-logo">
@@ -556,7 +889,7 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
                 <li><a href="<?= $base_url ?>/" class="<?= in_array($cp, ['index.php','home.php']) ? 'active' : '' ?>">Home</a></li>
                 <li><a href="<?= $base_url ?>/why-choose-us" class="<?= $cp == 'why-choose-us.php' ? 'active' : '' ?>">About</a></li>
                 <li>
-                    <a href="<?= $base_url ?>/services" class="<?= $cp == 'services.php' ? 'active' : '' ?>">
+                    <a href="<?= $base_url ?>/services" class="<?= in_array($cp, ['services.php', 'service-detail.php']) ? 'active' : '' ?>">
                         Digital Marketing <i class="fas fa-chevron-down" style="font-size: 11px;"></i>
                     </a>
                     <ul class="cdm-dropdown">
@@ -585,7 +918,7 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
                 <li><a href="<?= $base_url ?>/contact" class="<?= $cp == 'contact.php' ? 'active' : '' ?>">Contact</a></li>
             </ul>
 
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="cdm-header-actions">
                 <button type="button" class="cdm-btn-quote" onclick="openContactPopup()">
                     <span>Free Quote</span>
                     <i class="fas fa-arrow-right"></i>
@@ -597,47 +930,218 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
         </div>
     </header>
 
-    <!-- MOBILE DRAWER -->
-    <div class="cdm-drawer-overlay" id="cdmDrawerOverlay"></div>
-    <div class="cdm-mobile-drawer" id="cdmMobileDrawer">
-        <button class="cdm-drawer-close" id="cdmDrawerClose">&times;</button>
-        <div style="margin-bottom: 20px;">
-            <a href="<?= $base_url ?>/" class="cdm-logo">
+    <!-- IN-FLOW HEADER SPACER TO PREVENT PAGE CONTENT HIDING -->
+    <div class="cdm-header-spacer" aria-hidden="true"></div>
+
+    <!-- MOBILE DRAWER BACKDROP OVERLAY -->
+    <div class="cdm-drawer-overlay" id="cdmDrawerOverlay" tabindex="-1" aria-hidden="true"></div>
+
+    <!-- MOBILE NAVIGATION DRAWER -->
+    <aside class="cdm-mobile-drawer" id="cdmMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation Menu">
+        <!-- FIXED DRAWER HEADER: Prominent Logo + Aligned Close Button -->
+        <div class="cdm-drawer-header">
+            <a href="<?= $base_url ?>/" class="cdm-drawer-brand" aria-label="<?= htmlspecialchars($site_name) ?> Home">
                 <?php if ($site_logo): ?>
-                <img src="<?= $base_url ?>/<?= htmlspecialchars(ltrim($site_logo, '/')) ?>" alt="<?= htmlspecialchars($site_name) ?>" style="max-height: 42px;">
+                <img src="<?= $base_url ?>/<?= htmlspecialchars(ltrim($site_logo, '/')) ?>" alt="<?= htmlspecialchars($site_name) ?>" class="cdm-drawer-logo">
                 <?php else: ?>
-                <span><?= htmlspecialchars($site_name) ?></span>
+                <span class="cdm-drawer-logo-text"><?= htmlspecialchars($site_name) ?></span>
                 <?php endif; ?>
             </a>
-        </div>
-        <ul class="cdm-drawer-nav">
-            <li><a href="<?= $base_url ?>/" class="<?= in_array($cp, ['index.php','home.php']) ? 'active' : '' ?>">Home</a></li>
-            <li><a href="<?= $base_url ?>/why-choose-us">About Us</a></li>
-            <li>
-                <a href="<?= $base_url ?>/services">Services</a>
-                <?php if (!empty($nav_services)): ?>
-                <ul style="list-style:none; padding-left:14px; margin-top:4px; display:flex; flex-direction:column; gap:6px;">
-                    <?php foreach ($nav_services as $ns): ?>
-                    <li>
-                        <a href="<?= $base_url ?>/service/<?= htmlspecialchars($ns['slug']) ?>" style="font-size:13.5px; font-weight:500; color:#475569; padding:4px 0; border-bottom:none;">
-                            <i class="fas fa-angle-right" style="color:#fb9a27; font-size:11px; margin-right:6px;"></i>
-                            <?= htmlspecialchars($ns['service_name']) ?>
-                        </a>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-                <?php endif; ?>
-            </li>
-            <li><a href="<?= $base_url ?>/projects">Portfolio</a></li>
-            <li><a href="<?= $base_url ?>/blog" class="<?= in_array($cp, ['blog.php', 'blog-detail.php']) ? 'active' : '' ?>">Blog</a></li>
-            <li><a href="<?= $base_url ?>/reviews">Reviews & Ratings</a></li>
-            <li><a href="<?= $base_url ?>/testimonials">Testimonials</a></li>
-            <li><a href="<?= $base_url ?>/contact">Contact Us</a></li>
-        </ul>
-        <div style="margin-top: 30px;">
-            <button type="button" class="cdm-btn-quote" style="width: 100%; justify-content: center;" onclick="openContactPopup()">
-                <span>Get Free Quote</span>
-                <i class="fas fa-arrow-right"></i>
+            <button type="button" class="cdm-drawer-close" id="cdmDrawerClose" aria-label="Close navigation menu">
+                <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         </div>
-    </div>
+
+        <!-- SCROLLABLE DRAWER BODY -->
+        <div class="cdm-drawer-body">
+            <nav class="cdm-drawer-nav-wrap" aria-label="Mobile Main Navigation">
+                <ul class="cdm-drawer-nav">
+                    <!-- 1. Services (Collapsible with Chevron Dropdown Arrow) -->
+                    <li class="cdm-drawer-item cdm-drawer-dropdown <?= in_array($cp, ['services.php', 'service-detail.php']) ? 'active' : '' ?>">
+                        <button type="button" 
+                                class="cdm-drawer-link cdm-drawer-toggle-btn <?= in_array($cp, ['services.php', 'service-detail.php']) ? 'active' : '' ?>" 
+                                id="mobileServicesToggle" 
+                                aria-expanded="false" 
+                                aria-controls="mobileServicesSubmenu">
+                            <span class="cdm-drawer-link-text">Services</span>
+                            <span class="cdm-drawer-arrow-wrapper">
+                                <i class="fas fa-chevron-down cdm-drawer-arrow" aria-hidden="true"></i>
+                            </span>
+                        </button>
+                        <ul class="cdm-drawer-submenu" id="mobileServicesSubmenu" aria-label="Services Submenu">
+                            <?php if (!empty($nav_services)): ?>
+                                <?php foreach ($nav_services as $ns): ?>
+                                <li class="cdm-drawer-subitem">
+                                    <a href="<?= $base_url ?>/service/<?= htmlspecialchars($ns['slug']) ?>" class="cdm-drawer-sublink">
+                                        <i class="fas fa-angle-right" aria-hidden="true"></i>
+                                        <span><?= htmlspecialchars($ns['service_name']) ?></span>
+                                    </a>
+                                </li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/seo-optimization" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>SEO Optimization</span></a></li>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/google-meta-ads" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>Google &amp; Meta Ads</span></a></li>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/social-media-marketing" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>Social Media Marketing</span></a></li>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/website-app-development" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>Website &amp; App Development</span></a></li>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/brand-identity-design" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>Brand Identity &amp; Design</span></a></li>
+                                <li class="cdm-drawer-subitem"><a href="<?= $base_url ?>/service/content-marketing" class="cdm-drawer-sublink"><i class="fas fa-angle-right"></i><span>Content Marketing &amp; Copywriting</span></a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </li>
+
+                    <!-- 2. Portfolio -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/projects" class="cdm-drawer-link <?= $cp == 'projects.php' ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Portfolio</span>
+                        </a>
+                    </li>
+
+                    <!-- 3. Blog -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/blog" class="cdm-drawer-link <?= in_array($cp, ['blog.php', 'blog-detail.php']) ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Blog</span>
+                        </a>
+                    </li>
+
+                    <!-- 4. Reviews & Ratings -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/reviews" class="cdm-drawer-link <?= in_array($cp, ['reviews.php', 'testimonials.php']) ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Reviews &amp; Ratings</span>
+                        </a>
+                    </li>
+
+                    <!-- 5. Contact Us -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/contact" class="cdm-drawer-link <?= $cp == 'contact.php' ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Contact Us</span>
+                        </a>
+                    </li>
+
+                    <!-- 6. About Us -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/why-choose-us" class="cdm-drawer-link <?= $cp == 'why-choose-us.php' ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">About Us</span>
+                        </a>
+                    </li>
+
+                    <!-- 7. Privacy Policy -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/privacy-policy" class="cdm-drawer-link <?= $cp == 'privacy-policy.php' ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Privacy Policy</span>
+                        </a>
+                    </li>
+
+                    <!-- 8. Terms & Conditions -->
+                    <li class="cdm-drawer-item">
+                        <a href="<?= $base_url ?>/terms" class="cdm-drawer-link <?= in_array($cp, ['terms.php', 'terms-and-conditions.php']) ? 'active' : '' ?>">
+                            <span class="cdm-drawer-link-text">Terms &amp; Conditions</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- DRAWER FOOTER: CTA BUTTON -->
+            <div class="cdm-drawer-footer">
+                <button type="button" class="cdm-btn-quote cdm-drawer-cta" onclick="openContactPopup()">
+                    <span>Get Free Quote</span>
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+    (function() {
+        function initDrawer() {
+            if (window.cdmDrawerInitDone) return;
+            var toggle = document.getElementById('cdmMenuToggle');
+            var drawer = document.getElementById('cdmMobileDrawer');
+            var overlay = document.getElementById('cdmDrawerOverlay');
+            var closeBtn = document.getElementById('cdmDrawerClose');
+            var header = document.getElementById('cdmHeader');
+            var servicesToggle = document.getElementById('mobileServicesToggle');
+            var servicesSubmenu = document.getElementById('mobileServicesSubmenu');
+
+            if (!toggle || !drawer || !overlay) return;
+            window.cdmDrawerInitDone = true;
+
+            function openDrawer(e) {
+                if (e) {
+                    if (e.preventDefault) e.preventDefault();
+                    if (e.stopPropagation) e.stopPropagation();
+                }
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+                document.body.classList.add('cdm-drawer-open');
+                document.body.style.overflow = 'hidden';
+                toggle.setAttribute('aria-expanded', 'true');
+                if (closeBtn) {
+                    setTimeout(function() { closeBtn.focus(); }, 100);
+                }
+            }
+
+            function closeDrawer(e) {
+                if (e && e.preventDefault) e.preventDefault();
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.classList.remove('cdm-drawer-open');
+                document.body.style.overflow = '';
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            toggle.addEventListener('click', openDrawer);
+            if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+            if (overlay) {
+                overlay.addEventListener('click', closeDrawer);
+                overlay.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && drawer.classList.contains('active')) {
+                    closeDrawer();
+                }
+            });
+
+            if (servicesToggle && servicesSubmenu) {
+                servicesToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var isOpen = servicesSubmenu.classList.toggle('open');
+                    servicesToggle.classList.toggle('open', isOpen);
+                    var arrow = servicesToggle.querySelector('.cdm-drawer-arrow');
+                    if (arrow) arrow.classList.toggle('open', isOpen);
+                    servicesToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            }
+
+            var navLinks = drawer.querySelectorAll('.cdm-drawer-nav a, .cdm-drawer-brand');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    closeDrawer();
+                });
+            });
+
+            function updateHeaderScroll() {
+                if (!header) return;
+                if (window.scrollY > 20) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            window.addEventListener('scroll', updateHeaderScroll, { passive: true });
+            updateHeaderScroll();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDrawer);
+        } else {
+            initDrawer();
+        }
+    })();
+    </script>
+
+    <!-- Mobile-safe Page Wrapper to Clip Any Accidental Sub-pixel Overflow -->
+    <div class="cdm-site-wrapper">

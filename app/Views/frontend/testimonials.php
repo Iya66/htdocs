@@ -16,60 +16,10 @@ $target_satisfaction = (int)filter_var($stat_satisfaction, FILTER_SANITIZE_NUMBE
 $target_projects = (int)filter_var($stat_projects, FILTER_SANITIZE_NUMBER_INT);
 
 include __DIR__ . '/../../../includes/header.php'; 
+require_once __DIR__ . '/../../../includes/components/page_hero.php';
 ?>
 
-<!-- CHERRIDM INNER PAGE HERO -->
 <style>
-    .cdm-page-hero {
-        background: linear-gradient(135deg, rgba(2, 20, 74, 0.95) 0%, rgba(3, 34, 143, 0.92) 100%),
-                    url('https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1600&q=80') center/cover;
-        padding: 90px 20px 80px;
-        text-align: center;
-        color: #ffffff;
-        position: relative;
-    }
-    .cdm-page-hero h1 {
-        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 14px;
-        letter-spacing: -0.5px;
-    }
-    .cdm-page-hero h1 span.stroke {
-        color: #fb9a27;
-    }
-    .cdm-page-hero p {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 680px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
-    }
-    .cdm-breadcrumb-capsule {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.12);
-        padding: 7px 22px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-    .cdm-breadcrumb-capsule a {
-        color: #ffffff;
-        transition: color 0.2s ease;
-        text-decoration: none;
-    }
-    .cdm-breadcrumb-capsule a:hover {
-        color: #fb9a27;
-    }
-    .cdm-breadcrumb-capsule span.sep {
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .cdm-breadcrumb-capsule span.active {
-        color: #fb9a27;
-    }
-
     /* Metrics Grid */
     .cdm-testimonial-metrics {
         display: grid;
@@ -260,17 +210,15 @@ include __DIR__ . '/../../../includes/header.php';
     }
 </style>
 
-<section class="cdm-page-hero">
-    <div class="container">
-        <h1>Client <span class="stroke">Testimonials</span></h1>
-        <p>Real stories of growth, transformation, and impact from our valued business partners</p>
-        <div class="cdm-breadcrumb-capsule">
-            <a href="<?= $base_url ?>/"><i class="fas fa-home"></i> Home</a>
-            <span class="sep">/</span>
-            <span class="active">Testimonials</span>
-        </div>
-    </div>
-</section>
+<?php
+render_page_hero([
+    'title' => 'Client',
+    'highlight' => 'Testimonials',
+    'subtitle' => 'Real stories of growth, transformation, and impact from our valued business partners',
+    'breadcrumb_active' => 'Testimonials',
+    'base_url' => $base_url
+]);
+?>
 
 <section style="padding: 70px 0; background-color: #f8faff;">
     <div class="container">
@@ -378,22 +326,7 @@ include __DIR__ . '/../../../includes/header.php';
     </div>
 </section>
 
-<!-- BOTTOM CTA BANNER -->
-<section style="background: linear-gradient(135deg, #02144a 0%, #03228f 100%); padding: 70px 20px; color: #ffffff; text-align: center;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 8px;">
-            // Ready to Scale? //
-        </span>
-        <h3 style="font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; margin-bottom: 12px;">Ready to Become Our Next Success Story?</h3>
-        <p style="font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px;">
-            Let's engineer a customized, high-converting digital marketing campaign that scales your revenue and accelerates brand authority.
-        </p>
-        <button type="button" class="cdm-btn-quote" style="display: inline-flex;" onclick="openContactPopup()">
-            <span>Start Your Growth Journey</span>
-            <i class="fas fa-arrow-right"></i>
-        </button>
-    </div>
-</section>
+<?php include __DIR__ . '/../../../includes/components/cta_banner.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

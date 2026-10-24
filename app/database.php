@@ -25,5 +25,14 @@ try {
     $conn = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
     error_log("[Database] Connection failed: " . $e->getMessage());
-    die("Database connection error. Please verify your settings in app/.env and ensure database is imported.");
+    $msg = $e->getMessage();
+    if (strpos($msg, '2002') !== false) {
+        die("Database connection error: MySQL service is not running. Please start MySQL from the XAMPP Control Panel.");
+    } elseif (strpos($msg, '1049') !== false) {
+        die("Database connection error: Unknown database '{$db}'. Please verify DB_NAME in app/.env and ensure the database is imported.");
+    } elseif (strpos($msg, '1045') !== false) {
+        die("Database connection error: Access denied for user '{$user}'. Please verify DB_USER and DB_PASS in app/.env.");
+    } else {
+        die("Database connection error: " . htmlspecialchars($msg) . ". Please verify settings in app/.env.");
+    }
 }

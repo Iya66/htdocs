@@ -6,6 +6,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../app/config.php';
+global $conn;
 @include_once __DIR__ . '/../app/email_helper.php';
 @include_once __DIR__ . '/../app/security_notifier.php';
 @include_once __DIR__ . '/../app/whatsapp_helper.php';
@@ -27,6 +28,17 @@ if (!empty($website)) {
     $message = ($message ? $message . "\n" : "") . "Website: " . $website;
 }
 
+// Validate and normalize email if provided
+if (!empty($email)) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please provide a valid email address.']);
+        exit;
+    }
+    $email = strtolower($email);
+} else {
+    $email = null;
+}
+
 if (empty($name)) {
     echo json_encode(['status' => 'error', 'message' => 'Please provide your name.']);
     exit;
@@ -42,7 +54,7 @@ $clean_phone = preg_replace('/[^0-9+]/', '', $phone);
 
 try {
     if (isset($conn)) {
-        $stmt = $conn->prepare("INSERT INTO leads (name, phone, email, service, message, status) VALUES (?, ?, ?, ?, ?, 'new')");
+        $stmt = $conn->prepare("INSERT INTO leads (name, phone, email, service, message, status) VALUES (?, ?, ?, ?, ?, 'new_lead')");
         $stmt->execute([
             $name,
             $clean_phone ?: null,

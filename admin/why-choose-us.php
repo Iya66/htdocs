@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 case 'seed_defaults':
                     $defaults = [
-                        ['icon' => 'fa-trophy', 'q' => 'Proven Track Record', 'a' => '500+ successful digital initiatives with measurable ROI across e-commerce, healthcare, and SaaS.', 'order' => 1],
+                        ['icon' => 'fa-trophy', 'q' => 'Proven Track Record', 'a' => 'Over ' . (int)($settings['stat_experience'] ?? 4) . '+ successful digital initiatives with measurable ROI across e-commerce, healthcare, and SaaS.', 'order' => 1],
                         ['icon' => 'fa-users-gear', 'q' => 'Certified Specialists', 'a' => 'Dedicated specialists in performance marketing, technical SEO, and conversion-focused web development.', 'order' => 2],
                         ['icon' => 'fa-chart-line', 'q' => 'Data-Driven Growth', 'a' => 'Every campaign decision is backed by live analytics and deep audience behavior modeling.', 'order' => 3],
                         ['icon' => 'fa-headset', 'q' => 'Dedicated Support', 'a' => 'Direct access to account leads and transparent bi-weekly strategy alignment calls.', 'order' => 4],

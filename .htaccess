@@ -135,8 +135,11 @@ ErrorDocument 404 /404.php
 # Enable Rewrite Engine
 RewriteEngine On
 
-# 1. Strip .php extension in Admin URLs (Redirect /admin/path.php to /admin/path)
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+(admin/[^\s\?]+)\.php [NC]
+# 1. Strip .php extension in Admin URLs (Redirect /admin/path.php to /admin/path, excluding POST and API requests)
+RewriteCond %{REQUEST_METHOD} !POST [NC]
+RewriteCond %{REQUEST_URI} !^/admin/api/ [NC]
+RewriteCond %{REQUEST_URI} !^/api/ [NC]
+RewriteCond %{THE_REQUEST} ^GET\s/+(admin/[^\s\?]+)\.php [NC]
 RewriteRule ^admin/(.+)\.php$ /admin/$1 [R=301,L,NC]
 
 # 2. Dedicated Service Routes

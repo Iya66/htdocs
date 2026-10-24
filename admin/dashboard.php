@@ -21,12 +21,31 @@ $why_us_count = $conn->query("SELECT COUNT(*) FROM why_choose_us")->fetchColumn(
 $recent_leads = $conn->query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
 // ─── Lead Status Breakdown ──────────────────────────────────────
-$lead_status_counts = [
- 'new' => (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status='new'")->fetchColumn(),
- 'contacted' => (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status='contacted'")->fetchColumn(),
- 'confirmed' => (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status='confirmed'")->fetchColumn(),
- 'lose' => (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status='lose'")->fetchColumn(),
-];
+// One grouped query keeps the dashboard to a single round-trip and lets the
+// pipeline widget show every stage defined in app/lead_statuses.php.
+require_once __DIR__ . '/../app/lead_statuses.php';
+$lead_status_counts = leadStatusCounts($conn);
+$lead_group_counts = leadStatusGroupCounts($conn);
+$followup_stats = leadFollowupCounts($conn);
+
+$call_not_answered_count = (int)($lead_status_counts['call_not_answered'] ?? 0);
+$call_back_later_count = (int)($lead_status_counts['call_back_later'] ?? 0);
+$already_has_website_count = (int)($lead_status_counts['already_has_website'] ?? 0);
+$no_website_count = (int)($lead_status_counts['no_website'] ?? 0);
+$website_improvement_count = (int)($lead_status_counts['website_improvement'] ?? 0);
+$interested_count = (int)(($lead_status_counts['interested'] ?? 0) + ($conn->query("SELECT COUNT(*) FROM leads WHERE status = 'contacted'")->fetchColumn() ?: 0));
+$followup_pending_count = (int)($lead_status_counts['followup_pending'] ?? 0);
+$meeting_scheduled_count = (int)($lead_status_counts['meeting_scheduled'] ?? 0);
+$proposal_sent_count = (int)($lead_status_counts['proposal_sent'] ?? 0);
+$converted_count = (int)(($lead_status_counts['converted'] ?? 0) + ($conn->query("SELECT COUNT(*) FROM leads WHERE status = 'confirmed'")->fetchColumn() ?: 0));
+$not_interested_count = (int)(($lead_status_counts['not_interested'] ?? 0) + ($conn->query("SELECT COUNT(*) FROM leads WHERE status = 'lose'")->fetchColumn() ?: 0));
+
+$overdue_followups_count = (int)$followup_stats['overdue'];
+$upcoming_followups_count = (int)$followup_stats['upcoming'];
+
+// Conversion Rate Calculation: (Converted Leads / Total Leads) * 100
+$conversion_rate = (int)$leads_count > 0 ? round(($converted_count / (int)$leads_count) * 100, 1) : 0.0;
+
 
 // ─── Recent Activity ────────────────────────────────────────────
 $recent_activity = $conn->query("
@@ -51,8 +70,10 @@ $today_activity = (int)$conn->query("
  WHERE DATE(created_at) = CURDATE()
 ")->fetchColumn();
 
-// Real site data â€” no fake numbers
-$new_leads = (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status = 'new'")->fetchColumn();
+// Real site data — no fake numbers
+// Counts both the current "New Lead" stage and the legacy "new" value so the
+// KPI never drops to zero for leads captured before the workflow change.
+$new_leads = (int)$conn->query("SELECT COUNT(*) FROM leads WHERE status IN ('new_lead','new')")->fetchColumn();
 $projects_count = (int)$conn->query("SELECT COUNT(*) FROM projects")->fetchColumn();
 $uploads_count = (int)$conn->query("SELECT COUNT(*) FROM uploads")->fetchColumn();
 $staff_count = (int)$conn->query("SELECT COUNT(*) FROM admin")->fetchColumn();
