@@ -7,7 +7,8 @@ require_once __DIR__ . '/app/config.php';
 
 // Site Settings
 $site_name = !empty($settings['site_name']) ? $settings['site_name'] : 'Cloud Aspire';
-$pageTitle = $site_name . ' - Best Digital Marketing Company in Pondicherry';
+$pageTitle = 'Digital Marketing Agency in Pondicherry | Cloud Aspire Solutions';
+$pageDesc  = 'Looking for a digital marketing agency in Pondicherry? Cloud Aspire Solutions offers SEO, social media marketing, Google Ads and Meta Ads to help businesses improve online visibility and generate leads.';
 
 // Fetch active services from DB
 $services = [];

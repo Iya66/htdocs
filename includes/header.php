@@ -48,6 +48,10 @@ if (isset($conn)) {
             $stmtCurr = $conn->prepare("SELECT * FROM pages WHERE page_slug = ? LIMIT 1");
             $stmtCurr->execute([$current_script]);
             $page_settings = $stmtCurr->fetch(PDO::FETCH_ASSOC) ?: [];
+            if (empty($page_settings) && ($current_script === 'index.php' || $current_script === '')) {
+                $stmtCurr->execute(['home.php']);
+                $page_settings = $stmtCurr->fetch(PDO::FETCH_ASSOC) ?: [];
+            }
         }
     } catch (Exception $e) {
         error_log("[Header] Page settings fetch error: " . $e->getMessage());
@@ -86,8 +90,8 @@ if (preg_match('#^(.*?)/(admin|api|app)(?:/|$)#', $subfolder, $m)) {
 }
 $base_url = $protocol . '://' . $host . $subfolder;
 
-$display_title = $page_settings['seo_title'] ?? ($page_settings['page_title'] ?? (isset($pageTitle) ? $pageTitle : $site_name . ' - Best Digital Marketing Company in Pondicherry'));
-$display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageDesc : 'Digital marketing agency in Pondicherry specializing in SEO, PPC, Google Ads, and Social Media Marketing.');
+$display_title = $page_settings['seo_title'] ?? ($page_settings['page_title'] ?? (isset($pageTitle) ? $pageTitle : 'Digital Marketing Agency in Pondicherry | Cloud Aspire Solutions'));
+$display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageDesc : 'Looking for a digital marketing agency in Pondicherry? Cloud Aspire Solutions offers SEO, social media marketing, Google Ads and Meta Ads to help businesses improve online visibility and generate leads.');
 ?>
 <!DOCTYPE html>
 <html lang="en" class="no-js">

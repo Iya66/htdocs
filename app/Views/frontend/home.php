@@ -20,8 +20,8 @@ $stat_experience = (int)($settings['stat_experience'] ?? 5);
 $stat_staff = (int)($settings['stat_staff'] ?? 10);
 
 // SEO
-$pageTitle = $site_name . " - Best Digital Marketing Company in Pondicherry";
-$pageDesc = $site_name . " is a premier digital marketing agency in Pondicherry specializing in SEO, PPC, Google Ads, Meta Ads, and High-Performance Web Development.";
+$pageTitle = "Digital Marketing Agency in Pondicherry | Cloud Aspire Solutions";
+$pageDesc = "Looking for a digital marketing agency in Pondicherry? Cloud Aspire Solutions offers SEO, social media marketing, Google Ads and Meta Ads to help businesses improve online visibility and generate leads.";
 
 include __DIR__ . '/../../../includes/header.php';
 ?>
@@ -1093,6 +1093,542 @@ include __DIR__ . '/../../../includes/header.php';
             justify-content: center;
         }
     }
+
+    /* ══════════════════════════════════════════════
+       CORE PILLARS, PROCESS & CONTACT STYLING
+       ══════════════════════════════════════════════ */
+    .cdm-pillar-section {
+        padding: 85px 0;
+        background: #ffffff;
+    }
+    .cdm-pillar-section.cdm-alt-bg {
+        background: #f8faff;
+    }
+    .cdm-pillar-grid {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 60px;
+        align-items: center;
+    }
+    .cdm-pillar-grid.cdm-reverse {
+        grid-template-columns: 0.85fr 1.15fr;
+    }
+    .cdm-pillar-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        background: rgba(3, 34, 143, 0.08);
+        color: #03228f;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 15px;
+    }
+    .cdm-pillar-content h2 {
+        font-size: clamp(1.85rem, 3.6vw, 2.6rem);
+        font-weight: 800;
+        color: #03228f;
+        line-height: 1.22;
+        margin-bottom: 18px;
+    }
+    .cdm-pillar-lead {
+        font-size: 15.5px;
+        line-height: 1.75;
+        color: #475569;
+        margin-bottom: 25px;
+    }
+    .cdm-pillar-features {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+    .cdm-pfeat-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        background: #ffffff;
+        padding: 16px 18px;
+        border-radius: 10px;
+        border: 1px solid #eef2f6;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 10px rgba(3, 34, 143, 0.03);
+    }
+    .cdm-alt-bg .cdm-pfeat-item {
+        background: #ffffff;
+    }
+    .cdm-pillar-section:not(.cdm-alt-bg) .cdm-pfeat-item {
+        background: #f8faff;
+    }
+    .cdm-pfeat-item:hover {
+        border-color: #fb9a27;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(3, 34, 143, 0.08);
+    }
+    .cdm-pfeat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: rgba(251, 154, 39, 0.12);
+        color: #e08316;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .cdm-pfeat-text h4 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #03228f;
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+    .cdm-pfeat-text p {
+        font-size: 13.5px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+    }
+    .cdm-pillar-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 15px 40px rgba(3, 34, 143, 0.1);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        position: relative;
+    }
+    .cdm-pillar-card img {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .cdm-pillar-stat-badge {
+        position: absolute;
+        bottom: 40px;
+        right: 40px;
+        background: linear-gradient(135deg, #03228f 0%, #02144a 100%);
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+    }
+    .cdm-pillar-stat-badge .num {
+        font-size: 24px;
+        font-weight: 800;
+        color: #fb9a27;
+        line-height: 1;
+    }
+    .cdm-pillar-stat-badge .lbl {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #cbd5e1;
+        line-height: 1.3;
+    }
+
+    /* Small Business Marketing Section */
+    .cdm-smallbiz-section {
+        padding: 85px 0;
+        background: linear-gradient(135deg, #02144a 0%, #03228f 100%);
+        color: #ffffff;
+    }
+    .cdm-smallbiz-card {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .cdm-smallbiz-header {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 45px;
+    }
+    .cdm-smallbiz-pill {
+        display: inline-block;
+        padding: 6px 18px;
+        background: rgba(251, 154, 39, 0.2);
+        border: 1px solid #fb9a27;
+        color: #fb9a27;
+        border-radius: 30px;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }
+    .cdm-smallbiz-header h2 {
+        font-size: clamp(2rem, 3.8vw, 2.7rem);
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 16px;
+    }
+    .cdm-smallbiz-header p {
+        font-size: 16px;
+        color: #cbd5e1;
+        line-height: 1.7;
+    }
+    .cdm-smallbiz-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .cdm-sb-col {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 30px 24px;
+        transition: all 0.3s ease;
+        text-align: left;
+    }
+    .cdm-sb-col:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #fb9a27;
+        transform: translateY(-4px);
+    }
+    .cdm-sb-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        background: rgba(251, 154, 39, 0.2);
+        color: #fb9a27;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 18px;
+    }
+    .cdm-sb-col h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 10px;
+    }
+    .cdm-sb-col p {
+        font-size: 14px;
+        color: #cbd5e1;
+        line-height: 1.6;
+        margin: 0;
+    }
+    .cdm-smallbiz-action {
+        text-align: center;
+    }
+
+    /* Process Section */
+    .cdm-process-section {
+        padding: 85px 0;
+        background: #f8faff;
+    }
+    .cdm-process-grid {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+    }
+    .cdm-process-step {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 32px 22px 26px;
+        border: 1px solid #eef2f6;
+        box-shadow: 0 4px 15px rgba(3, 34, 143, 0.04);
+        position: relative;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    .cdm-process-step:hover {
+        transform: translateY(-4px);
+        border-color: #fb9a27;
+        box-shadow: 0 12px 30px rgba(3, 34, 143, 0.1);
+    }
+    .cdm-step-num {
+        font-size: 26px;
+        font-weight: 900;
+        color: #fb9a27;
+        margin-bottom: 12px;
+        line-height: 1;
+        font-family: monospace;
+    }
+    .cdm-step-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: rgba(3, 34, 143, 0.07);
+        color: #03228f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    .cdm-process-step h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #03228f;
+        margin-bottom: 8px;
+    }
+    .cdm-process-step p {
+        font-size: 13.5px;
+        color: #64748b;
+        line-height: 1.55;
+        margin: 0;
+    }
+
+    /* Contact Section on Homepage */
+    .cdm-home-contact-section {
+        padding: 85px 0;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+    }
+    .cdm-home-contact-wrapper {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: 1fr 1.05fr;
+        gap: 60px;
+        align-items: start;
+    }
+    .cdm-contact-pill {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(251, 154, 39, 0.12);
+        color: #e08316;
+        border-radius: 20px;
+        font-size: 12.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 12px;
+    }
+    .cdm-home-contact-info h2 {
+        font-size: clamp(2rem, 3.8vw, 2.7rem);
+        font-weight: 800;
+        color: #03228f;
+        line-height: 1.22;
+        margin-bottom: 16px;
+    }
+    .cdm-home-contact-info p {
+        font-size: 15.5px;
+        color: #475569;
+        line-height: 1.7;
+        margin-bottom: 25px;
+    }
+    .cdm-contact-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 30px;
+    }
+    .cdm-cdetail-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        font-size: 14.5px;
+        color: #334155;
+    }
+    .cdm-cdetail-item i {
+        color: #fb9a27;
+        font-size: 18px;
+        margin-top: 3px;
+        flex-shrink: 0;
+    }
+    .cdm-cdetail-item strong {
+        display: block;
+        color: #03228f;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    .cdm-cdetail-item a {
+        color: #03228f;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .cdm-cdetail-item a:hover {
+        color: #fb9a27;
+    }
+    .cdm-quick-channels {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    .cdm-btn-wa {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #25d366;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14.5px;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+    .cdm-btn-wa:hover {
+        background: #1eb956;
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+    .cdm-btn-call-direct {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #03228f;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14.5px;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+    .cdm-btn-call-direct:hover {
+        background: #fb9a27;
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
+    .cdm-home-contact-form-box {
+        background: #f8faff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 36px 32px;
+        box-shadow: 0 10px 30px rgba(3, 34, 143, 0.05);
+    }
+    .cdm-form-header {
+        margin-bottom: 22px;
+    }
+    .cdm-form-header h3 {
+        font-size: 20px;
+        font-weight: 800;
+        color: #03228f;
+        margin-bottom: 6px;
+    }
+    .cdm-form-header p {
+        font-size: 13.5px;
+        color: #64748b;
+        margin: 0;
+    }
+    .cdm-form-group {
+        margin-bottom: 16px;
+    }
+    .cdm-form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 6px;
+    }
+    .cdm-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .cdm-input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        font-size: 14px;
+        font-family: inherit;
+        color: #1e293b;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+    .cdm-input:focus {
+        outline: none;
+        border-color: #03228f;
+        box-shadow: 0 0 0 3px rgba(3, 34, 143, 0.12);
+    }
+    .cdm-btn-submit-lead {
+        width: 100%;
+        padding: 14px 24px;
+        background: #fb9a27;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(251, 154, 39, 0.3);
+    }
+    .cdm-btn-submit-lead:hover {
+        background: #e08316;
+        transform: translateY(-2px);
+    }
+    .cdm-form-status {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 6px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-align: center;
+    }
+    .cdm-form-status.success {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+    .cdm-form-status.error {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+    }
+
+    @media (max-width: 991px) {
+        .cdm-pillar-grid, .cdm-pillar-grid.cdm-reverse {
+            grid-template-columns: 1fr;
+            gap: 35px;
+        }
+        .cdm-reverse .cdm-pillar-visual {
+            order: 2;
+        }
+        .cdm-smallbiz-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+        .cdm-process-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+        .cdm-home-contact-wrapper {
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+    }
+    @media (max-width: 600px) {
+        .cdm-process-grid {
+            grid-template-columns: 1fr;
+        }
+        .cdm-form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
 </style>
 
 <!-- 1. HERO SLIDER BANNER (DYNAMIC SERVICES FROM DATABASE) -->
@@ -1125,12 +1661,21 @@ include __DIR__ . '/../../../includes/header.php';
     <div class="cdm-slide <?= $h_idx === 0 ? 'active' : '' ?>" style="background-image: url('<?= htmlspecialchars($bg_img) ?>');">
         <div class="cdm-slide-overlay"></div>
         <div class="cdm-slide-content">
+            <?php if ($h_idx === 0): ?>
             <h1 class="cdm-slide-title">
-                <?= htmlspecialchars($first_word) ?> <span class="stroke"><?= htmlspecialchars($rest_words) ?></span>
+                Digital Marketing Agency <span class="stroke">in Pondicherry</span>
             </h1>
+            <p class="cdm-slide-desc">
+                Looking for a digital marketing agency in Pondicherry? Cloud Aspire Solutions offers SEO, social media marketing, Google Ads and Meta Ads to help businesses improve online visibility and generate leads.
+            </p>
+            <?php else: ?>
+            <div class="cdm-slide-title" role="heading" aria-level="2">
+                <?= htmlspecialchars($first_word) ?> <span class="stroke"><?= htmlspecialchars($rest_words) ?></span>
+            </div>
             <p class="cdm-slide-desc">
                 <?= htmlspecialchars($hs['short_description'] ?? 'Best digital marketing services in Pondicherry designed to scale traffic, build authority, and convert visitors.') ?>
             </p>
+            <?php endif; ?>
             <div class="cdm-slide-actions">
                 <a href="<?= $base_url ?>/contact?service=<?= urlencode($hs['service_name']) ?>" class="cdm-btn-learn">
                     <span>Learn More</span>
@@ -1424,13 +1969,16 @@ if (!empty($innovative_highlight)) {
 <?php include __DIR__ . '/../../../includes/components/stats_counter.php'; ?>
 
 <!-- 9. SERVICES SHOWCASE (LIVE DATABASE `services` QUERY) -->
-<section class="cdm-services-section">
+<section class="cdm-services-section" id="servicesSection">
     <div class="cdm-section-heading">
         <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 8px;">
-            // We Offer a Full Range of Digital Marketing Services! //
+            // End-to-End Growth Solutions //
         </span>
-        <h2>Our Core <span class="text-secondary">Services</span></h2>
+        <h2>Digital Marketing Services <span class="text-secondary">We Offer</span></h2>
         <div class="cdm-divider"></div>
+        <p style="max-width: 760px; margin: 15px auto 0; color: #475569; font-size: 15px; line-height: 1.6;">
+            We engineer data-driven digital marketing campaigns specifically tailored to help Pondicherry businesses dominate local search, amplify social reach, and maximize customer acquisition.
+        </p>
     </div>
 
     <div class="cdm-services-grid">
@@ -1472,6 +2020,236 @@ if (!empty($innovative_highlight)) {
             </div>
         </div>
         <?php endforeach; ?>
+    </div>
+</section>
+
+<!-- PILLAR 1: SEARCH ENGINE OPTIMIZATION (SEO) -->
+<section class="cdm-pillar-section" id="seo-section">
+    <div class="cdm-pillar-grid">
+        <div class="cdm-pillar-content cdm-reveal-left">
+            <div class="cdm-pillar-badge"><i class="fas fa-magnifying-glass-chart"></i> Organic Visibility &amp; Top Rankings</div>
+            <h2>Search Engine Optimization (SEO)</h2>
+            <p class="cdm-pillar-lead">
+                Drive sustainable, high-intent organic customer traffic with tailored SEO strategies in Pondicherry. We optimize your digital presence for local Google Map packs, national searches, and AI-driven answer engines to turn searchers into paying clients.
+            </p>
+            <div class="cdm-pillar-features">
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fas fa-map-location-dot"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Local SEO &amp; Google Business Profile</h4>
+                        <p>Dominate the Google Local 3-Pack in Pondicherry, driving direct phone calls, walk-ins, and local service appointments.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>On-Page &amp; Technical Architecture</h4>
+                        <p>Speed optimization, Core Web Vitals, rich schema markup, and keyword clustering for fast, top-tier indexation.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fas fa-link"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Authority Link Building &amp; Content PR</h4>
+                        <p>Earn authoritative contextual backlinks that cement your position as the most trusted brand in your market.</p>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                <a href="<?= $base_url ?>/contact?service=SEO+Optimization" class="cdm-btn-primary">
+                    <span>Get Free SEO Audit</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="tel:<?= $contact_phone ?>" style="color: #03228f; font-weight: 700; text-decoration: none; font-size: 14.5px; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-phone-volume" style="color: #fb9a27;"></i> Speak With SEO Expert
+                </a>
+            </div>
+        </div>
+        <div class="cdm-pillar-visual cdm-reveal-right">
+            <div class="cdm-pillar-card">
+                <img src="https://images.unsplash.com/photo-1571786256017-aee7a0c009b6?auto=format&fit=crop&w=800&q=80" alt="Search Engine Optimization in Pondicherry" loading="lazy">
+                <div class="cdm-pillar-stat-badge">
+                    <div class="num">#1</div>
+                    <div class="lbl">Page-One Google<br>Rankings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PILLAR 2: SOCIAL MEDIA MARKETING -->
+<section class="cdm-pillar-section cdm-alt-bg" id="social-media-section">
+    <div class="cdm-pillar-grid cdm-reverse">
+        <div class="cdm-pillar-visual cdm-reveal-left">
+            <div class="cdm-pillar-card">
+                <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=800&q=80" alt="Social Media Marketing in Pondicherry" loading="lazy">
+                <div class="cdm-pillar-stat-badge" style="left: 40px; right: auto;">
+                    <div class="num">10x</div>
+                    <div class="lbl">Audience Engagement<br>&amp; Brand Reach</div>
+                </div>
+            </div>
+        </div>
+        <div class="cdm-pillar-content cdm-reveal-right">
+            <div class="cdm-pillar-badge"><i class="fas fa-share-nodes"></i> Audience Growth &amp; Viral Engagement</div>
+            <h2>Social Media Marketing</h2>
+            <p class="cdm-pillar-lead">
+                Transform casual scrollers into passionate brand advocates. Our creative social media marketing strategies combine scroll-stopping visual design, viral Instagram reels, and targeted B2B LinkedIn campaigns to build unstoppable brand momentum.
+            </p>
+            <div class="cdm-pillar-features">
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fab fa-instagram"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Instagram &amp; Facebook Mastery</h4>
+                        <p>High-production short-form video reels, aesthetic carousel posts, and daily stories that capture consumer attention.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fab fa-linkedin-in"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>B2B Social &amp; Corporate Branding</h4>
+                        <p>Position your leadership and generate enterprise connections through data-backed B2B content strategies.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fas fa-comments"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Community Management &amp; Reputation</h4>
+                        <p>Real-time comment engagement, message responses, and positive brand sentiment that turns followers into buyers.</p>
+                    </div>
+                </div>
+            </div>
+            <a href="<?= $base_url ?>/contact?service=Social+Media+Marketing" class="cdm-btn-primary">
+                <span>Scale Your Social Presence</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- PILLAR 3: GOOGLE ADS AND META ADS -->
+<section class="cdm-pillar-section" id="paid-ads-section">
+    <div class="cdm-pillar-grid">
+        <div class="cdm-pillar-content cdm-reveal-left">
+            <div class="cdm-pillar-badge"><i class="fas fa-bullhorn"></i> High-Intent Performance Advertising</div>
+            <h2>Google Ads and Meta Ads</h2>
+            <p class="cdm-pillar-lead">
+                Stop guessing and start converting with precision paid advertising. We design, manage, and continuously optimize high-ROI PPC campaigns across Google Search, Display, YouTube, Facebook, and Instagram to deliver predictable revenue and lower acquisition costs.
+            </p>
+            <div class="cdm-pillar-features">
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fab fa-google"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Google Search &amp; Intent-Based Ads</h4>
+                        <p>Target buyers at the exact moment they search for your services with compelling ad copy and negative keyword guards.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fab fa-meta"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Meta (Facebook &amp; Instagram) Funnels</h4>
+                        <p>Hyper-targeted demographic, behavioral, and lookalike audience campaigns that deliver instant qualified leads.</p>
+                    </div>
+                </div>
+                <div class="cdm-pfeat-item">
+                    <div class="cdm-pfeat-icon"><i class="fas fa-rotate"></i></div>
+                    <div class="cdm-pfeat-text">
+                        <h4>Dynamic Retargeting &amp; ROAS Optimization</h4>
+                        <p>Re-engage website drop-offs and past visitors with tailored conversion offers to multiply your final checkout rate.</p>
+                    </div>
+                </div>
+            </div>
+            <a href="<?= $base_url ?>/contact?service=Google+%26+Meta+Ads" class="cdm-btn-primary">
+                <span>Launch High-Converting Ads</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="cdm-pillar-visual cdm-reveal-right">
+            <div class="cdm-pillar-card">
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Google Ads and Meta Ads in Pondicherry" loading="lazy">
+                <div class="cdm-pillar-stat-badge">
+                    <div class="num">4.8x</div>
+                    <div class="lbl">Average Client<br>ROAS Multiplier</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PILLAR 4: DIGITAL MARKETING FOR SMALL BUSINESSES -->
+<section class="cdm-smallbiz-section" id="small-business-section">
+    <div class="cdm-smallbiz-card">
+        <div class="cdm-smallbiz-header">
+            <span class="cdm-smallbiz-pill">Empowering Local Entrepreneurs</span>
+            <h2>Digital Marketing for Small Businesses</h2>
+            <p>
+                We believe premium digital marketing should be accessible to growing enterprises. Whether you run a retail shop, boutique, clinic, restaurant, or professional firm in Pondicherry, our small business marketing packages deliver impactful, scalable results without burning your budget.
+            </p>
+        </div>
+        <div class="cdm-smallbiz-grid">
+            <div class="cdm-sb-col">
+                <div class="cdm-sb-icon"><i class="fas fa-phone-volume"></i></div>
+                <h3>Direct Phone &amp; WhatsApp Inquiries</h3>
+                <p>Engineered to generate immediate calls and WhatsApp chats from customers actively searching for your service locally.</p>
+            </div>
+            <div class="cdm-sb-col">
+                <div class="cdm-sb-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                <h3>Cost-Effective, Transparent Pricing</h3>
+                <p>Every rupee of your ad spend is accounted for. Zero hidden fees and scalable plans that grow alongside your revenue.</p>
+            </div>
+            <div class="cdm-sb-col">
+                <div class="cdm-sb-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Clear, Actionable Reporting</h3>
+                <p>Simple dashboards and weekly reports tracking real customer inquiries, store visits, and revenue growth.</p>
+            </div>
+        </div>
+        <div class="cdm-smallbiz-action">
+            <a href="<?= $base_url ?>/contact?service=Small+Business+Package" class="cdm-btn-primary" style="background:#fb9a27; color:#ffffff;">
+                <span>Get Small Business Marketing Strategy</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- PILLAR 5: OUR DIGITAL MARKETING PROCESS -->
+<section class="cdm-process-section" id="process-section">
+    <div class="container" style="max-width: 1240px; margin: 0 auto; padding: 0 20px;">
+        <div class="cdm-section-heading">
+            <span style="color: #fb9a27; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; display: block; margin-bottom: 8px;">
+                // Proven Execution Framework //
+            </span>
+            <h2>Our Digital Marketing <span class="text-secondary">Process</span></h2>
+            <div class="cdm-divider"></div>
+            <p style="max-width: 760px; margin: 15px auto 0; color: #475569; font-size: 15.5px; line-height: 1.6;">
+                Our systematic 4-stage process guarantees total transparency, rigorous testing, and compounding commercial growth.
+            </p>
+        </div>
+        <div class="cdm-process-grid">
+            <div class="cdm-process-step">
+                <div class="cdm-step-num">01</div>
+                <div class="cdm-step-icon"><i class="fas fa-magnifying-glass"></i></div>
+                <h3>Discovery &amp; Market Audit</h3>
+                <p>We analyze your business model, customer persona, competitor strengths, and search opportunities across Pondicherry and target regions.</p>
+            </div>
+            <div class="cdm-process-step">
+                <div class="cdm-step-num">02</div>
+                <div class="cdm-step-icon"><i class="fas fa-compass-drafting"></i></div>
+                <h3>Custom Growth Strategy</h3>
+                <p>We craft a targeted marketing blueprint combining high-intent SEO keywords, ad creatives, conversion funnels, and budget allocations.</p>
+            </div>
+            <div class="cdm-process-step">
+                <div class="cdm-step-num">03</div>
+                <div class="cdm-step-icon"><i class="fas fa-rocket"></i></div>
+                <h3>Multi-Channel Launch</h3>
+                <p>Our certified specialists launch targeted campaigns across Google, Meta, and Search with conversion tracking configured.</p>
+            </div>
+            <div class="cdm-process-step">
+                <div class="cdm-step-num">04</div>
+                <div class="cdm-step-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Analyze, Optimize &amp; Scale</h3>
+                <p>We run rigorous A/B tests on ad creatives and landing pages to lower cost-per-lead and aggressively scale your winning channels.</p>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -1569,6 +2347,107 @@ if (!empty($innovative_highlight)) {
 <!-- 11. REUSABLE FREQUENTLY ASKED QUESTIONS SECTION (CONNECTED TO DATABASE `faqs`) -->
 <?php include __DIR__ . '/../../../includes/components/faq_section.php'; ?>
 
+<!-- 12. CONTACT CLOUD ASPIRE SOLUTIONS SECTION -->
+<section class="cdm-home-contact-section" id="contactSection">
+    <div class="cdm-home-contact-wrapper">
+        <div class="cdm-home-contact-info cdm-reveal-left">
+            <span class="cdm-contact-pill">Get In Touch Today</span>
+            <h2>Contact <span class="text-secondary">Cloud Aspire Solutions</span></h2>
+            <p>
+                Ready to accelerate your business with Pondicherry's premier digital marketing agency? Reach out to our strategy consultants today for a free discovery session and personalized revenue proposal.
+            </p>
+            <div class="cdm-contact-details-list">
+                <div class="cdm-cdetail-item">
+                    <i class="fas fa-location-dot"></i>
+                    <div>
+                        <strong>Office Location:</strong>
+                        <span><?= htmlspecialchars($contact_address) ?></span>
+                    </div>
+                </div>
+                <div class="cdm-cdetail-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <strong>Phone Number:</strong>
+                        <a href="tel:<?= $contact_phone ?>">+91 <?= htmlspecialchars($contact_phone) ?></a>
+                    </div>
+                </div>
+                <div class="cdm-cdetail-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <strong>Email Address:</strong>
+                        <a href="mailto:<?= htmlspecialchars($contact_email) ?>"><?= htmlspecialchars($contact_email) ?></a>
+                    </div>
+                </div>
+                <div class="cdm-cdetail-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <strong>Business Hours:</strong>
+                        <span><?= htmlspecialchars($contact_hours) ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="cdm-quick-channels">
+                <?php
+                $clean_wa = preg_replace('/[^0-9]/', '', $contact_whatsapp);
+                if (strlen($clean_wa) === 10) { $clean_wa = '91' . $clean_wa; }
+                ?>
+                <a href="https://wa.me/<?= $clean_wa ?>?text=<?= urlencode('Hi Cloud Aspire, I want to inquire about digital marketing services.') ?>" target="_blank" class="cdm-btn-wa">
+                    <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="tel:<?= $contact_phone ?>" class="cdm-btn-call-direct">
+                    <i class="fas fa-phone-volume"></i> Call Directly
+                </a>
+            </div>
+        </div>
+        <div class="cdm-home-contact-form-box cdm-reveal-right">
+            <div class="cdm-form-header">
+                <h3>Request a Free Growth Consultation</h3>
+                <p>Fill out the form below and our strategy team will reach out within 24 hours.</p>
+            </div>
+            <form id="homeLeadForm" onsubmit="submitHomeLead(event)">
+                <div class="cdm-form-group">
+                    <label for="hl_name">Your Name *</label>
+                    <input type="text" id="hl_name" name="name" required placeholder="e.g. John Doe" class="cdm-input">
+                </div>
+                <div class="cdm-form-row">
+                    <div class="cdm-form-group">
+                        <label for="hl_phone">Phone Number *</label>
+                        <input type="tel" id="hl_phone" name="phone" required placeholder="Phone / WhatsApp" class="cdm-input">
+                    </div>
+                    <div class="cdm-form-group">
+                        <label for="hl_email">Email Address *</label>
+                        <input type="email" id="hl_email" name="email" required placeholder="name@example.com" class="cdm-input">
+                    </div>
+                </div>
+                <div class="cdm-form-group">
+                    <label for="hl_service">Service Needed</label>
+                    <select id="hl_service" name="service" class="cdm-input">
+                        <option value="Search Engine Optimization (SEO)">Search Engine Optimization (SEO)</option>
+                        <option value="Social Media Marketing">Social Media Marketing</option>
+                        <option value="Google Ads &amp; Meta Ads">Google Ads and Meta Ads</option>
+                        <option value="Digital Marketing for Small Businesses">Digital Marketing for Small Businesses</option>
+                        <option value="Website &amp; App Development">Website &amp; App Development</option>
+                        <option value="Brand Identity &amp; Design">Brand Identity &amp; Design</option>
+                    </select>
+                </div>
+                <div class="cdm-form-group">
+                    <label for="hl_message">Your Project Details / Goals</label>
+                    <textarea id="hl_message" name="message" rows="3" placeholder="Tell us about your business goals and requirements..." class="cdm-input"></textarea>
+                </div>
+                <!-- Anti-spam Honeypot -->
+                <div style="display:none !important;" aria-hidden="true">
+                    <input type="text" name="website_hp" tabindex="-1" autocomplete="off">
+                </div>
+                <button type="submit" id="hl_submit_btn" class="cdm-btn-submit-lead">
+                    <span>Send Consultation Request</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <div id="hl_status_msg" class="cdm-form-status" style="display:none;"></div>
+            </form>
+        </div>
+    </div>
+</section>
+
 <!-- HOMEPAGE INTERACTIVE SCRIPTS -->
 <script>
 // 1. Hero Slider Logic
@@ -1645,6 +2524,46 @@ if (testItems.length > 1) {
         let nxt = (currentTestimonial + 1) % testItems.length;
         showTestimonial(nxt);
     }, 7000);
+}
+
+// 4. Homepage Direct Lead Capture AJAX Handler
+function submitHomeLead(e) {
+    e.preventDefault();
+    const form = document.getElementById('homeLeadForm');
+    const btn = document.getElementById('hl_submit_btn');
+    const msgBox = document.getElementById('hl_status_msg');
+    const formData = new FormData(form);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span>Sending Request...</span> <i class="fas fa-spinner fa-spin"></i>';
+    msgBox.style.display = 'none';
+    msgBox.className = 'cdm-form-status';
+
+    fetch('<?= $base_url ?>/api/lead-capture.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Send Consultation Request</span> <i class="fas fa-paper-plane"></i>';
+        msgBox.style.display = 'block';
+        if (data.status === 'success') {
+            msgBox.className = 'cdm-form-status success';
+            msgBox.textContent = data.message || 'Thank you! Your request has been received. Our team will contact you shortly.';
+            form.reset();
+        } else {
+            msgBox.className = 'cdm-form-status error';
+            msgBox.textContent = data.message || 'Something went wrong. Please try again or call us directly.';
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Send Consultation Request</span> <i class="fas fa-paper-plane"></i>';
+        msgBox.style.display = 'block';
+        msgBox.className = 'cdm-form-status error';
+        msgBox.textContent = 'Network error. Please try again or reach out on WhatsApp.';
+    });
 }
 </script>
 
