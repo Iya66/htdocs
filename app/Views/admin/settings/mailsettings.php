@@ -78,8 +78,8 @@ require_once __DIR__ . '/../../../../admin/includes/header.php';
         <div class="row">
             <div class="form-group">
                 <label>SMTP Server *</label>
-                <input type="text" name="smtp_server" value="<?= htmlspecialchars(getSettingValue('mail_smtp_server')) ?>" placeholder="portel.cloudaspire.in" required>
-                <span class="hint">e.g., portel.cloudaspire.in, smtp.gmail.com, smtp.hostinger.com</span>
+                <input type="text" name="smtp_server" value="<?= htmlspecialchars(getSettingValue('mail_smtp_server')) ?>" placeholder="mail.cloudaspiresolutions.in" required>
+                <span class="hint">Outgoing mail server hostname (e.g. mail.cloudaspiresolutions.in — do not enter email address)</span>
             </div>
             <div class="form-group">
                 <label>SMTP Port *</label>
@@ -379,13 +379,12 @@ try {
     <h3 style="color: #f57c00;"><i class="fas fa-lightbulb"></i> SMTP Provider Setup Guide</h3>
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
         <div style="background: #fff; padding: 20px; border-radius: 8px; border: 2px solid #6366f1;">
-            <h4 style="color: #6366f1; margin-bottom: 10px;">NinzaHost / CloudASPIRE <span style="font-size:11px;background:#6366f1;color:#fff;padding:2px 8px;border-radius:4px;margin-left:6px;">Current</span></h4>
+            <h4 style="color: #6366f1; margin-bottom: 10px;">NinzaHost / Cloud Aspire</h4>
             <ul style="color: #666; font-size: 13px; line-height: 1.8; padding-left: 20px;">
-                <li>SMTP Server: <strong>portel.cloudaspire.in</strong></li>
-                <li>Port: <strong>465</strong> (SSL/SMTPS)</li>
-                <li>Protocol: <strong>SSL</strong></li>
-                <li>Username: noreply@portel.cloudaspire.in</li>
-                <li><em>Do NOT use mail.portel.cloudaspire.in</em></li>
+                <li>SMTP Server: <strong>cloudaspiresolutions.in</strong></li>
+                <li>Port: <strong>587</strong> (TLS) or <strong>465</strong> (SSL)</li>
+                <li>Protocol: <strong>TLS</strong> or <strong>SSL</strong></li>
+                <li>Username: your_cpanel_email</li>
             </ul>
         </div>
         <div style="background: #fff; padding: 20px; border-radius: 8px;">

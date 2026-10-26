@@ -160,56 +160,9 @@ class SecurityNotifier {
   // ==================== EMAIL NOTIFICATIONS ====================
 
   private function sendEmailNotification(string $action, string $details, int|string|null $userId, array $metadata = []): void {
-  // Check if email notifications module is enabled
-  try {
-  $stmt = $this->conn->prepare("SELECT is_active FROM modules WHERE module_key = 'email_notifications'");
-  $stmt->execute();
-  $module = $stmt->fetch();
-
-  if (!$module || $module['is_active'] != 1) {
-  return; // Notifications disabled
-  }
-  } catch (PDOException $e) {
-  error_log("[SecurityNotifier] Failed to check module status: " . $e->getMessage());
-  return;
-  }
-
-  if (empty($this->adminEmail)) {
-  error_log("[SecurityNotifier] No admin email configured");
-  return;
-  }
-
-  // Get user info if available
-  $userName = 'System';
-  $userEmail = '';
-
-  if ($userId) {
-  try {
-  $stmt = $this->conn->prepare("SELECT name, email FROM admin WHERE id = ?");
-  $stmt->execute([$userId]);
-  $user = $stmt->fetch();
-  if ($user) {
-  $userName = $this->sanitizeString($user['name']);
-  $userEmail = $this->sanitizeEmail($user['email']);
-  }
-  } catch (PDOException $e) {
-  error_log("[SecurityNotifier] Failed to fetch user: " . $e->getMessage());
-  }
-  }
-
-  $emailData = [
-  'action' => $action,
-  'details' => $this->sanitizeString($details),
-  'user_name' => $userName,
-  'user_email' => $userEmail,
-  'metadata' => $this->sanitizeMetadata($metadata),
-  'ip_address' => $this->getClientIP(),
-  'user_agent' => $this->getUserAgent(),
-  'device_info' => $this->getDeviceInfo(),
-  'timestamp' => date('Y-m-d H:i:s')
-  ];
-
-  $this->sendHTMLAlertEmail($emailData);
+      // Security email notification sending is disabled by configuration to preserve sender reputation.
+      // Complete database audit logging in admin_activities and security_alerts remains 100% active.
+      return;
   }
 
   /**

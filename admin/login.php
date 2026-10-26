@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					</div>';
 
 					$mail_res = sendEmail($email, $subject, $body);
-					if ($mail_res['success'] || (defined('SITE_URL') && str_contains(SITE_URL, 'localhost'))) {
+					if ($mail_res['success']) {
 						$success = 'Verification code sent to your email!';
 						$view_state = 'verify_otp';
 					} else {

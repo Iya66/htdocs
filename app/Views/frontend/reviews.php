@@ -718,39 +718,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Number Count-Up Animation
     const counterElements = document.querySelectorAll('.counter-num');
-    const countObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                const el = entry.target;
-                if (!el.dataset.counted) {
-                    el.dataset.counted = 'true';
-                    const target = parseFloat(el.getAttribute('data-target')) || 0;
-                    const decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
-                    const suffix = el.getAttribute('data-suffix') || '';
-                    const duration = 1400;
-                    let startTime = null;
-
-                    function animateCount(timestamp) {
-                        if (!startTime) startTime = timestamp;
-                        const progress = Math.min((timestamp - startTime) / duration, 1);
-                        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-                        const currentVal = (ease * target).toFixed(decimals);
-                        el.textContent = currentVal + suffix;
-                        if (progress < 1) {
-                            requestAnimationFrame(animateCount);
-                        } else {
-                            el.textContent = (target).toFixed(decimals) + suffix;
-                        }
-                    }
-
-                    requestAnimationFrame(animateCount);
-                }
-                countObserver.unobserve(el);
-            }
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+        counterElements.forEach((el) => {
+            const target = parseFloat(el.getAttribute('data-target')) || 0;
+            const decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
+            const suffix = el.getAttribute('data-suffix') || '';
+            el.textContent = (target).toFixed(decimals) + suffix;
         });
-    }, { threshold: 0.25 });
+    } else {
+        const countObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    if (!el.dataset.counted) {
+                        el.dataset.counted = 'true';
+                        const target = parseFloat(el.getAttribute('data-target')) || 0;
+                        const decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
+                        const suffix = el.getAttribute('data-suffix') || '';
+                        const duration = 1400;
+                        let startTime = null;
 
-    counterElements.forEach((el) => countObserver.observe(el));
+                        function animateCount(timestamp) {
+                            if (!startTime) startTime = timestamp;
+                            const progress = Math.min((timestamp - startTime) / duration, 1);
+                            const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                            const currentVal = (ease * target).toFixed(decimals);
+                            el.textContent = currentVal + suffix;
+                            if (progress < 1) {
+                                requestAnimationFrame(animateCount);
+                            } else {
+                                el.textContent = (target).toFixed(decimals) + suffix;
+                            }
+                        }
+
+                        requestAnimationFrame(animateCount);
+                    }
+                    countObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.25 });
+
+        counterElements.forEach((el) => countObserver.observe(el));
+    }
 });
 </script>
 

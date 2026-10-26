@@ -111,119 +111,194 @@ function getMailSMTPOptions(array $mailSettings): array {
 
 // Save Mail Settings
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_mail_settings'])) {
- if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
- $message = 'Invalid request. Please refresh and try again.';
- $message_type = 'error';
- } else {
- $settings = [
- 'mail_admin_email' => trim($_POST['admin_email'] ?? ''),
- 'mail_smtp_email' => trim($_POST['smtp_email'] ?? ''),
- 'mail_smtp_server' => trim($_POST['smtp_server'] ?? ''),
- 'mail_smtp_port' => trim($_POST['smtp_port'] ?? ''),
- 'mail_smtp_protocol' => trim($_POST['smtp_protocol'] ?? 'tls'),
- 'mail_from_name' => trim($_POST['from_name'] ?? 'CloudASPIRE'),
- 'mail_force_ipv4' => isset($_POST['force_ipv4']) ? '1' : '0',
- ];
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $message = 'Invalid request. Please refresh and try again.';
+        $message_type = 'error';
+    } else {
+        $adminEmail = trim($_POST['admin_email'] ?? '');
+        $smtpEmail = trim($_POST['smtp_email'] ?? '');
+        $smtpServer = trim($_POST['smtp_server'] ?? '');
+        $smtpPort = trim($_POST['smtp_port'] ?? '');
+        $smtpProtocol = strtolower(trim($_POST['smtp_protocol'] ?? 'tls'));
+        $fromName = trim($_POST['from_name'] ?? 'Cloud Aspire');
+        $forceIpv4 = isset($_POST['force_ipv4']) ? '1' : '0';
 
- if (!empty($_POST['smtp_password'])) {
- $settings['mail_smtp_password'] = encryptPassword(trim($_POST['smtp_password']));
- }
+        // Auto-correct if user accidentally pasted their email into the SMTP Server field
+        if (str_contains($smtpServer, '@')) {
+            $domainPart = strtolower(trim(substr(strrchr($smtpServer, '@'), 1)));
+            if ($domainPart === 'gmail.com' || $domainPart === 'googlemail.com') {
+                $smtpServer = 'smtp.gmail.com';
+            } else {
+                $smtpServer = 'mail.' . $domainPart;
+            }
+        }
+        // Strip protocol prefix (ssl:// or tls://) and trailing slashes if typed
+        $smtpServer = preg_replace('/^(ssl|tls):\/\//i', '', rtrim($smtpServer, '/'));
 
- foreach ($settings as $key => $value) {
- $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
- $stmt->execute([$key, $value]);
- }
+        // Auto-correct mistyped Gmail hosts
+        if (in_array(strtolower($smtpServer), ['mail.gmail.com', 'gmail.com', 'googlemail.com', 'mail.google.com'], true)) {
+            $smtpServer = 'smtp.gmail.com';
+        }
 
- logAudit($conn, 'UPDATE_MAIL_SETTINGS', 'Updated mail/SMTP settings', $_SESSION['admin_id']);
- notifySecurity('UPDATE_MAIL_SETTINGS', 'Updated mail/SMTP settings', $_SESSION['admin_id']);
+        // If authenticated SMTP email is on cloudaspiresolutions.in, ensure host matches domain mail server
+        if (str_contains(strtolower($smtpEmail), '@cloudaspiresolutions.in') && str_contains(strtolower($smtpServer), 'gmail')) {
+            $smtpServer = 'mail.cloudaspiresolutions.in';
+        }
 
- $message = 'Mail settings saved successfully!';
- $message_type = 'success';
+        // Auto-align protocol if port 465 (SMTPS) is selected
+        if ((int)$smtpPort === 465 && ($smtpProtocol === 'tls' || empty($smtpProtocol))) {
+            $smtpProtocol = 'ssl';
+        }
 
- $stmt = $conn->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mail_%'");
- $stmt->execute();
- while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
- $mailSettings[$row['setting_key']] = $row['setting_value'];
- }
- }
+        // Validation
+        $validationError = '';
+        if (empty($adminEmail) || !filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+            $validationError = 'Please enter a valid Admin Email address.';
+        } elseif (empty($smtpEmail) || !filter_var($smtpEmail, FILTER_VALIDATE_EMAIL)) {
+            $validationError = 'Please enter a valid SMTP Email address.';
+        } elseif (empty($smtpServer)) {
+            $validationError = 'SMTP Server hostname is required.';
+        } elseif (preg_match('/[\s\/\\:]/', $smtpServer)) {
+            $validationError = 'SMTP Server hostname contains invalid characters or port numbers (e.g. use mail.cloudaspiresolutions.in).';
+        } elseif ((int)$smtpPort < 1 || (int)$smtpPort > 65535) {
+            $validationError = 'SMTP Port must be a valid number between 1 and 65535 (usually 465 or 587).';
+        }
+
+        if ($validationError !== '') {
+            $message = $validationError;
+            $message_type = 'error';
+        } else {
+            $settings = [
+                'mail_admin_email' => $adminEmail,
+                'mail_smtp_email' => $smtpEmail,
+                'mail_smtp_server' => $smtpServer,
+                'mail_smtp_port' => $smtpPort,
+                'mail_smtp_protocol' => in_array($smtpProtocol, ['tls', 'ssl', 'none'], true) ? $smtpProtocol : 'tls',
+                'mail_from_name' => $fromName,
+                'mail_force_ipv4' => $forceIpv4,
+            ];
+
+            if (!empty($_POST['smtp_password'])) {
+                $settings['mail_smtp_password'] = encryptPassword(trim($_POST['smtp_password']));
+            }
+
+            foreach ($settings as $key => $value) {
+                $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                $stmt->execute([$key, $value]);
+            }
+
+            logAudit($conn, 'UPDATE_MAIL_SETTINGS', 'Updated mail/SMTP settings', $_SESSION['admin_id']);
+            notifySecurity('UPDATE_MAIL_SETTINGS', 'Updated mail/SMTP settings', $_SESSION['admin_id']);
+
+            $message = 'Mail settings saved successfully!';
+            $message_type = 'success';
+
+            $stmt = $conn->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mail_%'");
+            $stmt->execute();
+            $mailSettings = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $mailSettings[$row['setting_key']] = $row['setting_value'];
+            }
+        }
+    }
 }
 
 // Test SMTP Connection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['test_smtp'])) {
- if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
- $message = 'Invalid request. Please refresh and try again.';
- $message_type = 'error';
- } else {
- try {
- $debugOutput = '';
- $mail = createMailer($conn, PHPMailer\PHPMailer\SMTP::DEBUG_CONNECTION, function($str, $level) use (&$debugOutput) {
- $debugOutput .= $str . "\n";
- });
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $message = 'Invalid request. Please refresh and try again.';
+        $message_type = 'error';
+    } else {
+        $serverHost = getSettingValue('mail_smtp_server');
+        $serverEmail = getSettingValue('mail_smtp_email');
 
- if (!$mail->smtpConnect()) {
- throw new Exception('Could not connect to SMTP server');
- }
+        if (empty($serverHost) || empty($serverEmail)) {
+            $message = 'SMTP settings are not configured. Please enter and save your SMTP server and email first.';
+            $message_type = 'error';
+        } else {
+            $debugOutput = '';
+            $mail = null;
+            try {
+                $mail = createMailer($conn, PHPMailer\PHPMailer\SMTP::DEBUG_CONNECTION, function($str, $level) use (&$debugOutput) {
+                    $debugOutput .= $str . "\n";
+                });
 
- $mail->smtpClose();
- $message = 'SMTP connection successful! Server is reachable.';
- $message_type = 'success';
- } catch (Exception $e) {
- $errorDetail = htmlspecialchars($e->getMessage());
- if (!empty($mail->ErrorInfo)) $errorDetail .= " | ErrorInfo: " . htmlspecialchars($mail->ErrorInfo);
- if (!empty($debugOutput)) $errorDetail .= "<br><br><b>Debug Log:</b><br><pre style='font-size: 11px; white-space: pre-wrap;'>" . htmlspecialchars($debugOutput) . "</pre>";
+                if (!$mail->smtpConnect()) {
+                    throw new Exception('Could not connect to SMTP server');
+                }
 
- $message = 'SMTP connection failed: ' . $errorDetail;
- $message_type = 'error';
- }
- }
+                $mail->smtpClose();
+                $message = 'SMTP connection successful! Connected and authenticated with ' . htmlspecialchars($mail->Host) . ' on port ' . $mail->Port . '.';
+                $message_type = 'success';
+            } catch (\Throwable $e) {
+                // Log full technical trace in protected server error logs
+                error_log("[SMTP Connection Test Failed] Host: " . ($mail->Host ?? $serverHost) . " | Exception: " . $e->getMessage() . (!empty($mail->ErrorInfo) ? " | ErrorInfo: " . $mail->ErrorInfo : "") . "\nDebug trace: " . $debugOutput);
+
+                // Show clean, user-friendly error in the Admin Panel
+                $message = formatSmtpUserErrorMessage($e, $mail, $mail->Host ?? $serverHost);
+                $message_type = 'error';
+            }
+        }
+    }
 }
 
 // Send Test Email
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test_email'])) {
- if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
- $message = 'Invalid request. Please refresh and try again.';
- $message_type = 'error';
- } else {
- $test_email = trim($_POST['test_email'] ?? '');
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $message = 'Invalid request. Please refresh and try again.';
+        $message_type = 'error';
+    } else {
+        $test_email = trim($_POST['test_email'] ?? '');
 
- if (empty($test_email)) {
- $message = 'Please enter a test email address.';
- $message_type = 'error';
- } else {
- try {
- $debugOutput = '';
- $from_name = getSettingValue('mail_from_name', 'CloudASPIRE');
- $smtp_email = getSettingValue('mail_smtp_email');
+        if (empty($test_email) || !filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
+            $message = 'Please enter a valid recipient email address for testing.';
+            $message_type = 'error';
+        } else {
+            $serverHost = getSettingValue('mail_smtp_server');
+            $smtpEmail = getSettingValue('mail_smtp_email');
+            $fromName = getSettingValue('mail_from_name', 'Cloud Aspire');
 
- if (empty($smtp_email)) {
- throw new Exception('SMTP settings are not configured. Please save settings first.');
- }
+            if (empty($serverHost) || empty($smtpEmail)) {
+                $message = 'SMTP settings are not configured. Please save your SMTP settings first.';
+                $message_type = 'error';
+            } else {
+                $debugOutput = '';
+                $mail = null;
+                try {
+                    $mail = createMailer($conn, PHPMailer\PHPMailer\SMTP::DEBUG_CONNECTION, function($str, $level) use (&$debugOutput) {
+                        $debugOutput .= $str . "\n";
+                    });
 
- $mail = createMailer($conn, PHPMailer\PHPMailer\SMTP::DEBUG_CONNECTION, function($str, $level) use (&$debugOutput) {
- $debugOutput .= $str . "\n";
- });
+                    $mail->setFrom($smtpEmail, $fromName);
+                    $mail->addAddress($test_email);
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Test Email from Cloud Aspire Admin';
+                    $mail->Body = '<h2>SMTP Delivery Verified!</h2><p>This is a test email sent from the Cloud Aspire administration panel.</p><p>If you received this message, your outbound SMTP configuration and delivery pipeline are working properly.</p>';
+                    $mail->AltBody = 'SMTP Delivery Verified! This is a test email sent from the Cloud Aspire administration panel. Your outbound SMTP configuration is working properly.';
 
- $mail->setFrom($smtp_email, $from_name);
- $mail->addAddress($test_email);
- $mail->isHTML(true);
- $mail->Subject = 'Test Email from CloudASPIRE';
- $mail->Body = '<h2>Test Email Successful!</h2><p>This is a test email from CloudASPIRE admin panel.</p><p>If you received this, your SMTP settings are configured correctly.</p>';
- $mail->AltBody = 'Test Email Successful! This is a test email from CloudASPIRE admin panel.';
+                    sendWithRetry($mail, 2);
 
- sendWithRetry($mail, 3);
+                    try {
+                        $stmtLog = $conn->prepare("INSERT INTO mail_logs (recipient, subject, status, error_message, sent_at) VALUES (?, ?, 'sent', NULL, NOW())");
+                        $stmtLog->execute([$test_email, 'Test Email from Cloud Aspire Admin']);
+                    } catch (\Exception $logEx) {}
 
- $message = 'Test email sent successfully to ' . htmlspecialchars($test_email);
- $message_type = 'success';
- } catch (Exception $e) {
- $errorDetail = htmlspecialchars($e->getMessage());
- if (!empty($mail->ErrorInfo)) $errorDetail .= " | ErrorInfo: " . htmlspecialchars($mail->ErrorInfo);
- if (!empty($debugOutput)) $errorDetail .= "<br><br><b>Debug Log:</b><br><pre style='font-size: 11px; white-space: pre-wrap;'>" . htmlspecialchars($debugOutput) . "</pre>";
+                    $message = 'Test email accepted by SMTP server and delivered successfully to ' . htmlspecialchars($test_email) . '.';
+                    $message_type = 'success';
+                } catch (\Throwable $e) {
+                    error_log("[SMTP Send Test Email Failed] Recipient: $test_email | Host: " . ($mail->Host ?? $serverHost) . " | Exception: " . $e->getMessage() . (!empty($mail->ErrorInfo) ? " | ErrorInfo: " . $mail->ErrorInfo : "") . "\nDebug trace: " . $debugOutput);
 
- $message = 'Failed to send test email: ' . $errorDetail;
- $message_type = 'error';
- }
- }
- }
+                    try {
+                        $stmtLog = $conn->prepare("INSERT INTO mail_logs (recipient, subject, status, error_message, sent_at) VALUES (?, ?, 'failed', ?, NOW())");
+                        $stmtLog->execute([$test_email, 'Test Email from Cloud Aspire Admin', substr($e->getMessage(), 0, 500)]);
+                    } catch (\Exception $logEx) {}
+
+                    $message = 'Failed to send test email: ' . formatSmtpUserErrorMessage($e, $mail, $mail->Host ?? $serverHost);
+                    $message_type = 'error';
+                }
+            }
+        }
+    }
 }
 
 // Process Mail Queue Manually

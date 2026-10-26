@@ -180,16 +180,33 @@ if (isset($conn)) {
     }
 
     /* "Get Free Audit" Footer Form */
+    .cdm-footer-form,
+    .cdm-footer-form * {
+        box-sizing: border-box;
+    }
+
+    .cdm-footer-col {
+        min-width: 0;
+    }
+
     .cdm-footer-form {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        width: 100%;
+        position: relative;
     }
 
     .cdm-form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .cdm-form-row > * {
+        min-width: 0;
     }
 
     .cdm-footer-form input {
@@ -197,44 +214,83 @@ if (isset($conn)) {
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.18);
         border-bottom: 2px solid var(--secondary-color, #fb9a27);
-        border-radius: 4px;
+        border-radius: 6px;
         color: #ffffff;
-        padding: 10px 14px;
+        padding: 11px 14px;
         font-size: 13px;
         outline: none;
         transition: all 0.3s ease;
+        box-sizing: border-box;
     }
 
     .cdm-footer-form input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
+        color: rgba(255, 255, 255, 0.65);
     }
 
     .cdm-footer-form input:focus {
         background: rgba(255, 255, 255, 0.15);
         border-color: var(--secondary-color, #fb9a27);
+        box-shadow: 0 0 0 3px rgba(251, 154, 39, 0.2);
     }
 
     .cdm-btn-audit {
+        width: 100%;
         background: var(--secondary-color, #fb9a27);
         color: #ffffff;
         border: none;
-        padding: 12px 20px;
-        border-radius: 4px;
+        padding: 13px 20px;
+        border-radius: 6px;
         font-weight: 700;
         font-size: 14px;
         cursor: pointer;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: all 0.3s ease;
-        margin-top: 5px;
+        transition: all 0.25s ease;
+        margin-top: 4px;
+        box-sizing: border-box;
     }
 
     .cdm-btn-audit:hover {
         background: #ffffff;
         color: var(--primary-color, #03228f);
         transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(251, 154, 39, 0.35);
+    }
+
+    .cdm-btn-audit:disabled {
+        opacity: 0.85;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none;
+    }
+
+    /* Footer Alert Message Box */
+    .cdm-footer-form .cdm-alert-box {
+        padding: 11px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        line-height: 1.5;
+        display: none;
+        margin-top: 8px;
+        box-sizing: border-box;
+        word-break: break-word;
+        transition: all 0.3s ease;
+    }
+
+    .cdm-footer-form .cdm-alert-box.success {
+        background: rgba(16, 185, 129, 0.18);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.45);
+        display: block;
+    }
+
+    .cdm-footer-form .cdm-alert-box.error {
+        background: rgba(239, 68, 68, 0.18);
+        color: #fca5a5;
+        border: 1px solid rgba(248, 113, 113, 0.45);
+        display: block;
     }
 
     /* Copyright Bar */
@@ -515,6 +571,12 @@ if (isset($conn)) {
         display: block;
     }
 
+    @media (max-width: 1199px) {
+        .cdm-form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
     @media (max-width: 992px) {
         .cdm-footer-top-grid {
             grid-template-columns: 1fr;
@@ -529,6 +591,11 @@ if (isset($conn)) {
             grid-template-columns: 1fr 1fr;
             gap: 30px;
         }
+    }
+
+    /* WhatsApp floating button clearance when near footer */
+    body.cdm-footer-visible .cdm-float-wa {
+        bottom: 84px;
     }
 
     @media (max-width: 768px) {
@@ -562,6 +629,12 @@ if (isset($conn)) {
             bottom: 20px;
             right: 18px;
             font-size: 26px;
+        }
+        body.cdm-footer-visible .cdm-float-wa {
+            bottom: 75px;
+        }
+        .cdm-footer-col:last-child {
+            padding-bottom: 15px;
         }
     }
 </style>
@@ -666,22 +739,24 @@ if (isset($conn)) {
         </div>
 
         <!-- Col 4: Get Free Audit Form -->
-        <div class="cdm-footer-col">
+        <div class="cdm-footer-col cdm-footer-col-audit">
             <h3>Get Free Audit</h3>
-            <form class="cdm-footer-form" id="cdmFooterAuditForm" onsubmit="submitFooterAudit(event)">
+            <form class="cdm-footer-form" id="cdmFooterAuditForm" onsubmit="submitFooterAudit(event)" novalidate>
+                <input type="hidden" name="source" value="footer_audit">
+                <input type="hidden" name="service" value="Free SEO Audit">
                 <div class="cdm-form-row">
-                    <input type="text" name="name" placeholder="Your Name*" required>
-                    <input type="email" name="email" placeholder="Your Email*" required>
+                    <input type="text" name="name" id="footer_audit_name" placeholder="Your Name*" required autocomplete="name" aria-label="Your Name">
+                    <input type="email" name="email" id="footer_audit_email" placeholder="Your Email*" required autocomplete="email" aria-label="Your Email">
                 </div>
                 <div class="cdm-form-row">
-                    <input type="tel" name="phone" placeholder="Phone Number*" required>
-                    <input type="text" name="website" placeholder="Website URL (optional)">
+                    <input type="tel" name="phone" id="footer_audit_phone" placeholder="Phone Number*" required autocomplete="tel" aria-label="Phone Number">
+                    <input type="text" name="website" id="footer_audit_website" placeholder="Website URL (e.g. yoursite.com)" autocomplete="url" aria-label="Website URL">
                 </div>
                 <button type="submit" class="cdm-btn-audit" id="btnAuditSubmit">
                     <span>Get Free Audit</span>
                     <i class="fas fa-arrow-right"></i>
                 </button>
-                <div id="footerAuditMsg" class="cdm-alert-box"></div>
+                <div id="footerAuditMsg" class="cdm-alert-box" role="alert" aria-live="polite"></div>
             </form>
         </div>
     </div>
@@ -690,7 +765,7 @@ if (isset($conn)) {
     <div class="cdm-footer-bottom">
         <div class="container">
             <p>
-                &copy; <?= date('Y') ?> <strong><?= htmlspecialchars($site_name) ?></strong>. All rights reserved.
+                &copy; <?= date('Y') ?> <strong><?= !empty($settings['copyright_company']) ? htmlspecialchars($settings['copyright_company']) : 'Cloud Aspire Solutions' ?></strong>. All rights reserved.
             </p>
             <ul class="cdm-footer-social">
                 <li><a href="<?= htmlspecialchars($facebook_url) ?>" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a></li>
@@ -990,33 +1065,117 @@ function submitFooterAudit(e) {
     const form = e.target;
     const btn = document.getElementById('btnAuditSubmit');
     const msg = document.getElementById('footerAuditMsg');
-    const formData = new FormData(form);
 
+    if (!form || !btn || !msg) return;
+
+    // Prevent duplicate submission if request is already in-flight
+    if (form.dataset.submitting === 'true' || btn.disabled) {
+        return;
+    }
+
+    const nameInput    = form.querySelector('input[name="name"]');
+    const emailInput   = form.querySelector('input[name="email"]');
+    const phoneInput   = form.querySelector('input[name="phone"]');
+
+    const nameVal  = (nameInput ? nameInput.value : '').trim();
+    const emailVal = (emailInput ? emailInput.value : '').trim();
+    const phoneVal = (phoneInput ? phoneInput.value : '').trim();
+
+    // Frontend validation before initiating loading state
+    if (!nameVal || nameVal.length < 2) {
+        msg.className = 'cdm-alert-box error';
+        msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter your name (at least 2 characters).';
+        msg.style.display = 'block';
+        if (nameInput) nameInput.focus();
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailVal || !emailRegex.test(emailVal)) {
+        msg.className = 'cdm-alert-box error';
+        msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid email address.';
+        msg.style.display = 'block';
+        if (emailInput) emailInput.focus();
+        return;
+    }
+
+    const cleanPhoneDigits = phoneVal.replace(/[^0-9]/g, '');
+    if (!phoneVal || cleanPhoneDigits.length < 7) {
+        msg.className = 'cdm-alert-box error';
+        msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid phone number (min 7 digits).';
+        msg.style.display = 'block';
+        if (phoneInput) phoneInput.focus();
+        return;
+    }
+
+    // Reset previous alert
+    msg.style.display = 'none';
+    msg.className = 'cdm-alert-box';
+    msg.textContent = '';
+
+    // Mark loading state
+    form.dataset.submitting = 'true';
     btn.disabled = true;
     btn.innerHTML = '<span>Submitting...</span> <i class="fas fa-spinner fa-spin"></i>';
 
+    const formData = new FormData(form);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     fetch('<?= $base_url ?>/footer-form.php', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: controller.signal
     })
-    .then(r => r.json())
+    .then(r => {
+        clearTimeout(timeoutId);
+        if (!r.ok) {
+            throw new Error('Server returned HTTP ' + r.status);
+        }
+        return r.json();
+    })
     .then(data => {
-        if (data.status === 'success') {
+        if (data && data.status === 'success') {
             msg.className = 'cdm-alert-box success';
-            msg.textContent = data.message;
+            msg.innerHTML = '<i class="fas fa-check-circle"></i> ' + (data.message || 'Audit request submitted successfully!');
+            msg.style.display = 'block';
             form.reset();
         } else {
             msg.className = 'cdm-alert-box error';
-            msg.textContent = data.message || 'Submission failed. Please try again.';
+            msg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data && data.message ? data.message : 'Submission failed. Please check your inputs and try again.');
+            msg.style.display = 'block';
         }
     })
     .catch(err => {
+        clearTimeout(timeoutId);
         msg.className = 'cdm-alert-box error';
-        msg.textContent = 'Network error. Please try again.';
+        if (err && err.name === 'AbortError') {
+            msg.innerHTML = '<i class="fas fa-hourglass-end"></i> Request timed out. Please check your internet connection and try again.';
+        } else {
+            msg.innerHTML = '<i class="fas fa-wifi"></i> Network error. Please try again or reach out to us directly.';
+        }
+        msg.style.display = 'block';
     })
     .finally(() => {
+        // ALWAYS restore submit button to normal state in every completion path
+        form.dataset.submitting = 'false';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Get Free Audit</span> <i class="fas fa-arrow-right"></i>';
     });
 }
+
+// Observe footer scroll to elevate floating WhatsApp button out of form elements
+document.addEventListener('DOMContentLoaded', function() {
+    const footerElement = document.querySelector('.cdm-footer');
+    if (footerElement && 'IntersectionObserver' in window) {
+        const waObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                document.body.classList.toggle('cdm-footer-visible', entry.isIntersecting);
+            });
+        }, { threshold: 0.08 });
+        waObserver.observe(footerElement);
+    }
+});
 </script>
 
 

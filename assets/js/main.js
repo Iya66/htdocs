@@ -1,8 +1,10 @@
 // Header scroll effect
-const header = document.getElementById('header');
-window.addEventListener('scroll', () => {
-  header.classList.toggle('scrolled', window.scrollY > 50);
-});
+const header = document.getElementById('header') || document.getElementById('cdmHeader');
+if (header) {
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  }, { passive: true });
+}
 
 // Sidebar toggle
 const menuToggle = document.getElementById('menuToggle');
@@ -10,8 +12,8 @@ const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('sidebarOverlay');
 const sidebarClose = document.getElementById('sidebarClose');
 
-function openSidebar() { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+function openSidebar() { if (sidebar) sidebar.classList.add('active'); if (overlay) overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { if (sidebar) sidebar.classList.remove('active'); if (overlay) overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
 if (menuToggle) menuToggle.addEventListener('click', openSidebar);
 if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);

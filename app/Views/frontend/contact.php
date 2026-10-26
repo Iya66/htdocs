@@ -398,10 +398,10 @@ include __DIR__ . '/../../../includes/components/page_hero.php';
         display: inline-block;
         margin-right: 6px;
         vertical-align: middle;
-        animation: cdmPulse 2s infinite ease-in-out;
+        animation: cdmDotPulse 2s infinite ease-in-out;
     }
 
-    @keyframes cdmPulse {
+    @keyframes cdmDotPulse {
         0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
         70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }

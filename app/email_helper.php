@@ -1,9 +1,17 @@
 <?php
 /**
- * Email Helper - Send emails using PHPMailer with settings from database
- * 
- * Uses centralized SMTP Factory for consistent PHPMailer configuration.
- * All SMTP setup is handled by smtp_factory.php — no inline config here.
+ * Email Helper - Centralized Transactional Email Engine
+ *
+ * Configured strictly for high-deliverability lead capture and essential system notifications:
+ * 1. Admin Lead & Audit Notifications (Reply-To = visitor email)
+ * 2. Visitor Thank-You Confirmations (Reply-To = authenticated domain noreply)
+ * 3. Contact Form Notifications (Reply-To = visitor email)
+ *
+ * Non-essential automated emails (welcome, admin session alerts, review notices,
+ * project/digest updates) are safely disabled as no-ops to protect sender reputation.
+ *
+ * @requires app/smtp_factory.php
+ * @requires app/mail_queue.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -11,21 +19,23 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/smtp_factory.php';
 require_once __DIR__ . '/mail_queue.php';
 
-
-// SMTP Password Decryption — delegates to smtp_factory.php
-// Kept as alias for backward compatibility with any external callers
+// Backward compatibility alias for SMTP password decryption
 if (!function_exists('decryptSMTPPassword')) {
     function decryptSMTPPassword(string $encoded): string {
         return decryptSmtpPassword($encoded);
     }
 }
 
-
+/**
+ * Escape HTML output securely.
+ */
 function safe_html($string) {
     return htmlspecialchars((string)$string, ENT_QUOTES, 'UTF-8', false);
 }
 
-// Error logging for debugging
+/**
+ * Log email errors to PHP error log and database audit log if available.
+ */
 function logEmailError(string $function, string $message) {
     error_log("[Email Error - $function] $message");
     global $conn;
@@ -34,79 +44,40 @@ function logEmailError(string $function, string $message) {
             $conn->prepare("INSERT INTO admin_activities (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)")
                 ->execute([$_SESSION['admin_id'] ?? 0, 'EMAIL_ERROR', "$function: $message", $_SERVER['REMOTE_ADDR'] ?? '']);
         } catch (Exception $e) {
-            // Silently fail
+            // Silently ignore activity log failures
         }
     }
 }
 
 /**
- * Send an email either asynchronously via the mail queue (default, instant response)
+ * Dispatch an email either asynchronously via the mail queue (default, non-blocking)
  * or synchronously (direct connection).
  *
- * @param mixed  $to       Recipient email address(es)
- * @param string $subject  Email subject
- * @param string $body     HTML message body
- * @param string $altBody  Plain text alternative
- * @param bool   $async    True to queue and send in background (instant), false for direct send
+ * @param mixed       $to           Recipient email address(es)
+ * @param string      $subject      Email subject line
+ * @param string      $body         HTML message body
+ * @param string      $altBody      Plain text alternative
+ * @param bool        $async        True to queue and send in background, false for direct send
+ * @param string|null $replyTo      Reply-To email address
+ * @param string|null $replyToName  Reply-To display name
  * @return array{success: bool, message: string, queued?: bool}
  */
-function sendEmail(mixed $to, string $subject, string $body, string $altBody = '', bool $async = false): array {
+function sendEmail(mixed $to, string $subject, string $body, string $altBody = '', bool $async = false, ?string $replyTo = null, ?string $replyToName = null): array {
     global $conn;
 
     if ($async) {
-        return enqueueEmail($conn, $to, $subject, $body, $altBody, true);
+        return enqueueEmail($conn, $to, $subject, $body, $altBody, true, $replyTo, $replyToName);
     }
 
-    return sendEmailDirect($to, $subject, $body, $altBody);
+    return sendEmailDirect($to, $subject, $body, $altBody, $replyTo, $replyToName);
 }
 
 /**
- * Explicit helper to enqueue an email for asynchronous delivery.
+ * Enqueue an email explicitly for asynchronous background delivery.
  */
-function queueEmail(mixed $to, string $subject, string $body, string $altBody = ''): array {
+function queueEmail(mixed $to, string $subject, string $body, string $altBody = '', ?string $replyTo = null, ?string $replyToName = null): array {
     global $conn;
-    return enqueueEmail($conn, $to, $subject, $body, $altBody, true);
-}
-
-/**
- * Convert HTML email to high-quality plain text alternative (AltBody).
- * Eliminates raw CSS, scripts, and broken tags that trigger spam filters.
- */
-if (!function_exists('htmlToCleanPlainText')) {
-    function htmlToCleanPlainText(string $html): string {
-        if (empty($html)) return '';
-
-        // 1. Strip <style>, <script>, <head> and their contents completely
-        $clean = preg_replace('/<(head|style|script)\b[^>]*>.*?<\/\1>/si', '', $html);
-
-        // 2. Convert links: <a href="http://...">Text</a> -> Text (http://...)
-        $clean = preg_replace_callback('/<a\s+[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)<\/a>/si', function($matches) {
-            $text = trim(strip_tags($matches[2]));
-            $url = trim($matches[1]);
-            if ($text === '' || $text === $url || str_starts_with($url, '#') || str_starts_with($url, 'javascript:')) {
-                return $text ?: $url;
-            }
-            return "$text ($url)";
-        }, $clean);
-
-        // 3. Convert breaks, headers, table rows, and paragraphs to newlines
-        $clean = preg_replace('/<(br|hr)\s*\/?>/i', "\n", $clean);
-        $clean = preg_replace('/<\/(p|div|h[1-6]|tr|table|blockquote)>/i', "\n\n", $clean);
-        $clean = preg_replace('/<li[^>]*>/i', "  • ", $clean);
-        $clean = preg_replace('/<\/li>/i', "\n", $clean);
-
-        // 4. Strip any remaining tags
-        $clean = strip_tags($clean);
-
-        // 5. Decode HTML entities (&amp;, &nbsp;, &copy;, &#9733;, etc.)
-        $clean = html_entity_decode($clean, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
-        // 6. Clean up excess whitespace and blank lines
-        $clean = preg_replace("/[ \t]+/", " ", $clean);
-        $clean = preg_replace("/\n\s*\n\s*\n+/", "\n\n", $clean);
-
-        return trim($clean);
-    }
+    return enqueueEmail($conn, $to, $subject, $body, $altBody, true, $replyTo, $replyToName);
 }
 
 /**
@@ -114,13 +85,12 @@ if (!function_exists('htmlToCleanPlainText')) {
  * Used for interactive SMTP diagnostics (Test SMTP / Send Test Email) where
  * immediate inline confirmation or debug output is required.
  */
-function sendEmailDirect(mixed $to, string $subject, string $body, string $altBody = ''): array {
+function sendEmailDirect(mixed $to, string $subject, string $body, string $altBody = '', ?string $replyTo = null, ?string $replyToName = null): array {
     global $conn;
 
     $recipientStr = is_array($to) ? implode(', ', $to) : $to;
 
     try {
-        // Validate recipient
         if (empty($to) || (is_array($to) && count(array_filter($to)) === 0)) {
             $msg = 'No recipient email address provided';
             logEmailError('sendEmailDirect', $msg);
@@ -131,24 +101,18 @@ function sendEmailDirect(mixed $to, string $subject, string $body, string $altBo
             return ['success' => false, 'message' => $msg];
         }
 
-        // Load settings for from_name and admin_email (factory handles SMTP config)
         $settings = loadSmtpSettings($conn);
-        $smtp_email  = $settings['mail_smtp_email'] ?? '';
-        $from_name   = $settings['mail_from_name'] ?? (defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Cloud Aspire');
-        $admin_email = $settings['mail_admin_email'] ?? $smtp_email;
+        $smtp_email = $settings['mail_smtp_email'] ?? '';
+        $from_name  = $settings['mail_from_name'] ?? (defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Cloud Aspire');
 
-        // Create mailer via centralized factory (handles host, port, auth, encryption, IPv4, timeouts)
+        // Create mailer via centralized factory
         $mail = createMailer($conn);
 
-        // Sender & Return-Path alignment for SPF/DMARC
+        // Envelope Sender & From alignment for SPF/DMARC
         $mail->setFrom($smtp_email, $from_name);
         $mail->Sender = $smtp_email;
 
-        // Anti-Spam / Deliverability Headers
-        $mail->addCustomHeader('Auto-Submitted', 'auto-generated');
-        $mail->addCustomHeader('X-Auto-Response-Suppress', 'All');
-
-        // Handle multiple recipients
+        // Recipients
         if (is_array($to)) {
             foreach ($to as $recipient) {
                 if (!empty($recipient) && filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
@@ -161,20 +125,23 @@ function sendEmailDirect(mixed $to, string $subject, string $body, string $altBo
             }
         }
 
-        if (!empty($admin_email)) {
-            $mail->addReplyTo($admin_email, $from_name);
+        // Reply-To header alignment
+        if (!empty($replyTo) && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
+            $mail->addReplyTo($replyTo, !empty($replyToName) ? $replyToName : $replyTo);
+        } elseif (!empty($smtp_email)) {
+            $mail->addReplyTo($smtp_email, $from_name);
         }
 
         // Content
         $mail->isHTML(true);
         $mail->Subject = $subject;
-        $mail->Body = $body;
+        $mail->Body    = $body;
         $mail->AltBody = !empty($altBody) ? $altBody : htmlToCleanPlainText($body);
 
         // Send with automatic retry (2 attempts)
         sendWithRetry($mail, 2);
 
-        error_log("[Email Success] Sent to: $recipientStr");
+        error_log("[Email Success] Sent direct to: $recipientStr");
 
         try {
             $stmtLog = $conn->prepare("INSERT INTO mail_logs (recipient, subject, status, sent_at) VALUES (?, ?, 'sent', NOW())");
@@ -200,25 +167,20 @@ function sendEmailDirect(mixed $to, string $subject, string $body, string $altBo
 }
 
 /**
- * Build a modern, professional branded HTML email layout optimized for 100% inbox deliverability.
+ * Build a modern, clean HTML email layout optimized for inbox deliverability.
  *
- * @param array $options Configuration options:
- *                       - title (string): Main headline
- *                       - subtitle (string, optional): Header subtext
- *                       - badge (string, optional): Status/category tag
- *                       - badge_color (string, optional): Hex color for badge
- *                       - content_html (string): Main body content HTML
- *                       - button_text (string, optional): CTA button label
- *                       - button_url (string, optional): CTA button URL
- *                       - footer_note (string, optional): Special note in footer
- * @return string Complete responsive HTML document
+ * Rules:
+ * - Table-based responsive container (600px width).
+ * - PNG logo only (no SVG images).
+ * - No spam trigger words or emojis in headers or badges.
+ * - Clean inline styling compatible with Gmail, Apple Mail, and Outlook.
  */
 function buildProfessionalEmailTemplate(array $options): string {
     global $conn;
 
-    $siteName  = defined('SITE_NAME') ? SITE_NAME : 'Cloud Aspire';
-    $siteUrl   = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspire.in';
-    $siteLogo  = '';
+    $siteName     = defined('SITE_NAME') ? SITE_NAME : 'Cloud Aspire';
+    $siteUrl      = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
+    $siteLogo     = '';
     $contactEmail = 'cloudaspire2025@gmail.com';
 
     if (isset($conn)) {
@@ -231,642 +193,504 @@ function buildProfessionalEmailTemplate(array $options): string {
         } catch (Exception $e) {}
     }
 
-    $title        = $options['title'] ?? $siteName;
-    $subtitle     = $options['subtitle'] ?? '';
-    $badge        = $options['badge'] ?? '';
-    $badgeColor   = $options['badge_color'] ?? '#4f46e5';
-    $contentHtml  = $options['content_html'] ?? '';
-    $buttonText   = $options['button_text'] ?? '';
-    $buttonUrl    = $options['button_url'] ?? '';
-    $footerNote   = $options['footer_note'] ?? '';
+    $title       = $options['title'] ?? $siteName;
+    $subtitle    = $options['subtitle'] ?? '';
+    $badge       = $options['badge'] ?? '';
+    $badgeColor  = $options['badge_color'] ?? '#312e81';
+    $contentHtml = $options['content_html'] ?? '';
+    $buttonText  = $options['button_text'] ?? '';
+    $buttonUrl   = $options['button_url'] ?? '';
+    $footerNote  = $options['footer_note'] ?? '';
 
-    // Build logo URL
+    // Render PNG logo only. If SVG is configured, fall back to clean text brand to prevent spam triggers
     $logoHtml = '';
-    if (!empty($siteLogo)) {
+    if (!empty($siteLogo) && !str_ends_with(strtolower($siteLogo), '.svg')) {
         $logoUrl = (str_starts_with($siteLogo, 'http://') || str_starts_with($siteLogo, 'https://'))
             ? $siteLogo
             : $siteUrl . '/' . ltrim($siteLogo, '/');
-        $logoHtml = '<img src="' . safe_html($logoUrl) . '" alt="' . safe_html($siteName) . '" style="max-height: 48px; max-width: 200px; height: auto; width: auto; object-fit: contain; vertical-align: middle; display: inline-block; margin-bottom: 8px;">';
+        $logoHtml = '<img src="' . safe_html($logoUrl) . '" alt="' . safe_html($siteName) . '" style="max-height: 44px; max-width: 180px; height: auto; width: auto; object-fit: contain; vertical-align: middle; display: inline-block; margin-bottom: 6px;">';
     } else {
-        $logoHtml = '<div style="font-size: 24px; font-weight: 800; color: #1e1b4b; letter-spacing: -0.5px; margin-bottom: 4px;">' . safe_html($siteName) . '</div>';
+        $logoHtml = '<div style="font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 4px;">' . safe_html($siteName) . '</div>';
     }
 
     $buttonHtml = '';
     if (!empty($buttonText) && !empty($buttonUrl)) {
         $buttonHtml = '
-        <div style="text-align: center; margin: 30px 0 10px 0;">
-            <a href="' . safe_html($buttonUrl) . '" target="_blank" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff; padding: 13px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block; letter-spacing: 0.2px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);">' . safe_html($buttonText) . ' &rarr;</a>
+        <div style="text-align: center; margin: 28px 0 12px 0;">
+            <a href="' . safe_html($buttonUrl) . '" target="_blank" style="background-color: #312e81; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">' . safe_html($buttonText) . '</a>
         </div>';
     }
 
     $badgeHtml = '';
     if (!empty($badge)) {
-        $badgeHtml = '<div style="display: inline-block; padding: 5px 14px; background: ' . safe_html($badgeColor) . '; color: #ffffff; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;">' . safe_html($badge) . '</div>';
+        $badgeHtml = '
+        <div style="margin-bottom: 12px;">
+            <span style="background-color: #f1f5f9; color: ' . safe_html($badgeColor) . '; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 10px; border-radius: 4px; display: inline-block; border: 1px solid #e2e8f0;">' . safe_html($badge) . '</span>
+        </div>';
     }
 
+    $year = date('Y');
+
     return '<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>' . safe_html($title) . '</title>
-    <!--[if mso]>
-    <noscript>
-        <xml>
-            <o:OfficeDocumentSettings>
-                <o:PixelsPerInch>96</o:PixelsPerInch>
-            </o:OfficeDocumentSettings>
-        </xml>
-    </noscript>
-    <![endif]-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>' . safe_html($title) . '</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #334155; line-height: 1.6;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f1f5f9; padding: 32px 16px;">
-        <tr>
-            <td align="center">
-                <!-- Email Container -->
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; width: 100%; margin: 0 auto;">
-                    <!-- Brand Header -->
-                    <tr>
-                        <td align="center" style="padding-bottom: 20px;">
-                            <a href="' . safe_html($siteUrl) . '" target="_blank" style="text-decoration: none; display: inline-block;">
-                                ' . $logoHtml . '
-                            </a>
-                        </td>
-                    </tr>
-                    
-                    <!-- Main Card -->
-                    <tr>
-                        <td>
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); border: 1px solid #e2e8f0;">
-                                <!-- Card Header Banner -->
-                                <tr>
-                                    <td style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); padding: 32px 28px; text-align: center;">
-                                        ' . $badgeHtml . '
-                                        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; line-height: 1.3;">' . safe_html($title) . '</h1>
-                                        ' . (!empty($subtitle) ? '<p style="color: #cbd5e1; margin: 8px 0 0 0; font-size: 14px; line-height: 1.5;">' . safe_html($subtitle) . '</p>' : '') . '
-                                    </td>
-                                </tr>
-
-                                <!-- Card Body -->
-                                <tr>
-                                    <td style="padding: 32px 28px; font-size: 15px; line-height: 1.6; color: #334155;">
-                                        ' . $contentHtml . '
-                                        ' . $buttonHtml . '
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                    <!-- Footer (CAN-SPAM & Anti-Spam Compliant) -->
-                    <tr>
-                        <td style="padding: 24px 16px 12px 16px; text-align: center; color: #64748b; font-size: 12px; line-height: 1.6;">
-                            ' . (!empty($footerNote) ? '<p style="margin: 0 0 10px 0; color: #64748b; font-size: 11px;">' . safe_html($footerNote) . '</p>' : '') . '
-                            <p style="margin: 0 0 6px 0; color: #475569; font-size: 11px;">
-                                You are receiving this automated notification because a service inquiry or review was submitted on <a href="' . safe_html($siteUrl) . '" target="_blank" style="color: #4f46e5; text-decoration: none;">' . safe_html($siteName) . '</a>.
-                            </p>
-                            <p style="margin: 0 0 8px 0; color: #334155; font-weight: 600;">&copy; ' . date('Y') . ' ' . safe_html($siteName) . ' &bull; Pondicherry, India</p>
-                            <p style="margin: 0;">
-                                <a href="' . safe_html($siteUrl) . '" target="_blank" style="color: #4f46e5; text-decoration: none; margin: 0 8px;">Official Website</a> &bull;
-                                <a href="' . safe_html($siteUrl) . '/privacy-policy" target="_blank" style="color: #4f46e5; text-decoration: none; margin: 0 8px;">Privacy Policy</a> &bull;
-                                <a href="mailto:' . safe_html($contactEmail) . '" style="color: #4f46e5; text-decoration: none; margin: 0 8px;">Support Contact</a>
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased; line-height: 1.6;">
+<table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 30px 15px;">
+    <tr>
+        <td align="center">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;">
+                <tr>
+                    <td style="padding: 28px 36px 20px 36px; border-bottom: 1px solid #f1f5f9; text-align: left;">
+                        ' . $logoHtml . '
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 32px 36px 24px 36px;">
+                        ' . $badgeHtml . '
+                        <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #0f172a; line-height: 1.3;">' . safe_html($title) . '</h1>
+                        ' . (!empty($subtitle) ? '<p style="margin: 0 0 20px 0; font-size: 14px; color: #64748b; line-height: 1.5;">' . safe_html($subtitle) . '</p>' : '<div style="margin-bottom: 20px;"></div>') . '
+                        ' . $contentHtml . '
+                        ' . $buttonHtml . '
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 20px 36px 24px 36px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.6;">
+                        ' . (!empty($footerNote) ? '<p style="margin: 0 0 8px 0; color: #64748b;">' . safe_html($footerNote) . '</p>' : '') . '
+                        <p style="margin: 0 0 4px 0;">This email was sent by <strong>' . safe_html($siteName) . '</strong>.</p>
+                        <p style="margin: 0;">For inquiries, contact us at <a href="mailto:' . safe_html($contactEmail) . '" style="color: #312e81; text-decoration: none;">' . safe_html($contactEmail) . '</a> or visit <a href="' . safe_html($siteUrl) . '" style="color: #312e81; text-decoration: none;">' . safe_html($siteUrl) . '</a>.</p>
+                        <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 11px;">&copy; ' . $year . ' ' . safe_html($siteName) . '. All rights reserved.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>';
 }
 
-function sendLeadNotification(array $lead_data, bool $async = true) {
+// =========================================================================
+// ACTIVE LEAD & AUDIT EMAIL FUNCTIONS (RETAINED)
+// =========================================================================
+
+/**
+ * 1. Admin Notification for SEO Audit Requests.
+ *
+ * Subject: New SEO Audit Request - {Name}
+ * Reply-To: Visitor's validated email address.
+ */
+function sendAuditRequestNotification(array $audit_data, bool $async = true): array {
     global $conn;
 
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
-    $stmt->execute();
-    $admin_email = $stmt->fetchColumn() ?: '';
-
+    $admin_email = '';
+    if (isset($conn)) {
+        try {
+            $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
+            $stmt->execute();
+            $admin_email = $stmt->fetchColumn() ?: '';
+            if (empty($admin_email)) {
+                $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
+                $stmt->execute();
+                $admin_email = $stmt->fetchColumn() ?: '';
+            }
+        } catch (Exception $e) {}
+    }
     if (empty($admin_email)) {
-        $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
-        $stmt->execute();
-        $admin_email = $stmt->fetchColumn() ?: 'cloudaspire2026@gmail.com';
+        $admin_email = 'premkumar40187@gmail.com';
     }
 
-    $subject = 'New Lead Received - ' . ($lead_data['name'] ?? 'Unknown');
-    
+    $name    = trim($audit_data['name'] ?? 'Prospective Client');
+    $email   = trim($audit_data['email'] ?? '');
+    $phone   = trim($audit_data['phone'] ?? '');
+    $website = trim($audit_data['website'] ?? '');
+    $leadId  = (int)($audit_data['lead_id'] ?? 0);
+    $refId   = $leadId > 0 ? ('#AUD-' . str_pad((string)$leadId, 5, '0', STR_PAD_LEFT)) : ('#AUD-' . date('ymd') . rand(100, 999));
+
+    // Deliverability: Clean subject, no emojis, no spam-trigger phrases
+    $subject = 'New SEO Audit Request - ' . $name;
+
+    $websiteText = !empty($website) ? safe_html($website) : 'Not provided';
+    $emailText   = !empty($email) ? safe_html($email) : 'Not provided';
+    $phoneText   = !empty($phone) ? safe_html($phone) : 'Not provided';
+    $submittedAt = date('Y-m-d H:i:s T');
+    $siteUrl     = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
+
     $content = '
-    <p style="margin-top: 0;">A new lead inquiry has been submitted through your website:</p>
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Name:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($lead_data['name'] ?? 'N/A') . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($lead_data['email'] ?? '') . '" style="color: #4f46e5; text-decoration: none;">' . safe_html($lead_data['email'] ?? 'N/A') . '</a></td></tr>
-            <tr><td style="color: #64748b;"><strong>Phone:</strong></td><td style="color: #0f172a;">' . safe_html($lead_data['phone'] ?? 'N/A') . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Service:</strong></td><td><span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">' . safe_html($lead_data['service'] ?? 'General') . '</span></td></tr>
-            <tr><td style="color: #64748b; vertical-align: top;"><strong>Message:</strong></td><td style="color: #334155; line-height: 1.5;">' . nl2br(safe_html($lead_data['message'] ?? 'N/A')) . '</td></tr>
-        </table>
-    </div>
-    <p style="color: #64748b; font-size: 13px; margin: 0;">Received at ' . date('Y-m-d H:i:s') . '</p>';
+    <div style="margin-bottom: 20px;">
+        <p style="margin: 0 0 14px 0; font-size: 14px; color: #334155;">
+            A new SEO and website performance audit request has been submitted through the website.
+        </p>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+            <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px; border-collapse: collapse;">
+                <tr><td style="color: #64748b; width: 30%;"><strong>Reference:</strong></td><td style="color: #0f172a; font-family: monospace; font-weight: 700;">' . safe_html($refId) . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Contact Name:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($name) . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($email) . '" style="color: #312e81; text-decoration: none;">' . $emailText . '</a></td></tr>
+                <tr><td style="color: #64748b;"><strong>Phone:</strong></td><td style="color: #0f172a;">' . $phoneText . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Website:</strong></td><td style="color: #0f172a; font-family: monospace;">' . $websiteText . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Submitted:</strong></td><td style="color: #64748b; font-size: 13px;">' . $submittedAt . '</td></tr>
+            </table>
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">You can click Reply directly to respond to this prospective client.</p>
+    </div>';
 
     $body = buildProfessionalEmailTemplate([
-        'title'        => 'New Lead Submission',
-        'subtitle'     => 'An inquiry was submitted via the contact/lead form',
-        'badge'        => 'NEW LEAD',
-        'badge_color'  => '#10b981',
+        'title'        => 'New SEO Audit Request',
+        'subtitle'     => 'Inquiry details for ' . safe_html($name),
+        'badge'        => 'AUDIT INQUIRY',
+        'badge_color'  => '#059669',
         'content_html' => $content,
         'button_text'  => 'Open Admin Panel',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/leads.php'
+        'button_url'   => $siteUrl . '/admin/leads.php'
     ]);
 
-    return sendEmail($admin_email, $subject, $body, '', $async);
-}
-
-function sendContactNotification(array $contact_data, bool $async = true) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
-    $stmt->execute();
-    $admin_email = $stmt->fetchColumn() ?: '';
-
-    if (empty($admin_email)) {
-        $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
-        $stmt->execute();
-        $admin_email = $stmt->fetchColumn() ?: 'cloudaspire2026@gmail.com';
-    }
-
-    $subject = 'New Contact Form Submission - ' . ($contact_data['name'] ?? 'Unknown');
-
-    $content = '
-    <p style="margin-top: 0;">A visitor sent a new message from the contact form:</p>
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Name:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($contact_data['name'] ?? 'N/A') . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($contact_data['email'] ?? '') . '" style="color: #4f46e5; text-decoration: none;">' . safe_html($contact_data['email'] ?? 'N/A') . '</a></td></tr>
-            <tr><td style="color: #64748b;"><strong>Subject:</strong></td><td style="color: #0f172a;">' . safe_html($contact_data['subject'] ?? 'N/A') . '</td></tr>
-            <tr><td style="color: #64748b; vertical-align: top;"><strong>Message:</strong></td><td style="color: #334155; line-height: 1.5;">' . nl2br(safe_html($contact_data['message'] ?? 'N/A')) . '</td></tr>
-        </table>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Contact Form Submission',
-        'subtitle'     => 'New message from ' . safe_html($contact_data['name'] ?? 'Visitor'),
-        'badge'        => 'CONTACT FORM',
-        'badge_color'  => '#3b82f6',
-        'content_html' => $content,
-        'button_text'  => 'View in Admin',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/'
-    ]);
-
-    return sendEmail($admin_email, $subject, $body, '', $async);
-}
-
-function sendReportToAdmin(string $report_type, string $report_data) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
-    $stmt->execute();
-    $admin_email = $stmt->fetchColumn() ?: '';
-
-    $subject = 'CloudASPIRE Report: ' . ucfirst($report_type) . ' - ' . date('Y-m-d');
-    
-    $content = '
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin: 15px 0;">
-        ' . $report_data . '
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => ucfirst($report_type) . ' Report',
-        'subtitle'     => 'Generated on ' . date('Y-m-d H:i:s'),
-        'badge'        => 'SYSTEM REPORT',
-        'badge_color'  => '#6366f1',
-        'content_html' => $content,
-        'footer_note'  => 'This is an automated system report generated by the administrative panel.'
-    ]);
-
-    return sendEmail($admin_email, $subject, $body);
-}
-
-// ========== ADDITIONAL EMAIL FUNCTIONS ==========
-
-/**
- * Send welcome email to new user
- */
-function sendWelcomeEmail(string $email, string $name, string $password = '') {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'CloudASPIRE';
-
-    $subject = "Welcome to {$site_name} - Account Created";
-    
-    $content = '
-    <h2 style="color: #0f172a; margin-top: 0; font-size: 18px;">Hello, ' . safe_html($name) . '!</h2>
-    <p>Your account has been successfully created and configured. You now have complete access to your account dashboard and services.</p>
-    <div style="background: #f1f5f9; border-left: 4px solid #4f46e5; padding: 14px 18px; border-radius: 6px; margin: 20px 0;">
-        <p style="margin: 0; font-size: 14px; color: #475569;">
-            <strong>Quick Tip:</strong> If you ever forget your password, you can easily request a reset link anytime from the login screen.
-        </p>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Welcome to ' . $site_name,
-        'subtitle'     => 'Your account is ready to go',
-        'badge'        => 'WELCOME ABOARD',
-        'badge_color'  => '#4f46e5',
-        'content_html' => $content,
-        'button_text'  => 'Access Your Account',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/login'
-    ]);
-
-    return sendEmail($email, $subject, $body);
+    // Admin lead notification: Reply-To = visitor's email
+    return sendEmail($admin_email, $subject, $body, '', $async, $email ?: null, $name ?: null);
 }
 
 /**
- * Send thank you email after lead submission (to user)
+ * 2. Visitor Thank-You Email for SEO Audit Requests.
+ *
+ * Subject: We received your SEO audit request - {Site Name}
+ * Reply-To: Authenticated From address (noreply@cloudaspiresolutions.in).
  */
-function sendLeadThankYouEmail(string $email, string $name, string $service = '', bool $async = true) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'Cloud Aspire';
-
-    $subject = "Thank You for Contacting {$site_name}";
-    
-    $content = '
-    <div style="text-align: left;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">Hello, ' . safe_html($name) . '!</h2>
-        <p style="color: #334155; line-height: 1.6; font-size: 15px;">
-            Thank you for reaching out to us. We have successfully received your inquiry' . (!empty($service) ? ' regarding <strong>' . safe_html($service) . '</strong>' : '') . '.
-        </p>
-        
-        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 24px 0;">
-            <p style="margin: 0 0 8px 0; color: #166534; font-weight: 700; font-size: 15px;">What happens next?</p>
-            <ul style="margin: 0; padding-left: 20px; color: #1e293b; font-size: 14px; line-height: 1.6;">
-                <li>Our specialist team will review your requirements.</li>
-                <li>We will prepare tailored solutions and answers for you.</li>
-                <li>A representative will get in touch with you within <strong>24 hours</strong>.</li>
-            </ul>
-        </div>
-
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">
-            If your request is urgent, you can reply directly to this email or reach us through our official portal.
-        </p>
-
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px;">
-            <p style="margin: 0; color: #334155; font-size: 14px;">Warm regards,</p>
-            <p style="margin: 4px 0 0 0; color: #0f172a; font-weight: 700; font-size: 15px;">The ' . safe_html($site_name) . ' Team</p>
-        </div>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Thank You for Reaching Out',
-        'subtitle'     => 'We have received your message and are on it!',
-        'badge'        => 'INQUIRY RECEIVED',
-        'badge_color'  => '#10b981',
-        'content_html' => $content,
-        'button_text'  => 'Visit Our Website',
-        'button_url'   => defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in'
-    ]);
-
-    return sendEmail($email, $subject, $body, '', $async);
-}
-
-/**
- * Send admin login notification
- */
-function sendAdminLoginEmail(string $admin_name, string $admin_email, string $ip_address = '') {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'CloudASPIRE';
-
-    $subject = "[{$site_name}] Admin Security Alert: Login Detected";
-    
-    $content = '
-    <p style="margin-top: 0;">An administrative login was just authenticated on your account:</p>
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Admin User:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($admin_name) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Account:</strong></td><td style="color: #0f172a;">' . safe_html($admin_email) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Time:</strong></td><td style="color: #0f172a;">' . date('Y-m-d H:i:s') . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>IP Address:</strong></td><td style="font-family: monospace; color: #4f46e5;">' . safe_html($ip_address ?: $_SERVER['REMOTE_ADDR'] ?? 'Unknown') . '</td></tr>
-        </table>
-    </div>
-    <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px;">
-        <p style="margin: 0; color: #b45309; font-size: 13px;">
-            <strong>Security Notice:</strong> If this was not you, please immediately log in and change your password.
-        </p>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Admin Login Alert',
-        'subtitle'     => 'Security notification for ' . safe_html($admin_name),
-        'badge'        => 'SECURITY ALERT',
-        'badge_color'  => '#f59e0b',
-        'content_html' => $content,
-        'button_text'  => 'Review Security Settings',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/settings/security.php'
-    ]);
-
-    return sendEmail($admin_email, $subject, $body);
-}
-
-/**
- * Send admin logout notification
- */
-function sendAdminLogoutEmail(string $admin_name, string $admin_email) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'CloudASPIRE';
-
-    $subject = "[{$site_name}] Admin Logged Out";
-    
-    $content = '
-    <p style="margin-top: 0;">Your administrator session has ended.</p>
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <p style="margin: 0 0 8px 0;"><strong>Admin User:</strong> ' . safe_html($admin_name) . '</p>
-        <p style="margin: 0 0 8px 0;"><strong>Account:</strong> ' . safe_html($admin_email) . '</p>
-        <p style="margin: 0;"><strong>Timestamp:</strong> ' . date('Y-m-d H:i:s') . '</p>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Admin Session Ended',
-        'badge'        => 'LOGOUT',
-        'badge_color'  => '#64748b',
-        'content_html' => $content
-    ]);
-
-    return sendEmail($admin_email, $subject, $body);
-}
-
-/**
- * Send thank you email to reviewer after submitting a review
- */
-function sendReviewThankYouEmail(string $email, string $name, int $star_rating = 5, bool $async = true) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'Cloud Aspire';
-
-    $subject = "Thank You for Your Review, {$name}! - {$site_name}";
-    
-    $starsHtml = str_repeat('&#9733;', max(1, min(5, $star_rating))) . str_repeat('&#9734;', max(0, 5 - $star_rating));
-
-    $content = '
-    <div style="text-align: left;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">Hello, ' . safe_html($name) . '!</h2>
-        <p style="color: #334155; line-height: 1.6; font-size: 15px;">
-            Thank you so much for taking the time to share your feedback with <strong>' . safe_html($site_name) . '</strong>! Your review helps us continuously elevate our services and helps other businesses discover our solutions.
-        </p>
-        
-        <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 22px; margin: 24px 0; text-align: center;">
-            <p style="margin: 0 0 6px 0; color: #92400e; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Your Submitted Rating</p>
-            <div style="color: #f59e0b; font-size: 26px; letter-spacing: 4px; line-height: 1.2;">
-                ' . $starsHtml . '
-            </div>
-            <p style="margin: 6px 0 0 0; color: #78350f; font-size: 14px; font-weight: 600;">' . $star_rating . ' out of 5 Stars</p>
-        </div>
-
-        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            We truly value your partnership and look forward to continuing to deliver impactful digital results for you.
-        </p>
-
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 24px;">
-            <p style="margin: 0; color: #334155; font-size: 14px;">With warm regards,</p>
-            <p style="margin: 4px 0 0 0; color: #0f172a; font-weight: 700; font-size: 15px;">The ' . safe_html($site_name) . ' Team</p>
-        </div>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Thank You for Your Review',
-        'subtitle'     => 'Your feedback means the world to us!',
-        'badge'        => 'REVIEW RECEIVED',
-        'badge_color'  => '#f59e0b',
-        'content_html' => $content,
-        'button_text'  => 'Visit Our Website',
-        'button_url'   => defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in'
-    ]);
-
-    return sendEmail($email, $subject, $body, '', $async);
-}
-
-/**
- * Send approval notification email to reviewer when their review is published
- */
-function sendReviewApprovedEmail(string $email, string $name, int $star_rating = 5, string $comment = '', bool $async = true) {
+function sendAuditThankYouEmail(string $email, string $name, ?string $website = null, ?int $lead_id = null, bool $async = true): array {
     global $conn;
 
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        return ['success' => false, 'message' => 'No valid email provided'];
+        return ['success' => false, 'message' => 'Invalid visitor email'];
     }
 
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt->execute();
-    $site_name = $stmt->fetchColumn() ?: 'Cloud Aspire';
+    $siteName     = 'Cloud Aspire';
+    $sitePhone    = '8098830937';
+    $contactEmail = 'cloudaspire2025@gmail.com';
+    $fromEmail    = 'noreply@cloudaspiresolutions.in';
+    $siteUrl      = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
 
-    $subject = "Your Review is Now Live on {$site_name}! ⭐";
-    $starsHtml = str_repeat('&#9733;', max(1, min(5, $star_rating))) . str_repeat('&#9734;', max(0, 5 - $star_rating));
+    if (isset($conn)) {
+        try {
+            $stmt = $conn->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('site_name', 'contact_phone', 'contact_email', 'mail_smtp_email')");
+            $s = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (!empty($s['site_name'])) $siteName = $s['site_name'];
+            if (!empty($s['contact_phone'])) $sitePhone = $s['contact_phone'];
+            if (!empty($s['contact_email'])) $contactEmail = $s['contact_email'];
+            if (!empty($s['mail_smtp_email'])) $fromEmail = $s['mail_smtp_email'];
+        } catch (Exception $e) {}
+    }
+
+    $refId = ($lead_id && $lead_id > 0)
+        ? ('#AUD-' . str_pad((string)$lead_id, 5, '0', STR_PAD_LEFT))
+        : ('#AUD-' . date('ymd') . rand(100, 999));
+
+    // Deliverability: Clean subject line without spam keywords
+    $subject = 'We received your SEO audit request - ' . $siteName;
+
+    $websiteSection = '';
+    if (!empty($website)) {
+        $websiteSection = '
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; margin: 16px 0;">
+            <span style="color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: 700;">Analyzed Website:</span><br>
+            <strong style="color: #0f172a; font-size: 14px;">' . safe_html($website) . '</strong>
+        </div>';
+    }
 
     $content = '
-    <div style="text-align: left;">
-        <h2 style="color: #0f172a; margin-top: 0; font-size: 20px; font-weight: 700;">Hello ' . safe_html($name) . ',</h2>
-        <p style="color: #334155; line-height: 1.6; font-size: 15px;">
-            Great news! Your review has been approved by our team and is now published live on the <strong>' . safe_html($site_name) . '</strong> website.
+    <div>
+        <p style="margin-top: 0; font-size: 15px; color: #1e293b;">Hello ' . safe_html($name) . ',</p>
+        <p style="color: #334155; line-height: 1.6; font-size: 14px;">
+            Thank you for requesting an SEO and performance audit from ' . safe_html($siteName) . '. We have received your details (Reference: <strong style="font-family: monospace;">' . safe_html($refId) . '</strong>).
         </p>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
-            <div style="color: #f59e0b; font-size: 22px; letter-spacing: 3px; margin-bottom: 8px;">
-                ' . $starsHtml . '
-            </div>
-            ' . (!empty($comment) ? '<p style="color: #334155; font-style: italic; margin: 0; line-height: 1.6;">"' . nl2br(safe_html($comment)) . '"</p>' : '') . '
+
+        ' . $websiteSection . '
+
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 20px 0;">
+            <p style="margin: 0 0 10px 0; color: #0f172a; font-weight: 700; font-size: 14px;">What we evaluate:</p>
+            <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 13px; line-height: 1.7;">
+                <li><strong>Technical SEO:</strong> Crawlability, indexation status, and Core Web Vitals health.</li>
+                <li><strong>On-Page Structure:</strong> Metadata, content hierarchy, and internal linking.</li>
+                <li><strong>Search Visibility:</strong> Keyword opportunities and competitor positioning.</li>
+            </ul>
         </div>
 
-        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-            We sincerely appreciate your trust and endorsement. It motivates our team to keep delivering outstanding digital results!
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+            Our team will review your website metrics and get in touch with recommendations.
         </p>
 
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 24px;">
-            <p style="margin: 0; color: #334155; font-size: 14px;">Best regards,</p>
-            <p style="margin: 4px 0 0 0; color: #0f172a; font-weight: 700; font-size: 15px;">The ' . safe_html($site_name) . ' Team</p>
+        <p style="color: #64748b; font-size: 13px; margin-top: 24px;">
+            If you have questions in the meantime, reach us at <a href="mailto:' . safe_html($contactEmail) . '" style="color: #312e81;">' . safe_html($contactEmail) . '</a> or call ' . safe_html($sitePhone) . '.
+        </p>
+    </div>';
+
+    $body = buildProfessionalEmailTemplate([
+        'title'        => 'Audit Request Received',
+        'subtitle'     => 'We are processing your website review',
+        'badge'        => 'CONFIRMATION',
+        'badge_color'  => '#059669',
+        'content_html' => $content,
+        'button_text'  => 'Visit Our Website',
+        'button_url'   => $siteUrl
+    ]);
+
+    // Visitor confirmation: Reply-To = authenticated domain from address
+    return sendEmail($email, $subject, $body, '', $async, $fromEmail, $siteName);
+}
+
+/**
+ * 3. Admin Notification for Standard Lead Inquiries.
+ *
+ * Subject: New Lead Received - {Name}
+ * Reply-To: Visitor's validated email address.
+ */
+function sendLeadNotification(array $lead_data, bool $async = true): array {
+    global $conn;
+
+    $admin_email = '';
+    if (isset($conn)) {
+        try {
+            $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
+            $stmt->execute();
+            $admin_email = $stmt->fetchColumn() ?: '';
+            if (empty($admin_email)) {
+                $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
+                $stmt->execute();
+                $admin_email = $stmt->fetchColumn() ?: '';
+            }
+        } catch (Exception $e) {}
+    }
+    if (empty($admin_email)) {
+        $admin_email = 'premkumar40187@gmail.com';
+    }
+
+    $name    = trim($lead_data['name'] ?? 'Visitor');
+    $email   = trim($lead_data['email'] ?? '');
+    $phone   = trim($lead_data['phone'] ?? '');
+    $service = trim($lead_data['service'] ?? 'General Inquiry');
+    $message = trim($lead_data['message'] ?? '');
+    $siteUrl = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
+
+    $subject = 'New Lead Received - ' . $name;
+
+    $content = '
+    <div style="margin-bottom: 20px;">
+        <p style="margin: 0 0 14px 0; font-size: 14px; color: #334155;">A new lead inquiry has been received through the website:</p>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+            <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px; border-collapse: collapse;">
+                <tr><td style="color: #64748b; width: 30%;"><strong>Name:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($name) . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($email) . '" style="color: #312e81; text-decoration: none;">' . safe_html($email ?: 'N/A') . '</a></td></tr>
+                <tr><td style="color: #64748b;"><strong>Phone:</strong></td><td style="color: #0f172a;">' . safe_html($phone ?: 'N/A') . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Service:</strong></td><td><span style="background: #e2e8f0; color: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">' . safe_html($service) . '</span></td></tr>
+                <tr><td style="color: #64748b; vertical-align: top;"><strong>Message:</strong></td><td style="color: #334155; line-height: 1.5;">' . nl2br(safe_html($message ?: 'None')) . '</td></tr>
+            </table>
+        </div>
+        <p style="color: #64748b; font-size: 13px; margin: 0;">Received on ' . date('Y-m-d H:i:s') . '</p>
+    </div>';
+
+    $body = buildProfessionalEmailTemplate([
+        'title'        => 'New Lead Submission',
+        'subtitle'     => 'Inquiry received via website form',
+        'badge'        => 'NEW LEAD',
+        'badge_color'  => '#059669',
+        'content_html' => $content,
+        'button_text'  => 'Open Admin Panel',
+        'button_url'   => $siteUrl . '/admin/leads.php'
+    ]);
+
+    // Admin lead notification: Reply-To = visitor's email
+    return sendEmail($admin_email, $subject, $body, '', $async, $email ?: null, $name ?: null);
+}
+
+/**
+ * 4. Visitor Thank-You Email for Standard Inquiries.
+ *
+ * Subject: Thank you for contacting {Site Name}
+ * Reply-To: Authenticated From address (noreply@cloudaspiresolutions.in).
+ */
+function sendLeadThankYouEmail(string $email, string $name, string $service = '', bool $async = true): array {
+    global $conn;
+
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return ['success' => false, 'message' => 'Invalid recipient email'];
+    }
+
+    $siteName  = 'Cloud Aspire';
+    $fromEmail = 'noreply@cloudaspiresolutions.in';
+    $siteUrl   = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
+
+    if (isset($conn)) {
+        try {
+            $stmt = $conn->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('site_name', 'mail_smtp_email')");
+            $s = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (!empty($s['site_name'])) $siteName = $s['site_name'];
+            if (!empty($s['mail_smtp_email'])) $fromEmail = $s['mail_smtp_email'];
+        } catch (Exception $e) {}
+    }
+
+    $subject = 'Thank you for contacting ' . $siteName;
+
+    $content = '
+    <div>
+        <p style="margin-top: 0; font-size: 15px; color: #1e293b;">Hello ' . safe_html($name) . ',</p>
+        <p style="color: #334155; line-height: 1.6; font-size: 14px;">
+            Thank you for contacting ' . safe_html($siteName) . '. We have received your inquiry' . (!empty($service) ? ' regarding <strong>' . safe_html($service) . '</strong>' : '') . '.
+        </p>
+
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 20px 0;">
+            <p style="margin: 0 0 8px 0; color: #0f172a; font-weight: 700; font-size: 14px;">Next steps:</p>
+            <ul style="margin: 0; padding-left: 20px; color: #334155; font-size: 13px; line-height: 1.7;">
+                <li>Our team will review your requirements.</li>
+                <li>We will prepare the relevant details and options.</li>
+                <li>A representative will reach out to you within one business day.</li>
+            </ul>
+        </div>
+
+        <p style="color: #64748b; font-size: 13px; margin-top: 20px;">
+            With regards,<br>
+            <strong>The ' . safe_html($siteName) . ' Team</strong>
+        </p>
+    </div>';
+
+    $body = buildProfessionalEmailTemplate([
+        'title'        => 'Inquiry Received',
+        'subtitle'     => 'Thank you for reaching out to us',
+        'badge'        => 'RECEIVED',
+        'badge_color'  => '#059669',
+        'content_html' => $content,
+        'button_text'  => 'Visit Our Website',
+        'button_url'   => $siteUrl
+    ]);
+
+    // Visitor confirmation: Reply-To = authenticated from email
+    return sendEmail($email, $subject, $body, '', $async, $fromEmail, $siteName);
+}
+
+/**
+ * 5. Admin Notification for Contact Form Submissions.
+ *
+ * Subject: New Contact Form Submission - {Name}
+ * Reply-To: Visitor's validated email address.
+ */
+function sendContactNotification(array $contact_data, bool $async = true): array {
+    global $conn;
+
+    $admin_email = '';
+    if (isset($conn)) {
+        try {
+            $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
+            $stmt->execute();
+            $admin_email = $stmt->fetchColumn() ?: '';
+            if (empty($admin_email)) {
+                $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
+                $stmt->execute();
+                $admin_email = $stmt->fetchColumn() ?: '';
+            }
+        } catch (Exception $e) {}
+    }
+    if (empty($admin_email)) {
+        $admin_email = 'premkumar40187@gmail.com';
+    }
+
+    $name    = trim($contact_data['name'] ?? 'Visitor');
+    $email   = trim($contact_data['email'] ?? '');
+    $subjectLine = trim($contact_data['subject'] ?? 'Website Inquiry');
+    $message = trim($contact_data['message'] ?? '');
+    $siteUrl = defined('SITE_URL') ? rtrim(SITE_URL, '/') : 'https://cloudaspiresolutions.in';
+
+    $subject = 'New Contact Form Submission - ' . $name;
+
+    $content = '
+    <div style="margin-bottom: 20px;">
+        <p style="margin: 0 0 14px 0; font-size: 14px; color: #334155;">A new message has been received from the website contact form:</p>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 16px 0;">
+            <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px; border-collapse: collapse;">
+                <tr><td style="color: #64748b; width: 30%;"><strong>Name:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($name) . '</td></tr>
+                <tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($email) . '" style="color: #312e81; text-decoration: none;">' . safe_html($email ?: 'N/A') . '</a></td></tr>
+                <tr><td style="color: #64748b;"><strong>Subject:</strong></td><td style="color: #0f172a;">' . safe_html($subjectLine) . '</td></tr>
+                <tr><td style="color: #64748b; vertical-align: top;"><strong>Message:</strong></td><td style="color: #334155; line-height: 1.5;">' . nl2br(safe_html($message ?: 'None')) . '</td></tr>
+            </table>
         </div>
     </div>';
 
     $body = buildProfessionalEmailTemplate([
-        'title'        => 'Your Review is Published!',
-        'subtitle'     => 'Thank you for sharing your experience',
-        'badge'        => 'PUBLISHED',
-        'badge_color'  => '#10b981',
+        'title'        => 'Contact Form Message',
+        'subtitle'     => 'Message from ' . safe_html($name),
+        'badge'        => 'CONTACT FORM',
+        'badge_color'  => '#312e81',
         'content_html' => $content,
-        'button_text'  => 'View Reviews on Website',
-        'button_url'   => defined('SITE_URL') ? (SITE_URL . '/reviews') : 'https://cloudaspire.in/reviews'
+        'button_text'  => 'Open Admin Panel',
+        'button_url'   => $siteUrl . '/admin/'
     ]);
 
-    return sendEmail($email, $subject, $body, '', $async);
+    // Admin notification: Reply-To = visitor's email
+    return sendEmail($admin_email, $subject, $body, '', $async, $email ?: null, $name ?: null);
+}
+
+// =========================================================================
+// DISABLED EMAIL FUNCTIONS (SAFE NO-OPS TO PRESERVE SENDER REPUTATION)
+// Kept for backward compatibility with caller signatures. Returns success.
+// =========================================================================
+
+/**
+ * Disabled: Welcome Email
+ */
+function sendWelcomeEmail(string $email, string $name, string $password = ''): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
 }
 
 /**
- * Send review notification to admin
+ * Disabled: Admin Login Alert
  */
-function sendReviewNotificationEmail(string $action, array $review_data, int $created_by_admin = 0, int $created_by_user = 0, bool $async = true) {
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
-    $stmt->execute();
-    $admin_email = $stmt->fetchColumn() ?: '';
-
-    if (empty($admin_email)) {
-        $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'contact_email'");
-        $stmt->execute();
-        $admin_email = $stmt->fetchColumn() ?: 'cloudaspire2026@gmail.com';
-    }
-
-    $stmt2 = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt2->execute();
-    $site_name = $stmt2->fetchColumn() ?: 'CloudASPIRE';
-
-    $action_text = ($action === 'create') ? 'New Review Posted' : 'Review Updated';
-    $subject = "[{$site_name}] {$action_text}";
-
-    $creator = 'Website User';
-    if ($created_by_admin > 0) {
-        $stmt = $conn->prepare("SELECT name FROM admin WHERE id = ?");
-        $stmt->execute([$created_by_admin]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $creator = ($result ? $result['name'] : 'Admin') . ' (Admin Panel)';
-    } elseif ($created_by_user > 0) {
-        $creator = 'User ID: ' . (int)$created_by_user;
-    }
-
-    $ratingVal = (int)($review_data['star_rating'] ?? $review_data['rating'] ?? 5);
-    $commentVal = $review_data['message'] ?? $review_data['comment'] ?? $review_data['review_text'] ?? 'N/A';
-
-    $content = '
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Reviewer:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($review_data['name'] ?? 'N/A') . '</td></tr>
-            ' . (!empty($review_data['email']) ? '<tr><td style="color: #64748b;"><strong>Email:</strong></td><td><a href="mailto:' . safe_html($review_data['email']) . '" style="color: #4f46e5; text-decoration: none;">' . safe_html($review_data['email']) . '</a></td></tr>' : '') . '
-            <tr><td style="color: #64748b;"><strong>Rating:</strong></td><td style="color: #f59e0b; font-size: 16px;">' . str_repeat('&#9733;', $ratingVal) . ' <span style="font-size: 13px; color: #64748b;">(' . $ratingVal . '/5)</span></td></tr>
-            ' . (!empty($review_data['company']) || !empty($review_data['designation']) ? '<tr><td style="color: #64748b;"><strong>Role/Company:</strong></td><td style="color: #0f172a;">' . safe_html(trim(($review_data['designation'] ?? '') . ' ' . ($review_data['company'] ?? ''))) . '</td></tr>' : '') . '
-            <tr><td style="color: #64748b; vertical-align: top;"><strong>Comment:</strong></td><td style="color: #334155; line-height: 1.5;">' . nl2br(safe_html($commentVal)) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Source:</strong></td><td style="color: #0f172a;">' . safe_html($creator) . '</td></tr>
-        </table>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => $action_text,
-        'subtitle'     => 'Customer review activity',
-        'badge'        => 'REVIEWS',
-        'badge_color'  => '#f59e0b',
-        'content_html' => $content,
-        'button_text'  => 'Manage Reviews',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/reviews.php'
-    ]);
-
-    return sendEmail($admin_email, $subject, $body, '', $async);
+function sendAdminLoginEmail(string $admin_name, string $admin_email, string $ip_address = ''): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
 }
 
 /**
- * Send project activity notification
+ * Disabled: Admin Logout Notice
  */
-function sendProjectActivityEmail(string $action, string $project_name, int $admin_id) {
-    global $conn;
-
-    $admins = [];
-    $stmt = $conn->query("SELECT email FROM admin WHERE is_active = 1");
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if (!empty($row['email'])) {
-            $admins[] = $row['email'];
-        }
-    }
-
-    $stmt = $conn->prepare("SELECT name FROM admin WHERE id = ?");
-    $stmt->execute([$admin_id]);
-    $admin_name = $stmt->fetchColumn() ?: 'Unknown Admin';
-
-    $stmt2 = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt2->execute();
-    $site_name = $stmt2->fetchColumn() ?: 'CloudASPIRE';
-
-    $subject = "[{$site_name}] Project {$action}: {$project_name}";
-
-    $content = '
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Project:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($project_name) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Action:</strong></td><td><span style="background: #e0e7ff; color: #3730a3; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">' . strtoupper($action) . '</span></td></tr>
-            <tr><td style="color: #64748b;"><strong>Admin:</strong></td><td style="color: #0f172a;">' . safe_html($admin_name) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Timestamp:</strong></td><td style="color: #0f172a;">' . date('Y-m-d H:i:s') . '</td></tr>
-        </table>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Project Activity',
-        'subtitle'     => 'Changes made to project records',
-        'badge'        => 'PROJECTS',
-        'badge_color'  => '#4f46e5',
-        'content_html' => $content,
-        'button_text'  => 'View Projects',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/projects.php'
-    ]);
-
-    return sendEmail($admins, $subject, $body);
+function sendAdminLogoutEmail(string $admin_name, string $admin_email): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
 }
 
 /**
- * Send site change notification
+ * Disabled: Review Thank You
  */
-function sendSiteChangeNotification(string $action, string $details, string $admin_name, string $ip_address = '') {
-    global $conn;
+function sendReviewThankYouEmail(string $email, string $name, int $star_rating = 5, bool $async = true): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
+}
 
-    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'mail_admin_email'");
-    $stmt->execute();
-    $admin_email = $stmt->fetchColumn() ?: '';
+/**
+ * Disabled: Review Approved Notice
+ */
+function sendReviewApprovedEmail(string $email, string $name, int $star_rating = 5, string $comment = '', bool $async = true): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
+}
 
-    $stmt2 = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'site_name'");
-    $stmt2->execute();
-    $site_name = $stmt2->fetchColumn() ?: 'CloudASPIRE';
+/**
+ * Disabled: Review Notification to Admin
+ */
+function sendReviewNotificationEmail(string $action, array $review_data, int $created_by_admin = 0, int $created_by_user = 0, bool $async = true): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
+}
 
-    if (empty($admin_email)) {
-        error_log("[Email Warning] No admin email configured for site change notification");
-        return ['success' => false, 'message' => 'Admin email not configured'];
-    }
+/**
+ * Disabled: Project Activity Notice
+ */
+function sendProjectActivityEmail(string $action, string $project_name, int $admin_id): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
+}
 
-    $subject = "[{$site_name}] Site Activity: " . ucwords(str_replace('_', ' ', $action));
+/**
+ * Disabled: Site Change Alert
+ */
+function sendSiteChangeNotification(string $action, string $details, string $admin_name, string $ip_address = ''): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
+}
 
-    $content = '
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin: 20px 0;">
-        <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
-            <tr><td style="color: #64748b; width: 30%;"><strong>Admin:</strong></td><td style="color: #0f172a; font-weight: 600;">' . safe_html($admin_name) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Action:</strong></td><td><span style="background: #e0e7ff; color: #3730a3; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">' . strtoupper(str_replace('_', ' ', $action)) . '</span></td></tr>
-            <tr><td style="color: #64748b; vertical-align: top;"><strong>Details:</strong></td><td style="color: #334155; line-height: 1.5;">' . safe_html($details) . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>IP Address:</strong></td><td style="font-family: monospace; color: #4f46e5;">' . safe_html($ip_address ?: 'Unknown') . '</td></tr>
-            <tr><td style="color: #64748b;"><strong>Time:</strong></td><td style="color: #0f172a;">' . date('Y-m-d H:i:s') . '</td></tr>
-        </table>
-    </div>
-    <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px;">
-        <p style="margin: 0; color: #b45309; font-size: 13px;">
-            <strong>Action Required:</strong> If this modification was not authorized by you, please secure your account immediately.
-        </p>
-    </div>';
-
-    $body = buildProfessionalEmailTemplate([
-        'title'        => 'Site Activity Notification',
-        'subtitle'     => 'System configuration change recorded',
-        'badge'        => 'AUDIT LOG',
-        'badge_color'  => '#f59e0b',
-        'content_html' => $content,
-        'button_text'  => 'Open Activity Log',
-        'button_url'   => (defined('SITE_URL') ? SITE_URL : 'https://cloudaspire.in') . '/admin/reports.php'
-    ]);
-
-    return sendEmail($admin_email, $subject, $body);
+/**
+ * Disabled: Activity Digest Report
+ */
+function sendReportToAdmin(string $report_type, string $report_data): array {
+    return ['success' => true, 'message' => 'Email notification disabled by configuration'];
 }

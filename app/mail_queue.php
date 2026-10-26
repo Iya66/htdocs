@@ -27,6 +27,8 @@ function ensureMailQueueTable(?PDO $conn = null): void
             CREATE TABLE IF NOT EXISTS `mail_queue` (
                 `id` INT AUTO_INCREMENT PRIMARY KEY,
                 `recipient` VARCHAR(255) NOT NULL,
+                `reply_to` VARCHAR(255) NULL,
+                `reply_to_name` VARCHAR(255) NULL,
                 `subject` VARCHAR(255) NOT NULL,
                 `body` MEDIUMTEXT NOT NULL,
                 `alt_body` TEXT NULL,
@@ -42,6 +44,14 @@ function ensureMailQueueTable(?PDO $conn = null): void
                 INDEX (`created_at`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
+
+        // Safely check and add reply_to / reply_to_name if table already existed without them
+        try {
+            $cols = $conn->query("SHOW COLUMNS FROM `mail_queue` LIKE 'reply_to'")->fetchAll();
+            if (empty($cols)) {
+                $conn->exec("ALTER TABLE `mail_queue` ADD COLUMN `reply_to` VARCHAR(255) NULL AFTER `recipient`, ADD COLUMN `reply_to_name` VARCHAR(255) NULL AFTER `reply_to`");
+            }
+        } catch (Exception $alterEx) {}
     } catch (Exception $e) {}
 }
 
@@ -55,9 +65,11 @@ function ensureMailQueueTable(?PDO $conn = null): void
  * @param string       $body          Email body HTML
  * @param string       $altBody       Optional plain text alternative
  * @param bool         $triggerWorker Whether to spawn background worker immediately
+ * @param string|null  $replyTo       Optional Reply-To email address
+ * @param string|null  $replyToName   Optional Reply-To display name
  * @return array{success: bool, queued: bool, queue_ids?: array, message: string}
  */
-function enqueueEmail(?PDO $conn, mixed $to, string $subject, string $body, string $altBody = '', bool $triggerWorker = true): array
+function enqueueEmail(?PDO $conn, mixed $to, string $subject, string $body, string $altBody = '', bool $triggerWorker = true, ?string $replyTo = null, ?string $replyToName = null): array
 {
     ensureMailQueueTable($conn);
 
@@ -88,13 +100,16 @@ function enqueueEmail(?PDO $conn, mixed $to, string $subject, string $body, stri
         return ['success' => false, 'queued' => false, 'message' => 'No valid recipient email address'];
     }
 
+    $validReplyTo = (!empty($replyTo) && filter_var(trim($replyTo), FILTER_VALIDATE_EMAIL)) ? trim($replyTo) : null;
+    $cleanReplyToName = !empty($replyToName) ? trim($replyToName) : null;
+
     $queueIds = [];
     try {
-        $stmt = $conn->prepare("INSERT INTO mail_queue (recipient, subject, body, alt_body, is_html, status, created_at) VALUES (?, ?, ?, ?, 1, 'pending', NOW())");
+        $stmt = $conn->prepare("INSERT INTO mail_queue (recipient, reply_to, reply_to_name, subject, body, alt_body, is_html, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, 'pending', NOW())");
 
         foreach ($recipients as $recipient) {
             $plainText = !empty($altBody) ? $altBody : (function_exists('htmlToCleanPlainText') ? htmlToCleanPlainText($body) : strip_tags($body));
-            $stmt->execute([$recipient, $subject, $body, $plainText]);
+            $stmt->execute([$recipient, $validReplyTo, $cleanReplyToName, $subject, $body, $plainText]);
             $queueIds[] = (int) $conn->lastInsertId();
         }
 
@@ -196,7 +211,7 @@ function processMailQueue(?PDO $conn = null, int $batchSize = 15): array
     } catch (Exception $e) {}
 
     // Atomic fetch & claim pending items
-    $stmt = $conn->prepare("SELECT id, recipient, subject, body, alt_body, is_html, attempts 
+    $stmt = $conn->prepare("SELECT id, recipient, reply_to, reply_to_name, subject, body, alt_body, is_html, attempts 
                             FROM mail_queue 
                             WHERE status = 'pending' AND attempts < max_attempts 
                             ORDER BY id ASC 
@@ -217,7 +232,7 @@ function processMailQueue(?PDO $conn = null, int $batchSize = 15): array
 
     $settings = loadSmtpSettings($conn);
     $fromEmail = $settings['mail_smtp_email'] ?? '';
-    $fromName  = $settings['mail_from_name'] ?? (defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'CloudASPIRE');
+    $fromName  = $settings['mail_from_name'] ?? (defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Cloud Aspire');
     $adminEmail = $settings['mail_admin_email'] ?? $fromEmail;
 
     $sentCount = 0;
@@ -268,13 +283,13 @@ function processMailQueue(?PDO $conn = null, int $batchSize = 15): array
             $mail->setFrom($fromEmail, $fromName);
             $mail->Sender = $fromEmail;
 
-            // Anti-Spam & Deliverability headers
-            $mail->addCustomHeader('Auto-Submitted', 'auto-generated');
-            $mail->addCustomHeader('X-Auto-Response-Suppress', 'All');
-
             $mail->addAddress($recipient);
-            if (!empty($adminEmail)) {
-                $mail->addReplyTo($adminEmail, $fromName);
+            
+            // Respect visitor/custom Reply-To if specified, otherwise fall back to authenticated From address
+            if (!empty($item['reply_to']) && filter_var($item['reply_to'], FILTER_VALIDATE_EMAIL)) {
+                $mail->addReplyTo($item['reply_to'], !empty($item['reply_to_name']) ? $item['reply_to_name'] : $item['reply_to']);
+            } elseif (!empty($fromEmail)) {
+                $mail->addReplyTo($fromEmail, $fromName);
             }
 
             $mail->isHTML((bool)$item['is_html']);

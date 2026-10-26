@@ -90,8 +90,9 @@ $display_title = $page_settings['seo_title'] ?? ($page_settings['page_title'] ??
 $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageDesc : 'Digital marketing agency in Pondicherry specializing in SEO, PPC, Google Ads, and Social Media Marketing.');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
+    <script>document.documentElement.classList.remove('no-js');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title><?= htmlspecialchars($display_title) ?></title>
@@ -363,6 +364,16 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             width: 100%;
         }
 
+        .cdm-nav > li > a i.fa-chevron-down {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .cdm-nav > li:hover > a i.fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
         /* Dropdown */
         .cdm-dropdown {
             position: absolute;
@@ -375,17 +386,20 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
             padding: 12px 0;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(12px);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translate3d(0, 12px, 0);
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
             list-style: none;
             border-top: 3px solid var(--secondary-color);
             z-index: 1010;
+            will-change: opacity, transform;
+            pointer-events: none;
         }
 
         .cdm-nav > li:hover .cdm-dropdown {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
+            transform: translate3d(0, 0, 0);
+            pointer-events: auto;
         }
 
         .cdm-dropdown li a {
@@ -626,9 +640,11 @@ $display_desc = $page_settings['meta_description'] ?? (isset($pageDesc) ? $pageD
         }
 
         .cdm-drawer-arrow {
+            display: inline-block;
             font-size: 12px;
             color: #64748b;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+            will-change: transform;
         }
 
         .cdm-drawer-arrow.open,

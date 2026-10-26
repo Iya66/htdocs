@@ -126,6 +126,21 @@ include __DIR__ . '/../../../includes/components/page_hero.php';
         box-sizing: border-box;
     }
 
+    .cdm-project-card.filter-entrance {
+        animation: cdmCardFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes cdmCardFadeIn {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 10px, 0) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+    }
+
     .cdm-project-card:hover {
         transform: translateY(-6px);
         box-shadow: 0 18px 40px rgba(3, 34, 143, 0.12);
@@ -502,6 +517,9 @@ function filterProjects(cat, btn) {
         var cardCat = (card.getAttribute('data-category') || '').toLowerCase().trim();
         if (cat === 'all' || cardCat === cat || cardCat.indexOf(cat) !== -1) {
             card.style.display = 'flex';
+            card.classList.remove('filter-entrance');
+            void card.offsetWidth; // trigger reflow for smooth animation restart
+            card.classList.add('filter-entrance');
             matchCount++;
         } else {
             card.style.display = 'none';

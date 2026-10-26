@@ -124,20 +124,20 @@ $stat_staff      = (int)($settings['stat_staff'] ?? 10);
 <section class="cdm-counter-section-comp">
     <div class="cdm-counter-grid-comp">
         <div class="cdm-counter-left-comp">
-            <div class="number"><?= $stat_experience ?>+</div>
+            <div class="number" data-count="<?= $stat_experience ?>+"><?= $stat_experience ?>+</div>
             <h4>YEARS OF EXPERIENCE</h4>
         </div>
         <div class="cdm-counter-right-comp">
             <div class="cdm-stat-box-comp">
-                <h3><?= $stat_clients ?>+</h3>
+                <h3 data-count="<?= $stat_clients ?>+"><?= $stat_clients ?>+</h3>
                 <p>Happy Clients</p>
             </div>
             <div class="cdm-stat-box-comp">
-                <h3><?= $stat_projects ?>+</h3>
+                <h3 data-count="<?= $stat_projects ?>+"><?= $stat_projects ?>+</h3>
                 <p>Finished Projects</p>
             </div>
             <div class="cdm-stat-box-comp">
-                <h3><?= $stat_staff ?>+</h3>
+                <h3 data-count="<?= $stat_staff ?>+"><?= $stat_staff ?>+</h3>
                 <p>Specialists &amp; Staff</p>
             </div>
         </div>

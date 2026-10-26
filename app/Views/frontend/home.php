@@ -55,16 +55,19 @@ include __DIR__ . '/../../../includes/header.php';
         align-items: center;
         justify-content: center;
         text-align: center;
-        animation: cdmFadeIn 0.8s ease-in-out;
+        will-change: opacity, transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
     }
 
     .cdm-slide.active {
         display: flex;
+        animation: cdmFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes cdmFadeIn {
-        from { opacity: 0; transform: scale(1.02); }
-        to { opacity: 1; transform: scale(1); }
+        from { opacity: 0; transform: translate3d(0, 0, 0) scale(1.02); }
+        to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
     }
 
     .cdm-slide-overlay {
@@ -965,6 +968,10 @@ include __DIR__ . '/../../../includes/header.php';
     }
 
     @media (max-width: 900px) {
+        .cdm-cta-banner,
+        .cdm-testimonials-section {
+            background-attachment: scroll !important;
+        }
         .cdm-about-grid,
         .cdm-partner-grid {
             grid-template-columns: 1fr;
@@ -1601,7 +1608,17 @@ function flipClientCards() {
         card.classList.toggle('flip');
     });
 }
-setInterval(flipClientCards, 5000);
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let clientFlipInterval = setInterval(flipClientCards, 5000);
+    const clientGrid = document.querySelector('.cdm-clients-grid');
+    if (clientGrid) {
+        clientGrid.addEventListener('mouseenter', () => clearInterval(clientFlipInterval));
+        clientGrid.addEventListener('mouseleave', () => {
+            clearInterval(clientFlipInterval);
+            clientFlipInterval = setInterval(flipClientCards, 5000);
+        });
+    }
+}
 
 // 3. Testimonial Slider
 let currentTestimonial = 0;

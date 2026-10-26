@@ -108,28 +108,43 @@
     }
 }
 
+/* Fallback for environments with JavaScript disabled or loading slowly */
+html.no-js .cdm-reveal,
+html.no-js .cdm-reveal-left,
+html.no-js .cdm-reveal-right,
+html.no-js .cdm-reveal-zoom {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
 /* ══════════════════════════════════════════════════
    2. SCROLL-TRIGGERED REVEAL CLASSES (AOS PARITY)
    ══════════════════════════════════════════════════ */
 .cdm-reveal {
     opacity: 0;
-    transform: translateY(32px);
+    transform: translate3d(0, 32px, 0);
     transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .cdm-reveal-left {
     opacity: 0;
-    transform: translateX(-38px);
+    transform: translate3d(-38px, 0, 0);
     transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .cdm-reveal-right {
     opacity: 0;
-    transform: translateX(38px);
+    transform: translate3d(38px, 0, 0);
     transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .cdm-reveal-zoom {
@@ -137,6 +152,18 @@
     transform: scale(0.92);
     transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Mobile Overflow Prevention: Swap horizontal reveal to vertical translateY BEFORE reveal */
+@media (max-width: 768px) {
+    .cdm-reveal-left:not(.cdm-visible) {
+        transform: translate3d(0, 24px, 0);
+    }
+    .cdm-reveal-right:not(.cdm-visible) {
+        transform: translate3d(0, 24px, 0);
+    }
 }
 
 /* Active State Triggered by IntersectionObserver */
@@ -145,7 +172,7 @@
 .cdm-reveal-right.cdm-visible,
 .cdm-reveal-zoom.cdm-visible {
     opacity: 1 !important;
-    transform: translate(0, 0) scale(1) !important;
+    transform: translate3d(0, 0, 0) scale(1) !important;
 }
 
 /* Stagger Delays */
@@ -155,16 +182,6 @@
 .cdm-delay-4 { transition-delay: 400ms; }
 .cdm-delay-5 { transition-delay: 500ms; }
 .cdm-delay-6 { transition-delay: 600ms; }
-
-/* Mobile Overflow Prevention: Swap horizontal reveal to vertical translateY */
-@media (max-width: 768px) {
-    .cdm-reveal-left {
-        transform: translateY(24px) !important;
-    }
-    .cdm-reveal-right {
-        transform: translateY(24px) !important;
-    }
-}
 
 /* ══════════════════════════════════════════════════
    3. BUTTON SHIMMER & HOVER MICRO-INTERACTIONS
@@ -227,7 +244,8 @@
 /* ══════════════════════════════════════════════════
    4. FLOATING WHATSAPP & CALL ACTION
    ══════════════════════════════════════════════════ */
-.cdm-floating-wa {
+.cdm-floating-wa,
+.cdm-float-wa {
     position: fixed;
     bottom: 28px;
     right: 28px;
@@ -240,15 +258,19 @@
     align-items: center;
     justify-content: center;
     font-size: 30px;
-    z-index: 999;
+    z-index: 9990;
     box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
     animation: cdmPulse 2.2s infinite;
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform, box-shadow;
+    text-decoration: none !important;
 }
 
-.cdm-floating-wa:hover {
+.cdm-floating-wa:hover,
+.cdm-float-wa:hover {
     transform: scale(1.1) translateY(-3px);
     background-color: #1ebe5d;
+    box-shadow: 0 10px 28px rgba(37, 211, 102, 0.55);
 }
 
 /* Floating Scroll-to-Top Button */
@@ -265,25 +287,26 @@
     align-items: center;
     justify-content: center;
     font-size: 16px;
-    z-index: 998;
+    z-index: 9980;
     box-shadow: 0 4px 14px rgba(3, 34, 143, 0.25);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translate3d(0, 20px, 0);
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease, background-color 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
     border: none;
+    will-change: opacity, transform;
 }
 
 .cdm-scroll-top.visible {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
 }
 
 .cdm-scroll-top:hover {
     background: #fb9a27;
-    transform: translateY(-4px);
+    transform: translate3d(0, -4px, 0);
     box-shadow: 0 8px 20px rgba(251, 154, 39, 0.35);
 }
 
@@ -327,4 +350,50 @@
 
 .cdm-flip-back {
     transform: rotateY(180deg);
+}
+
+/* ══════════════════════════════════════════════════
+   6. ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   Respects user operating system / browser preferences
+   ══════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .cdm-reveal,
+    .cdm-reveal-left,
+    .cdm-reveal-right,
+    .cdm-reveal-zoom {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .cdm-float,
+    .cdm-floating-wa,
+    .cdm-float-wa,
+    .cdm-scroll-down,
+    .cdm-btn-quote:hover::after,
+    .cdm-btn-primary:hover::after,
+    .cdm-btn-learn:hover::after,
+    .cdm-btn-shimmer:hover::after {
+        animation: none !important;
+    }
+
+    .cdm-hover-lift:hover,
+    .cdm-btn-quote:hover,
+    .cdm-btn-primary:hover,
+    .cdm-scroll-top:hover {
+        transform: none !important;
+    }
+
+    .cdm-flip-inner {
+        transition: none !important;
+    }
 }
