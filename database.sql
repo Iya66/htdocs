@@ -1172,12 +1172,12 @@ INSERT INTO `leads` (`id`, `name`, `phone`, `email`, `service`, `message`, `stat
 (109, 'RED SKY ICE CREAMS', '+919943840205', 'cloudaspire2026@gmail.com', 'WEB DEVELOPMENT', 'TRY AGAIN LATER', 'new', '2026-09-29 05:40:13', '2026-09-29 05:40:13'),
 (110, 'VIMALA\'S BEAUTY PARLOUR', '+919445491791', NULL, NULL, NULL, 'new', '2026-09-29 05:44:26', '2026-09-29 05:44:26'),
 (111, 'KOYYATHOPPU RESTAURANT', '91 96298 43701', NULL, NULL, NULL, 'lose', '2026-09-29 05:51:26', '2026-10-14 08:07:26'),
-(112, 'KARTHIKRAJA restaurant A/c and non A/c rooms', '+91 86087 70909', NULL, NULL, 'they not reacts our calls\r\n', 'new', '2026-09-29 06:20:26', '2026-10-14 08:06:46'),
+(112, 'KARTHIKRAJA restaurant A/c and non A/c rooms', '+91 86087 70909', NULL, NULL, NULL, 'new', '2026-09-29 06:20:26', '2026-10-14 08:06:46'),
 (113, 'Checkpost A/C Restaurant', '+91 95388 29018', NULL, 'WEB DEVELOPMENT', NULL, 'lose', '2026-09-29 06:21:56', '2026-09-29 06:21:56'),
 (114, 'MKS Chicken Centre', '+91 97864 42269', NULL, NULL, NULL, 'lose', '2026-09-29 06:29:51', '2026-09-29 06:29:51'),
-(115, 'Hi-way gardenrestaurant ', '+91 9344372851', NULL, NULL, 'sat call 11 clock again', 'contacted', '2026-10-01 06:49:17', '2026-10-01 06:49:17'),
-(116, 'ANBU CAFE', '+91 8667333933', NULL, NULL, 'try again later beacause coustomer is driving by that the time\r\n\r\n', 'new', '2026-10-01 06:59:02', '2026-10-01 06:59:02'),
-(117, 'Ishaan Dev', '627973490', 'seorankingtech@gmail.com', 'Website &amp; App Development', 'Hey team cloudaspiresolutions.in,\r\n\r\nI was going through your website &amp; I personally see a lot of potential in your website &amp; business.\r\n\r\nWe help businesses rank higher on Google while also increasing their presence on AI-powered search platforms like ChatGPT, Gemini, Claude, and Perplexity.\r\n\r\nOur SEO + AEO + GEO strategies help brands get discovered wherever customers search for answers.\r\n\r\nMay I send you a quote &amp; price list?\r\n\r\nCheers,\r\nIshaan Dev | Founder &amp; Project Head', 'new', '2026-10-06 10:26:58', '2026-10-06 10:26:58'),
+(115, 'Hi-way gardenrestaurant ', '+91 9344372851', NULL, NULL, NULL, 'contacted', '2026-10-01 06:49:17', '2026-10-01 06:49:17'),
+(116, 'ANBU CAFE', '+91 8667333933', NULL, NULL, NULL, 'new', '2026-10-01 06:59:02', '2026-10-01 06:59:02'),
+(117, 'Ishaan Dev', '627973490', 'seorankingtech@gmail.com', 'Website &amp; App Development', 'Hey team cloudaspiresolutions.in,\r\n\r\nWe help businesses rank higher on Google while also increasing their presence on AI-powered search platforms.', 'new', '2026-10-06 10:26:58', '2026-10-06 10:26:58'),
 (118, 'Coromandel Cafe ', '+91 9489214332', NULL, NULL, NULL, 'new', '2026-10-09 04:38:01', '2026-10-09 04:38:01'),
 (119, 'kamachi jwe', '9944330804', NULL, NULL, NULL, 'new', '2026-10-09 04:45:46', '2026-10-09 04:45:46'),
 (120, 'ishwariya silks', '98/43537079', NULL, NULL, NULL, 'new', '2026-10-09 04:47:57', '2026-10-09 04:47:57'),
@@ -1188,12 +1188,12 @@ INSERT INTO `leads` (`id`, `name`, `phone`, `email`, `service`, `message`, `stat
 (125, 'Cafe', '+91 7708824946 ', NULL, NULL, 'already have websites', 'lose', '2026-10-09 10:17:08', '2026-10-09 10:17:08'),
 (126, 'Sree LakshmiCoffee Works', '+91 9843047781 ', NULL, NULL, 'already have account', 'new', '2026-10-09 10:19:51', '2026-10-09 10:19:51'),
 (127, 'CHERRYPONDGARDEN CAFE &BAR;', '+91 9566616364', NULL, NULL, NULL, 'lose', '2026-10-09 10:27:22', '2026-10-15 06:24:21'),
-(131, 'Soni Hotel', '+91 8870345183', NULL, NULL, '\r\n', 'lose', '2026-10-15 06:16:55', '2026-10-15 06:17:20'),
+(131, 'Soni Hotel', '+91 8870345183', NULL, NULL, NULL, 'lose', '2026-10-15 06:16:55', '2026-10-15 06:17:20'),
 (132, 'J.K Restaurant', '+91 7094661248', NULL, NULL, 'ALREADY HAVE WEBSITES\r\n', 'lose', '2026-10-15 06:20:31', '2026-10-15 06:20:31'),
 (133, 'HOTELIMMUKUTTY', '+91 9080098945 ', NULL, NULL, 'CALL AGAIN LATTER', 'new', '2026-10-15 06:24:07', '2026-10-15 06:24:07'),
 (134, 'Vinayaga Mess ', '+91 6383180802', NULL, NULL, 'CALL AGAIN LATER', 'new', '2026-10-15 06:34:20', '2026-10-15 06:34:20'),
 (135, 'ThiruvandarkoilTamil NaduIN Om Sakthi Hotel ', '+91 9750774077', NULL, NULL, 'THEY ARE SMALL SHOP SO NEED FOR WEBSITES', 'lose', '2026-10-15 06:38:13', '2026-10-15 06:38:13'),
-(136, 'Nisha’s Cafe ', '+91 9600826564', NULL, NULL, 'THEY ARE SMALL SHOP NO NEED FOR WEBSITES', 'lose', '2026-10-15 06:48:17', '2026-10-15 06:48:17');
+(136, 'Nisha’s Cafe ', '+91 9600826564', NULL, NULL, NULL, 'lose', '2026-10-15 06:48:17', '2026-10-15 06:48:17');
 
 -- --------------------------------------------------------
 
